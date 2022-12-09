@@ -1,0 +1,680 @@
+#+TITLE: Climate Change Explorations
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [10pt,a4paper,titlepage]
+#+LATEX_HEADER: \def\today{\number\day\space\ifcase\month\or January\or February\or March\or April\or May\or June\or July\or August\or September\or October\or November\or December\fi \space \number\year}
+#+LATEX_HEADER: \usepackage{lmodern}
+#+LATEX_HEADER: \usepackage{amssymb,amsmath}
+#+LATEX_HEADER: \usepackage{parskip}
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \usepackage[round]{natbib}
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \usepackage{titling}
+#+LATEX_HEADER: \usepackage[squaren,cdot]{SIunits}
+#+LATEX_HEADER: \usepackage{booktabs}
+#+LATEX_HEADER: \pagestyle{fancy}
+#+LATEX_HEADER: \renewcommand{\footrulewidth}{0.4pt}
+#+LATEX_HEADER: \lhead{}
+#+LATEX_HEADER: \rhead{}
+#+LATEX_HEADER: \lfoot{Climate Change}
+#+LATEX_HEADER: \cfoot{\thepage}
+#+LATEX_HEADER: \rfoot{\thedate}
+#+LATEX_HEADER_EXTRA: \author{Stefan Revets}
+#+LATEX_HEADER_EXTRA: \pretitle{\flushleft\LARGE\bfseries\vskip 80mm}
+#+LATEX_HEADER_EXTRA: \posttitle{\par}
+#+LATEX_HEADER_EXTRA: \preauthor{\flushleft}
+#+LATEX_HEADER_EXTRA: \postauthor{\par}
+#+LATEX_HEADER_EXTRA: \predate{\flushleft}
+#+LATEX_HEADER_EXTRA: \postdate{\par{In Progress}}
+#+OPTIONS: ^:{}
+
+* Introduction
+In one of our monthly discussions, Birger asked if there was a proper
+understanding of the processes and mechanisms driving climate change
+(on a geological timescale). The glacial-interglacial alternations
+have been documented to go back some considerable time, and
+Milankovitch cycles are usually put forward as explanation. My
+impression is that we don't really understand what is going on, but it
+seemed only fair to look a little closer into what has been proposed
+over the years.
+
+A considerable amount of work has been expended already, using the
+Milankovitch cycles as a basis \citep{milankovitch20:theorie},
+refining and expanding the processes involved (changes in albedo,
+moisture content in the atmosphere, ocean circulation, and so on and
+so forth).
+
+Alternative approaches are few and far in between. A distinct
+alternative proposes that the cycles are endogenous, i.e., the
+consequence of behaviour of coupled differential equations describing
+the processes of heat transfer in the Earth's system, decoupled and
+independent from astronomical driving or forcing
+\citep{maslov14:self-organisation}.
+
+Looking at the Oxygen isotope curves from the Greenland and Deuterium
+from Antarctic ice cores more closely prompts a whole series of
+questions. Why is it that a great many (most?) warming events are
+short and abrupt and followed by a much more gradual, lower, cooling
+sequence? What happened after the last ice age to bring about an
+apparently unprecedented 10 kY of stable climate? The curves do show
+similarities to curves of limit cycles, `chaotic' systems, or strange
+attractor systems. It was rather nice then, to come across a paper
+\citep{steffen-al18:trajectories} that sketches this possible
+mechanism. Another intrigueing discussion was presented by
+\citet{baez12:twf319}, and then there is the endogenous,
+Lotka-Volterra like modelling as well
+\citep{maslov14:self-organisation}.
+
+In order to try and get a better understanding of the whole thing,
+taking a step back from all that engrossing, immediate detail, and
+going back to first principles seems like a good plan.
+
+At the most fundamental level, the Earth behaves like a heat engine,
+powered by the Sun.  The Earth, atmosphere, oceans and land mass,
+absorb and emit energy, all of which comes from the Sun. As the Earth
+turns around its own axis, around the Sun, rotating on its titled,
+wobbling axis, the amount of energy coming down and hence available
+for reflection, absorption and emmission changes at a wide variety of
+time scales.
+
+\citet{milankovitch20:theorie} used the Stockwell-Pilgrim values for
+eccentricity, obliquity and precession to calculate the incoming solar
+radiation for latitudes \unit{55}{\degree}, \unit{60}{\degree} and
+\unit{65}{\degree} N for the last 500,000 years.
+
+Since that time, the calculation of orbital parameters have continued
+to improve \citep{laskar-al04:insolation,laskar-al11:la2010}, and,
+more importantly, we now have access to much more precisely dated
+palaeotemperatures, in particular temperature data from Greenland and
+Antarctica ice cores. In addition, we also have CO$_2$ and CH$_4$
+measurements from those same ice cores. And so we have everything we
+need to (re)calculate the amount of solar energy delivered anywhere on
+the Earth and revisit any relations with the temperature changes
+recorded in the ice cores.
+
+* Data Sources
+** Astronomical Data
+Laskar and colleagues have created a website to allow on-line
+calculation of insolation given a set of input parameters using the
+results published in \citet{laskar-al04:insolation}
+(http://vo.imcce.fr/insola/earth/online/earth/online/index.php).
+
+This provides an easy means of getting the data needed here.
+
+A useful measure would be the mean daily insolation. This can be
+converted for calculation purposes into a mean longitude as set out in
+the table below
+
+| Date         | Mean Longitude | Season   |
+|--------------+----------------+----------|
+| 21 March     |              0 | equinox  |
+| 21 April     |             30 |          |
+| 21 May       |             60 |          |
+| 21 June      |             90 | solstice |
+| 21 July      |            120 |          |
+| 21 August    |            150 |          |
+| 21 September |            180 | equinox  |
+| 21 October   |            210 |          |
+| 21 November  |            240 |          |
+| 21 December  |            270 | solstice |
+| 21 January   |            300 |          |
+| 21 February  |            330 |          |
+
+Note that intermediate values can be used if desired.
+
+Other assumptions and setting include the following
+- time :: is expressed in Julian years, with a starting/ending point
+          of J2000.0.
+- solar constant :: \unit{1368}{\watt\per\squaremetre}
+- latitudes :: positive for N, negative for S hemisphere
+- insolation :: expressed in \watt\per\squaremetre
+
+Let's generate mean daily insolation data for the 4 season onsets over
+100 year intervals for the last 1 million years and that at 4
+latitudes, and use a naming convention for the data files
+
+| latitude             | name      |
+|----------------------+-----------|
+| \unit{0}{\degree}    | insol_equ |
+| \unit{25}{\degree}   | insol_tro |
+| \unit{50}{\degree}   | insol_tem |
+| \unit{72.5}{\degree} | insol_pol |
+
+The latitude chosen for the polar region is that of the location of
+the GRIP core in Greenland.  Of course, there will be only zeroes for
+the winter solstice for the polar latitude. Each of the data files is
+made up of the time (expressed in units of thousands of Julian Years,
+and negative as we're interested in values before the present) and the
+calculated insolation (in \watt\per\squaremetre).
+
+** Temperature Data
+GRIP and Vostok
+
+** Atmospheric gases
+Vostok
+
+* Calculations
+:PROPERTIES:
+:session: *R*
+:cache: yes
+:results: output graphics
+:exports: both
+:END:
+
+#+BEGIN_SRC R :results none
+  library("dplyr")
+  library("ggplot2")
+  library("magrittr")
+  library("pracma")
+#+END_SRC
+
+** Data preparation
+First of all, let's bring in the insolation data and combine the data
+so that we end up with separate data frames for each of the latitudes,
+but bringing each of the dates together.
+
+First bring in the data for the equator. In the process, let's change
+the time into actual years, and drop the negative. That way, it will
+be compatible with the ice core data
+#+BEGIN_SRC R :results none
+  insol_equ <- read.table("data/insol_equ_0.dat",
+                          col.names = c('time','march'))
+
+  insol_temp <- read.table("data/insol_equ_90.dat",
+                           col.names = c('time','june'))
+  insol_equ %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_equ_180.dat",
+                           col.names = c('time','september'))
+  insol_equ %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_equ_270.dat",
+                           col.names = c('time','december'))
+  insol_equ %<>%
+      left_join(insol_temp, by = 'time') %>%
+      mutate(time = time * -1000) %>%
+      arrange(time)
+#+END_SRC
+
+Now repeat for the other latitudes; first for the tropic of cancer
+#+BEGIN_SRC R :results none
+  insol_tro <- read.table("data/insol_tro_0.dat",
+                          col.names = c('time','march'))
+
+  insol_temp <- read.table("data/insol_tro_90.dat",
+                           col.names = c('time','june'))
+  insol_tro %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_tro_180.dat",
+                           col.names = c('time','september'))
+  insol_tro %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_tro_270.dat",
+                           col.names = c('time','december'))
+  insol_tro %<>%
+      left_join(insol_temp, by = 'time') %>%
+      mutate(time = time * -1000) %>%
+      arrange(time)
+#+END_SRC
+
+then for the temperate zone
+#+BEGIN_SRC R :results none
+  insol_tem <- read.table("data/insol_tem_0.dat",
+                          col.names = c('time','march'))
+
+  insol_temp <- read.table("data/insol_tem_90.dat",
+                           col.names = c('time','june'))
+  insol_tem %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_tem_180.dat",
+                           col.names = c('time','september'))
+  insol_tem %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_tem_270.dat",
+                           col.names = c('time','december'))
+  insol_tem %<>%
+      left_join(insol_temp, by = 'time') %>%
+      mutate(time = time * -1000) %>%
+      arrange(time)
+#+END_SRC
+
+and finally for the polar region
+#+BEGIN_SRC R :results none
+  insol_pol <- read.table("data/insol_pol_0.dat",
+                          col.names = c('time','march'))
+
+  insol_temp <- read.table("data/insol_pol_90.dat",
+                           col.names = c('time','june'))
+  insol_pol %<>%
+      left_join(insol_temp, by = 'time')
+
+  insol_temp <- read.table("data/insol_pol_180.dat",
+                           col.names = c('time','september'))
+  insol_pol %<>%
+      left_join(insol_temp, by = 'time') %>%
+      mutate(time = time * -1000) %>%
+      arrange(time)
+#+END_SRC
+
+Now let's get the GRIP and GISP oxygen isotope data as well as the
+deuterium data from the Vostok core
+#+BEGIN_SRC R :results none
+  grip <- read.table("grip/gripd18O.dat",
+                     col.names = c('depth','time','del18O'))
+  gisp <- read.table("gisp/gispd18O.dat",
+                     col.names = c('depth','time','del18O'))
+  vostok <-  read.table("vostok/vostok_d.dat",
+                        col.names = c('depth', 'time', 'deuterium', 'deltaTS'))
+#+END_SRC
+
+** Exploration
+*** Insolation
+Let's have a look first at the insolation calculations. One obvious
+avenue to pursue is to see how the summer-winter differences evolve?
+
+#+BEGIN_SRC R :file output/insol_delta.pdf
+  insol_del <- data.frame(time = insol_equ$time,
+                          equ_rel = 1 - insol_equ$december/insol_equ$june,
+                          tro_rel = 1 - insol_tro$december/insol_tro$june,
+                          tem_rel = 1 - insol_tem$december/insol_tem$june,
+                          pol_rel = 1)
+
+  insol_del %<>%
+      mutate(equ_abs = equ_rel * insol_equ$june,
+             tro_abs = tro_rel * insol_tro$june,
+             tem_abs = tem_rel * insol_tem$june,
+             pol_abs = insol_pol$june,
+             delta = equ_abs + tro_abs + tem_abs)
+
+  ggplot(insol_del) +
+  #    geom_line(aes(time, delta)) +
+      geom_line(aes(time, equ_rel), color = 'blue') +
+      geom_line(aes(time, tro_rel), color = 'blue') +
+      geom_line(aes(time, tem_rel), color = 'blue') +
+  #    geom_line(aes(time, pol), color = 'blue') +
+      labs(title = "Relative Summer-Winter Insolation Deficit",
+           x = "Time (Years)",
+           y = "Relative Deficit")
+
+#+END_SRC
+
+Let's have a look at the differences relative to the mean insolations
+for each latitude and find out if these are essentially the same, or
+not. Let's offset the three zones from each other in the plot by 0.5,
+so that we can see the individual lines more clearly.
+#+BEGIN_SRC R :file output/insol_rel.pdf
+  insol_means_pol <- summarise_each(insol_pol, funs(mean))
+  insol_means_tem <- summarise_each(insol_tem, funs(mean))
+  insol_means_tro <- summarise_each(insol_tro, funs(mean))
+  insol_means_equ <- summarise_each(insol_equ, funs(mean))
+
+  insol_rel <- data.frame(time = insol_equ$time,
+                          equ = (insol_equ$december / insol_means_equ$december)/(insol_equ$june / insol_means_equ$june),
+                          tro = (insol_tro$december / insol_means_tro$december)/(insol_tro$june / insol_means_tro$june),
+                          tem = (insol_tem$december / insol_means_tem$december)/(insol_tem$june / insol_means_tem$june),
+                          pol = 1)
+
+  ggplot(insol_rel) +
+      geom_line(aes(time, equ - 0.5), color = 'red') +
+      geom_line(aes(time, tro), color = 'green') +
+      geom_line(aes(time, tem + 0.5), color = 'blue') +
+#      ylim(-1, 1) +
+      labs(title = "Relative Summer-Winter Insolation Change",
+           x = "Time (Years)",
+           y = "Relative summer/winter insolation")
+
+#+END_SRC
+And that plot shows rather neatly that the deviations from the average
+insolation are indeed different at the different latitudes looked at.
+
+*** Isotope data
+First let's have a look at the degree of concordance between GRIP
+(red), GISP (orange, with the 6 \permil offset for the GISP data) and
+Vostok (blue) data
+#+BEGIN_SRC R :file output/isotope_concordance.pdf
+  ggplot() +
+      geom_line(aes(time, del18O), data = grip, color = "red") +
+      geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
+      geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
+#      xlim(0, 250000) +
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+                         name = expression(paste(delta ^{2}, 'H')))) +
+      labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
+           x = "Time (Years)",
+           y = expression(paste(delta ^{18}, 'O')))
+
+#+END_SRC
+
+Here, we get a hint of a possible problem: the various peaks and
+troughs observed in the Greenland and Antarctic do not appear to
+coincide all the time, and the direction of changes is also not always
+in step. This needs to be resolved one way or another before we can
+even begin to look at possible correlations with insolation changes.
+
+Let's look in a little more detail:
+#+BEGIN_SRC R :file output/isotope_concordance_detail.pdf
+  ggplot() +
+      geom_line(aes(time, del18O), data = grip, color = "red") +
+      geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
+      geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
+      xlim(0, 150000) +
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+                         name = expression(paste(delta ^{2}, 'H')))) +
+      labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
+           x = "Time (Years)",
+           y = expression(paste(delta ^{18}, 'O')))
+
+#+END_SRC
+
+Something we have to keep in mind is that the Antarctic signal is
+determined from the Hydrogen isotope fractionation, while the
+Greenland signal uses Oxygen isotope fractionation. This may be
+relevant: the overall behaviour appears to be the same, i.e., the
+colder intervals show up as more negative fractionations in both
+isotopes. However, there are situations in which the signals go in
+opposite direction:
+#+BEGIN_SRC R :file output/deuterium_oxygen_detail.pdf
+  ggplot() +
+      geom_line(aes(time, del18O), data = grip, color = "red") +
+      geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
+      geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
+      xlim(0, 12000) +
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+                         name = expression(paste(delta ^{2}, 'H')))) +
+      labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
+           x = "Time (Years)",
+           y = expression(paste(delta ^{18}, 'O')))
+
+#+END_SRC
+
+The most obvious difference between Antarctic and Greenland signals is
+that the Antarctic signal shows a small but sustained negative
+trend. 
+
+A closer look at the 10-12 kYBP interval shows the Antarctic Deuterium
+signal ending on a high around 11250 YBP and then gradually
+declining. In contrast, the Greenland Oxygen signals rose very fast
+around 11600 YBP, and then continue their increase, albeit much more
+slowly, until 10000 YBP, from when on they stabilise.
+
+In addition, there is also a clear inversion between the two around
+8300 YBP: the GRIP and GISP Oxygen signals show a negative spike,
+while the Vostok Deuterium signal shows a positive spike.
+
+The most problematic culprit is the dating. How accurate are the ages,
+indeed, how are these determined?
+
+First off, let's have a look at the relations between depth and age?
+#+BEGIN_SRC R :file output/age_depth.pdf
+  ggplot() +
+      geom_line(aes(depth, time), data = grip, color = "red") +
+      geom_line(aes(depth, time), data = gisp, color = "orange") +
+      geom_line(aes(depth, time), data = vostok, color = "blue") +
+      labs(title = "Age versus Depth",
+           y = "Time (Years)",
+           x = "Depth (m)")
+#+END_SRC
+
+The GRIP timescale, ss09, was used by \citet{johnsen-al97:eemian} and
+is based on modeling by \citet{dansgaard-johnsen69:model}
+
+*** Relations between insolation and isotope data
+How do these insolation differences relate to the GRIP ice signals?
+#+BEGIN_SRC R :file output/insol_grip.pdf
+    ggplot(insol_del) +
+        geom_line(aes(time, delta), color = 'blue') +
+        geom_line(aes(time, 30*del18O + 1600),
+                  data = grip, color = 'red') +
+        scale_y_continuous(sec.axis = sec_axis(~. / 30,
+                           name = expression(paste(delta ^{18}, 'O')))) +
+        xlim(0,250000) +
+        labs(title = "Insolation Deficit and GRIP O isotope",
+             x = "Time (Years)",
+             y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
+
+#+END_SRC
+
+And, what about the Vostok signals?
+#+BEGIN_SRC R :file output/insol_vostok.pdf
+    ggplot(insol_del) +
+        geom_line(aes(time, 5*deuterium + 2800),
+                  data = vostok, color = 'red') +
+        geom_line(aes(time, delta), color = 'blue') +
+        scale_y_continuous(sec.axis = sec_axis(~. / 5,
+                           name = 'Deuterium')) +
+        xlim(0,450000) +
+        labs(title = "Insolation Deficit and Vostok Deuterium",
+             x = "Time (Years)",
+             y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
+
+#+END_SRC
+
+Maybe more can be gleaned from the relative insolation changes?
+For Greenland, that gives
+#+BEGIN_SRC R :file output/insol_rel_grip.pdf
+    ggplot(insol_rel) +
+        geom_line(aes(time, del18O),
+                  data = grip, color = 'red') +
+        geom_line(aes(time, 15 * tem - 50), color = 'blue') +
+        geom_line(aes(time, 15 * tro - 50), color = 'green') +
+#        scale_y_continuous(sec.axis = sec_axis(~. / 30,
+#                           name = expression(paste(delta ^{18}, 'O')))) +
+        xlim(0,150000) +
+        labs(title = "Insolation Deficit and GRIP O isotope",
+             x = "Time (Years)",
+             y = "Relative Summer/Winter Insolation proportion")
+
+#+END_SRC
+
+and for Antarctica
+#+BEGIN_SRC R :file output/insol_rel_vostok.pdf
+    ggplot(insol_rel) +
+        geom_line(aes(time, deuterium),
+                  data = vostok, color = 'red') +
+        geom_line(aes(time, 100 * tro - 500), color = 'green') +
+        geom_line(aes(time, 100 * tem - 500), color = 'blue') +
+        xlim(0,250000) +
+        labs(title = "Insolation Deficit and Vostok Deuterium",
+             x = "Time (Years)",
+             y = "Relative Summer/Winter Insolation proportion")
+
+#+END_SRC
+
+** Alternative approaches
+Correlation is not causation, and the direct coupling between
+temperature/ice volume and received solar radiation is too
+simplistic. The redistribution of heat absorbed and emitted by the
+oceans and the atmosphere, the various relaxation times of the heat
+absorption and (re)emission processes, all that in response to an
+oscillatory supply of solar energy (at a variety of different
+timescales) suggests that coming up with reasonable causality-driven
+models will not be easy.
+
+\citet{maslov14:self-organisation} characterisation of the
+exogenous-driven Milankovitch-like approaches as Ptolemaic is rudely
+dismissive, but not without substance. However, his proposed purely
+endogenous alternative takes that approach too far in turn. The
+Lotka-Volterra differential equations can lead to varying oscillatory
+behaviours in response to changes in the various constants of the base
+equations, but that begs the questions to what extent the physical
+processes can be described as such differential equations, and, if so,
+how the equation constants can be determined from the known physical
+properties of the relevant elements described by the equations.
+
+[Question. Can we differentiate between ice volume and temperature
+changes, e.g., by using both Oxygen and Deuterium signals?]
+
+** A first principles approach
+Earth receives essentially all its energy from the Sun (heat loss due
+to cooling of the core and radiogenic heating amounts to
+\unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
+for the total solar energy delivered to the Earth). 
+
+In the absence of tectonic activity and of human interference, this
+received energy undergoes a number of conversions before ultimately
+being radiated out. The various conversion processes have their own
+response time, and they interact with each other. This results in a
+dynamic equilibrium, maintaining the temperature on Earth within
+fairly narrow bounds.
+
+A clear distinction has to be made between the changes in CO2 and CH4
+concentrations and climate oscillations pre-Anthropocene and what is
+taking place now that a massive injection of CO2 has taken place,
+geologically speaking instantaneously. Pre-Anthropocene, the
+greenhouse gases did not drive climate change, if anything, they were
+part of the feedback responses. It is not at all clear if the
+geological concentrations and the temperatures/ice volumes can be used
+as a direct, simple proxy for the effects of the human-caused
+concentrations.
+
+
+- Hydrosphere
+  - Cryosphere (volume, area)
+  - Oceans (temperature, heat content, CO2, volume)
+- Atmosphere
+  - Water vapour (volume, heat content)
+  - Clouds (volume, heat content)
+  - Precipitation (volume, heat content)
+  - CO2 (amount, solubility)
+  - Temperature
+- Energy
+  - Incoming Solar Radiation
+  - Outgoing Earth Radiation
+
+Energy transfers
+- Evaporation
+- Condensation
+- Heating
+- Cooling
+- Radiation
+- Reflection (albedo)
+- Absorption (albedo)
+
+*** Atmosphere
+\citet{trenberth-smith05:atmosphere} provide a carefully argued
+calculation of the total mass of the atmosphere.
+
+The total mean mass amounts to \unit{5.1480}{\exad\kilogram} with an
+annual range due to water vapour of \unit{1.5}{\petad\kilogram}. The
+mean mass of water vapour is estimated as \unit{12.7}{\petad\kilogram}
+and the dry air mass as \unit{5.1352}{\exad\kilogram}.
+
+Composition of the atmosphere
+| component | fraction | mol mass |
+|-----------+----------+----------|
+| N$_2$     | 0.7808   | 28.0134  |
+| O$_2$     | 0.2094   | 31.8888  |
+| Ar        | 0.0093   | 39.948   |
+| CO$_2$    | 0.0004   | 43.8998  |
+which yields an average mol mass for air of 28.9395
+
+*** CO2
+While a great deal of work has been done on the behaviour and
+interactions of CO$_2$ and water, that is much less the case for
+interactions with seawater. The presence of the many different ions in
+seawater is a substantial impediment to physicochemical theories and
+calculations: the actual solution is quite a long way off from ideal,
+i.e., simplified, conditions.
+
+When CO$_2$ dissolves in water, it undergoes a two-step
+dissociation.
+\begin{eqnarray}
+CO_2 + H_2O & \rightleftharpoons & H^+ + HCO_3^ \\
+HCO_3^- & \rightleftharpoons & H^+ + CO_3^{2-}
+\end{eqnarray}
+
+\citet{dickson-goyet94:co2-seawater} gave a suite of standard
+procedures and calculations specifically to deal with CO$_2$ and
+seawater.
+
+Amongst the useful equations, there is one to calculate the fugacity
+of CO$_2$ as a component of a binary mixture
+\begin{equation}
+f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_xy(T)) p}{R T}}
+\end{equation}
+
+The first virial coefficient B can be calculated with an expression
+derived by \citet{weiss74:solubility}
+\begin{equation}
+B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
+\end{equation}
+valid for $265 < T < 320$, with T in \kelvin\ and B in
+\centi\cubic\metre\per\mole.
+
+He also derived a means to estimate the cross virial coefficient for
+the CO$_2$-air mixture as
+\begin{equation}
+\delta(T) = 57.7 - 0.118 T
+\end{equation}
+valid for $273 < T < 313$, again with T in \kelvin\ and \delta in
+\centi\cubic\metre\per\mole.
+
+The equilibrium constant K$_0$ for the reaction 
+\begin{equation}
+CO_2(g) \rightleftharpoons CO^*_2(aq) 
+\end{equation}
+(where CO$^*_2$ stands for sum of $[CO_2(aq)] + [HCO_3^-] + [CO_3^{2-}]$)
+that is to say
+\begin{equation}
+K_0 = \frac{[CO^*_2]}{f(CO_2)}
+\end{equation}
+comes again from \citet{weiss74:solubility} and is given as
+\begin{equation}
+\ln K_0 = 93.4517 \frac{100}{T} - 60.2409 + 23.3585 \ln \frac{T}{100} + S (0.023517 - 0.023656 \frac{T}{100} + 0.0047036 (\frac{T}{100})^2)
+\end{equation}
+where the fugacity is expressed in atmospheres and the salinity S
+
+And so we can calculate for any given CO$_2$ concentration in the air
+how much will be dissolved in seawater at a temperature T.
+* Epilogue
+
+** An aside on Catastropy Theory
+
+\citet{thom72:stabilite}
+
+For any system that seeks to minimize a function, only seven different
+local forms of catastrophe ``typically'' occur for four or fewer
+variables:
+
+1. Fold catastrophe,
+2. Cusp catastrophe,
+3. Swallowtail catastrophe,
+4. Butterfly catastrophe,
+5. Elliptic umbilic catastrophe,
+6. Hyperbolic umbilic catastrophe, and
+7. Parabolic umbilic catastrophe.
+
+More specifically, for any system with fewer than five control factors
+and fewer than three behavior axes, these are the only seven
+catastrophes possible. The following tables gives the possible
+catastrophes as a function of control factors and behavior axes.
+
+| controls | 1 behaviour | 2 behaviour                          |
+|----------+-------------+--------------------------------------|
+|        1 | fold        |                                      |
+|        2 | cusp        |                                      |
+|        3 | swallowtail | hyperbolic umbilic, elliptic umbilic |
+|        4 | butterfly   | parabolic umbilic                    |
+
+The following table gives prototypical examples for equations showing each type of catastrophe.
+| equation                      | catastrophe                                    |
+|-------------------------------+------------------------------------------------|
+| $x^3+ux$                      | fold catastrophe                               |
+| $x^4+ux^2+vx$                 | cusp catastrophe, Riemann-Hugoniot catastrophe |
+| $x^5+ux^3+vx^2+wx$            | swallowtail catastrophe                        |
+| $x^3+y^3+uxy+vx+wy$           | hyperbolic umbilic catastrophe                 |
+| $x^3/3-xy^2+u(x^2+y^2)+vx+wy$ | elliptic umbilic catastrophe                   |
+| $x^6+ux^4+vx^3+wx^2+tx$       | butterfly catastrophe                          |
+| $x^2y+y^4+ux^2+vy^2+wx+ty$    | parabolic umbilic catastrophe                  |
+
+
+* References
+
+\bibliographystyle{plainnat}
+\bibliography{climate}
+
