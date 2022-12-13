@@ -165,6 +165,9 @@ Vostok
   library("ggplot2")
   library("magrittr")
   library("pracma")
+
+  R <- 8.31451          % J / K mol, Gas constant
+  p0 <- 101325          % Pa, standard pressure
 #+END_SRC
 
 ** Data preparation
@@ -595,7 +598,7 @@ seawater.
 Amongst the useful equations, there is one to calculate the fugacity
 of CO$_2$ as a component of a binary mixture
 \begin{equation}
-f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_xy(T)) p}{R T}}
+f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
 \end{equation}
 
 The first virial coefficient B can be calculated with an expression
@@ -603,7 +606,7 @@ derived by \citet{weiss74:solubility}
 \begin{equation}
 B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
 \end{equation}
-valid for $265 < T < 320$, with T in \kelvin\ and B in
+valid for $265 < T < 320$, with T in \kelvin and B in
 \centi\cubic\metre\per\mole.
 
 He also derived a means to estimate the cross virial coefficient for
@@ -611,7 +614,7 @@ the CO$_2$-air mixture as
 \begin{equation}
 \delta(T) = 57.7 - 0.118 T
 \end{equation}
-valid for $273 < T < 313$, again with T in \kelvin\ and \delta in
+valid for $273 < T < 313$, again with T in \kelvin and \delta in
 \centi\cubic\metre\per\mole.
 
 The equilibrium constant K$_0$ for the reaction 
@@ -631,6 +634,53 @@ where the fugacity is expressed in atmospheres and the salinity S
 
 And so we can calculate for any given CO$_2$ concentration in the air
 how much will be dissolved in seawater at a temperature T.
+#+BEGIN_SRC R
+  # Include conversion from cm3 to m3
+  delta <- function(T){(57.7 - 0.118 * T) * 1e-6}
+
+  b0 <- -1636.75
+  b1 <- 12.0408
+  b2 <- -3.279571e-2
+  b3 <- 3.165281e-5
+
+  # Include conversion from cm3 to m3
+  virial <- function(T){(b0 + b1 * T + b2 * T^2 + b3 * T^3) * 1e-6}
+
+  e0 <- 93.4517
+  e1 <- -60.2409
+  e2 <- 23.3585
+  e3 <- 0.023517
+  e4 <- -0.023656
+  e5 <- 0.0047036
+
+  lnK0 <- function(T, S = 35){
+      e0 * 100/T + e1 + e2 * log(T/100) + S * (e3 + e4 * T/100 + e5 *(T/100)^2)}
+
+  fugacity <- function(x, T, p){
+      x * p * exp((virial(T) + 2 * x^2 * delta(T)) * p / (R * T))}
+
+  # the K0 calc assumes atmospheres, so bring in the Pa conversion with p0
+  co2aq <- function(x, T, p, S = 35){
+      exp(lnK0(T, S)) / p0 * fugacity(x, T, p)}
+#+END_SRC
+
+Having defined the various functions, let's have a look at the nature
+of the relations: include the pre-industrial and the present CO$_2$
+concentrations.
+
+#+BEGIN_SRC R :file output/co2sol.pdf
+  co2sol <- data.frame(T = seq(273, 300)) %>%
+      mutate(co2_280 = co2aq(280e-6, T, p0),
+             co2_420 = co2aq(420e-6, T, p0))
+
+  ggplot(co2sol) +
+      geom_line(aes(T, co2_280*1000), colour = "blue") +
+      geom_line(aes(T, co2_420*1000), colour = "green") +    
+      labs(title = "CO2 solubility",
+           x = "T (Kelvin)",
+           y = "[CO2(aq)] (mmol)")
+#+END_SRC
+
 * Epilogue
 
 ** An aside on Catastropy Theory
@@ -671,7 +721,6 @@ The following table gives prototypical examples for equations showing each type 
 | $x^3/3-xy^2+u(x^2+y^2)+vx+wy$ | elliptic umbilic catastrophe                   |
 | $x^6+ux^4+vx^3+wx^2+tx$       | butterfly catastrophe                          |
 | $x^2y+y^4+ux^2+vy^2+wx+ty$    | parabolic umbilic catastrophe                  |
-
 
 * References
 
