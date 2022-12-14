@@ -85,7 +85,7 @@ Since that time, the calculation of orbital parameters have continued
 to improve \citep{laskar-al04:insolation,laskar-al11:la2010}, and,
 more importantly, we now have access to much more precisely dated
 palaeotemperatures, in particular temperature data from Greenland and
-Antarctica ice cores. In addition, we also have CO$_2$ and CH$_4$
+Antarctica ice cores. In addition, we also have CO_{2} and CH_{4}
 measurements from those same ice cores. And so we have everything we
 need to (re)calculate the amount of solar energy delivered anywhere on
 the Earth and revisit any relations with the temperature changes
@@ -166,8 +166,8 @@ Vostok
   library("magrittr")
   library("pracma")
 
-  R <- 8.31451          % J / K mol, Gas constant
-  p0 <- 101325          % Pa, standard pressure
+  R <- 8.31451          # J / K mol, Gas constant
+  p0 <- 101325          # Pa, standard pressure
 #+END_SRC
 
 ** Data preparation
@@ -525,10 +525,10 @@ response time, and they interact with each other. This results in a
 dynamic equilibrium, maintaining the temperature on Earth within
 fairly narrow bounds.
 
-A clear distinction has to be made between the changes in CO2 and CH4
-concentrations and climate oscillations pre-Anthropocene and what is
-taking place now that a massive injection of CO2 has taken place,
-geologically speaking instantaneously. Pre-Anthropocene, the
+A clear distinction has to be made between the changes in CO_{2} and
+CH_{4} concentrations and climate oscillations pre-Anthropocene and
+what is taking place now that a massive injection of CO_{2} has taken
+place, geologically speaking instantaneously. Pre-Anthropocene, the
 greenhouse gases did not drive climate change, if anything, they were
 part of the feedback responses. It is not at all clear if the
 geological concentrations and the temperatures/ice volumes can be used
@@ -538,12 +538,12 @@ concentrations.
 
 - Hydrosphere
   - Cryosphere (volume, area)
-  - Oceans (temperature, heat content, CO2, volume)
+  - Oceans (temperature, heat content, CO_{2}, volume)
 - Atmosphere
   - Water vapour (volume, heat content)
   - Clouds (volume, heat content)
   - Precipitation (volume, heat content)
-  - CO2 (amount, solubility)
+  - CO_{2} (amount, solubility)
   - Temperature
 - Energy
   - Incoming Solar Radiation
@@ -570,21 +570,21 @@ and the dry air mass as \unit{5.1352}{\exad\kilogram}.
 Composition of the atmosphere
 | component | fraction | mol mass |
 |-----------+----------+----------|
-| N$_2$     | 0.7808   | 28.0134  |
-| O$_2$     | 0.2094   | 31.8888  |
-| Ar        | 0.0093   | 39.948   |
-| CO$_2$    | 0.0004   | 43.8998  |
+| N_{2}     |   0.7808 |  28.0134 |
+| O_{2}     |   0.2094 |  31.8888 |
+| Ar        |   0.0093 |   39.948 |
+| CO_{2}    |   0.0004 |  43.8998 |
 which yields an average mol mass for air of 28.9395
 
 *** CO2
 While a great deal of work has been done on the behaviour and
-interactions of CO$_2$ and water, that is much less the case for
+interactions of CO_{2} and water, that is much less the case for
 interactions with seawater. The presence of the many different ions in
 seawater is a substantial impediment to physicochemical theories and
 calculations: the actual solution is quite a long way off from ideal,
 i.e., simplified, conditions.
 
-When CO$_2$ dissolves in water, it undergoes a two-step
+When CO_{2} dissolves in water, it undergoes a two-step
 dissociation.
 \begin{eqnarray}
 CO_2 + H_2O & \rightleftharpoons & H^+ + HCO_3^ \\
@@ -592,11 +592,11 @@ HCO_3^- & \rightleftharpoons & H^+ + CO_3^{2-}
 \end{eqnarray}
 
 \citet{dickson-goyet94:co2-seawater} gave a suite of standard
-procedures and calculations specifically to deal with CO$_2$ and
+procedures and calculations specifically to deal with CO_{2} and
 seawater.
 
 Amongst the useful equations, there is one to calculate the fugacity
-of CO$_2$ as a component of a binary mixture
+of CO_{2} as a component of a binary mixture
 \begin{equation}
 f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
 \end{equation}
@@ -606,16 +606,16 @@ derived by \citet{weiss74:solubility}
 \begin{equation}
 B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
 \end{equation}
-valid for $265 < T < 320$, with T in \kelvin and B in
-\centi\cubic\metre\per\mole.
+valid for $265 < T < 320$, with T(\kelvin) and
+B(\centi\cubic\metre\per\mole).
 
 He also derived a means to estimate the cross virial coefficient for
-the CO$_2$-air mixture as
+the CO_{2}-air mixture as
 \begin{equation}
 \delta(T) = 57.7 - 0.118 T
 \end{equation}
-valid for $273 < T < 313$, again with T in \kelvin and \delta in
-\centi\cubic\metre\per\mole.
+valid for $273 < T < 313$, again with T(\kelvin) and
+\delta(\centi\cubic\metre\per\mole).
 
 The equilibrium constant K$_0$ for the reaction 
 \begin{equation}
@@ -632,7 +632,7 @@ comes again from \citet{weiss74:solubility} and is given as
 \end{equation}
 where the fugacity is expressed in atmospheres and the salinity S
 
-And so we can calculate for any given CO$_2$ concentration in the air
+And so we can calculate for any given CO_{2} concentration in the air
 how much will be dissolved in seawater at a temperature T.
 #+BEGIN_SRC R
   # Include conversion from cm3 to m3
@@ -665,8 +665,8 @@ how much will be dissolved in seawater at a temperature T.
 #+END_SRC
 
 Having defined the various functions, let's have a look at the nature
-of the relations: include the pre-industrial and the present CO$_2$
-concentrations.
+of the relations: include the pre-industrial (green line) and the
+present CO_{2} concentrations (blue line).
 
 #+BEGIN_SRC R :file output/co2sol.pdf
   co2sol <- data.frame(T = seq(273, 300)) %>%
@@ -674,12 +674,33 @@ concentrations.
              co2_420 = co2aq(420e-6, T, p0))
 
   ggplot(co2sol) +
-      geom_line(aes(T, co2_280*1000), colour = "blue") +
-      geom_line(aes(T, co2_420*1000), colour = "green") +    
-      labs(title = "CO2 solubility",
+      geom_line(aes(T, co2_280*1e6), colour = "blue") +
+      geom_line(aes(T, co2_420*1e6), colour = "green") +    
+      labs(title = "CO2 solubility in seawater",
            x = "T (Kelvin)",
-           y = "[CO2(aq)] (mmol)")
+           y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
+
+*** Calcium carbonate
+
+Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
+source. As I came across a reference in
+\citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
+Thermal Maximum \citet{ajayi-al20:evaluation}, I noticed that most, if
+not all, of the work is based on bulk sediment samples, i.e., the
+carbonate component in the sediment is not split up. This is terrible,
+as it conflates a variety of fractionation processes. Changes in
+plankton composition (foram/nanno ratio: nannos are photosynthetic,
+forams are not), changes in (planktonic) foram species abundance
+(globigerinid-like species remaining in the photic zone,
+globorotaliid/morozovellid-like species occupying different water
+depths over their life cycle), and on top of all that the demonstrated
+pH-dependence of the C fractionation, all these varying processes are
+conflated, so that there is no way in which to retrieve any changes in
+isotope composition due to injection/availability of C sources. Hence,
+I cannot trust the published suggestions of differing amounts of C
+coming from different sources (e.g., marine, terrestrial, plants,
+melting permafrost, \&c.)
 
 * Epilogue
 
