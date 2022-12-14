@@ -55,12 +55,18 @@ from Antarctic ice cores more closely prompts a whole series of
 questions. Why is it that a great many (most?) warming events are
 short and abrupt and followed by a much more gradual, lower, cooling
 sequence? What happened after the last ice age to bring about an
-apparently unprecedented 10 kY of stable climate? The curves do show
-similarities to curves of limit cycles, `chaotic' systems, or strange
-attractor systems. It was rather nice then, to come across a paper
-\citep{steffen-al18:trajectories} that sketches this possible
-mechanism. Another intrigueing discussion was presented by
-\citet{baez12:twf319}, and then there is the endogenous,
+apparently unprecedented 10 kY of stable climate? The Greenland and
+Antarctica isotope curves and CO_{2} curves appear to be quite
+similar, but which one changes first? That is, in the (pre-human
+intervention) past, are the changing CO_{2} concentrations a cause or
+a result of the temperature changes? What is the role of CO_{2} in the
+Dansgaard-Oescher cycles; an enabler, a moderator, an accelerator?
+
+The curves do show similarities to curves of limit cycles, `chaotic'
+systems, or strange attractor systems. It was rather nice then, to
+come across a paper \citep{steffen-al18:trajectories} that sketches
+this possible mechanism. Another intrigueing discussion was presented
+by \citet{baez12:twf319}, and then there is the endogenous,
 Lotka-Volterra like modelling as well
 \citep{maslov14:self-organisation}.
 
@@ -73,8 +79,14 @@ powered by the Sun.  The Earth, atmosphere, oceans and land mass,
 absorb and emit energy, all of which comes from the Sun. As the Earth
 turns around its own axis, around the Sun, rotating on its titled,
 wobbling axis, the amount of energy coming down and hence available
-for reflection, absorption and emmission changes at a wide variety of
-time scales.
+for reflection, absorption and emission changes at a wide variety of
+time scales. Some of that solar energy is variously trapped by water
+vapour, CO_{2} and CH_{4} in the atmosphere, as well as by the oceans
+and the continents, and downgraded to heat in the process. Part of
+that heat is then radiated out again into space, so that temperature
+on Earth remains within limits. There is of course the additional
+redistribution across the Earth of the absorbed heat, adding
+substantial complexity to the entire process.
 
 \citet{milankovitch20:theorie} used the Stockwell-Pilgrim values for
 eccentricity, obliquity and precession to calculate the incoming solar
