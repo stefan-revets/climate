@@ -43,8 +43,8 @@ refining and expanding the processes involved (changes in albedo,
 moisture content in the atmosphere, ocean circulation, and so on and
 so forth).
 
-Alternative approaches are few and far in between. A distinct
-alternative proposes that the cycles are endogenous, i.e., the
+Different approaches are few and far in between. A distinct
+alternative proposes that the cycles may be endogenous, i.e., the
 consequence of behaviour of coupled differential equations describing
 the processes of heat transfer in the Earth's system, decoupled and
 independent from astronomical driving or forcing
@@ -54,13 +54,15 @@ Looking at the Oxygen isotope curves from the Greenland and Deuterium
 from Antarctic ice cores more closely prompts a whole series of
 questions. Why is it that a great many (most?) warming events are
 short and abrupt and followed by a much more gradual, lower, cooling
-sequence? What happened after the last ice age to bring about an
+sequence? What happened after the last glacial to bring about an
 apparently unprecedented 10 kY of stable climate? The Greenland and
 Antarctica isotope curves and CO_{2} curves appear to be quite
 similar, but which one changes first? That is, in the (pre-human
 intervention) past, are the changing CO_{2} concentrations a cause or
-a result of the temperature changes? What is the role of CO_{2} in the
-Dansgaard-Oescher cycles; an enabler, a moderator, an accelerator?
+an effect of the temperature changes? What is the role of CO_{2} in
+the Dansgaard-Oescher cycles; an enabler, a moderator, an accelerator?
+How come that the there is no discernable insolation change comparable
+to the Dansgaard-Oescher cycle time intervals?
 
 The curves do show similarities to curves of limit cycles, `chaotic'
 systems, or strange attractor systems. It was rather nice then, to
@@ -159,10 +161,17 @@ and negative as we're interested in values before the present) and the
 calculated insolation (in \watt\per\squaremetre).
 
 ** Temperature Data
-GRIP and Vostok
+GRIP and GISP Oxygen isotope data and Vostok Deuterium data obtained
+from the National Snow and Ice Data Center, University of Colorado at
+Boulder, and the WDC-A for Paleoclimatology, National Geophysical Data
+Center, Boulder, Colorado.
 
 ** Atmospheric gases
-Vostok
+I still need to track down ice-based CO_{2} and CH_{4} data, ideally
+both from Greenland and from Antarctic ice cores. It is important in
+that the measurements of these gases also has isotope measurements in
+the same samples: interpolation would dilute the reliability of the
+data for study and analysis.
 
 * Calculations
 :PROPERTIES:
@@ -547,6 +556,10 @@ geological concentrations and the temperatures/ice volumes can be used
 as a direct, simple proxy for the effects of the human-caused
 concentrations.
 
+The behaviour of CO_{2} also needs scrutiny. Sinks, both temporary
+(e.g., dissolved in seawater) and long-term ones (e.g. carbonates) and
+sources, deserve attention. Here, too, the transfer between reservoirs
+and the characteristic times of residence and transfer, are relevant.
 
 - Hydrosphere
   - Cryosphere (volume, area)
