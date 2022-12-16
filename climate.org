@@ -714,6 +714,24 @@ I cannot trust the published suggestions of differing amounts of C
 coming from different sources (e.g., marine, terrestrial, plants,
 melting permafrost, \&c.)
 
+This unease is strengthened even further after looking a little more
+closely into the attempts to determine, or estimate, the earlier,
+geological, CO_{2} concentrations
+\citep{haynes-honisch20:inventory}. There is no question that clear
+and well-defined changes have been documented in the stratigraphic
+record (isotopic composition, amounts of CaCO_{3}, and the
+like). However, the explanations and mechanisms suggested are at best
+tentative, as so many assumptions are made, but remain untested
+(delving into the Boron-based work is disheartening: the careful work
+done on a few extant planktonic species in the lab already shows the
+need for caution, so transplanting that approach to extinct lineages
+is not good practice at all. So many questions arise, none of which
+are addressed. Not good.).
+
+As a result, I shall limit myself to use actual, directly measured
+values of CO_{2} and CH_{4} concentrations in air bubbles trapped in
+polar ice, and disregard any proxy-based data beyond the ice record.
+
 * Epilogue
 
 ** An aside on Catastropy Theory
