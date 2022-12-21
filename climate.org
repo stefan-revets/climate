@@ -739,7 +739,7 @@ tentative, as so many assumptions are made, but remain untested
 done on a few extant planktonic species in the lab already shows the
 need for caution, so transplanting that approach to extinct lineages
 is not good practice at all. So many questions arise, none of which
-are addressed. Not good.).
+are addressed. Not good. \citet{vega-al20:piacenzian}).
 
 As a result, I shall limit myself to use actual, directly measured
 values of CO_{2} and CH_{4} concentrations in air bubbles trapped in
@@ -748,6 +748,34 @@ polar ice, and disregard any proxy-based data beyond the ice record.
 * Epilogue
 
 ** An aside on Catastropy Theory
+
+There are indications that CO_{2} levels have to drop below 300-350
+ppm, before glacial-interglacial alternations kick off
+\citep{canadell-al21:IPCC6-biogeochemical,vega-al20:piacenzian}. If
+the inferred concentrations of CO_{2} can be made robust (in view of
+my reservations re the use of B as proxy), this would be a very good
+indication that the mechanism of catastrophe theory may be useful.
+
+The energy input into the Earth system is astronomically determined
+(control 1). The atmospheric CO_{2} concentration determines (to a
+large extent, but how large?) the amount of heat capture from the
+insolation (control 2). The (average) Earth temperature is a
+consequence of the captures head (behaviour).
+
+Of course, there are important complications. The atmospheric CO_{2}
+is the result of a partitioning between atmosphere and hydrosphere
+(the latter temperature dependent). And then there are the various
+sequestration processes.
+
+Something similar governs the heat budget as well. The hydrosphere can
+store substantial amounts of heat, but this will influence the
+redistribution patterns of the oceans. (Another thought: epeiric
+basins have all but disappeared, compared to earlier geological
+times. That must have a significant(?) influence of the CO_{2} storage
+capacity of the oceans; large expanses of water will be warmer, and
+store less CO_{2}, possibly/likely draining part of the deep storage
+as a result).
+
 
 \citet{thom72:stabilite}
 
