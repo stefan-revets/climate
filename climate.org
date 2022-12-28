@@ -173,6 +173,12 @@ that the measurements of these gases also has isotope measurements in
 the same samples: interpolation would dilute the reliability of the
 data for study and analysis.
 
+** Heat capture
+I need to track down the absorption spectrum of CO_{2} and H_{2}O, as
+well as the means to calculate the relation between concentration and
+amount of heat converted/trapped by these gases from the (incoming)
+solar radiation and outgoing radiation.
+
 * Calculations
 :PROPERTIES:
 :session: *R*
@@ -603,7 +609,7 @@ which yields an average mol mass for air of 28.9395
 
 *** CO2
 While a great deal of work has been done on the behaviour and
-interactions of CO_{2} and water, that is much less the case for
+interactions of CO_{2} and water, that was less the case for
 interactions with seawater. The presence of the many different ions in
 seawater is a substantial impediment to physicochemical theories and
 calculations: the actual solution is quite a long way off from ideal,
@@ -618,10 +624,8 @@ HCO_3^- & \rightleftharpoons & H^+ + CO_3^{2-}
 
 \citet{dickson-goyet94:co2-seawater} gave a suite of standard
 procedures and calculations specifically to deal with CO_{2} and
-seawater.
-
-Amongst the useful equations, there is one to calculate the fugacity
-of CO_{2} as a component of a binary mixture
+seawater. Amongst the useful equations, there is one to calculate the
+fugacity of CO_{2} as a component of a binary mixture
 \begin{equation}
 f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
 \end{equation}
@@ -747,20 +751,34 @@ polar ice, and disregard any proxy-based data beyond the ice record.
 
 * Epilogue
 
-** An aside on Catastropy Theory
-
+** An aside on the possible use of Catastropy Theory
 There are indications that CO_{2} levels have to drop below 300-350
 ppm, before glacial-interglacial alternations kick off
 \citep{canadell-al21:IPCC6-biogeochemical,vega-al20:piacenzian}. If
-the inferred concentrations of CO_{2} can be made robust (in view of
-my reservations re the use of B as proxy), this would be a very good
-indication that the mechanism of catastrophe theory may be useful.
+the inferred concentrations of CO_{2} can be made robust (which is an
+open question for now, in view of my reservations re the way in which
+Boron is used as a proxy), this would be a very good indication that
+the approach taken by catastrophe theory may be useful.
+
+The scenario would run along these lines. As long as CO_{2}
+concentrations remain high enough, the greenhouse effect is
+sufficiently large to mitigate the astronomical insolation variation
+and maintain a hothouse Earth. As CO_{2} continues to be sequestered
+over geological time, a point is reached where the greenhouse effect
+can no longer sustain a permanent hothouse Earth, and the
+glacial-interglacial alternations become established. Then we need
+some quirck in the system so that an interglacial remains locked in
+(i.e., the stable last interglacial). The massive injection of CO_{2}
+of the Anthropocene to concentrations encountered well before the
+glacial-interglacial alternations would then kick the entire system
+back to a hothouse Earth (after the various biogeochemical cycles have
+adjusted to a new equilibrium).
 
 The energy input into the Earth system is astronomically determined
 (control 1). The atmospheric CO_{2} concentration determines (to a
-large extent, but how large?) the amount of heat capture from the
+large extent, but how large?) the amount of heat captured from the
 insolation (control 2). The (average) Earth temperature is a
-consequence of the captures head (behaviour).
+consequence of the captured heat (behaviour). 
 
 Of course, there are important complications. The atmospheric CO_{2}
 is the result of a partitioning between atmosphere and hydrosphere
