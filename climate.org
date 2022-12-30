@@ -192,6 +192,7 @@ solar radiation and outgoing radiation.
   library("ggplot2")
   library("magrittr")
   library("pracma")
+  library("tidyr")
 
   R <- 8.31451          # J / K mol, Gas constant
   p0 <- 101325          # Pa, standard pressure
@@ -608,6 +609,8 @@ Composition of the atmosphere
 which yields an average mol mass for air of 28.9395
 
 *** CO2
+**** Solubility in seawater
+
 While a great deal of work has been done on the behaviour and
 interactions of CO_{2} and water, that was less the case for
 interactions with seawater. The presence of the many different ions in
@@ -709,6 +712,82 @@ present CO_{2} concentrations (blue line).
            x = "T (Kelvin)",
            y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
+
+**** Greenland-Antarctica CO_{2} concordance
+
+A discrepancy has been noted between the CO_{2} measurements in
+Greenland and Antarctic ice cores. \citet{anklin-al95:processes} set
+out to try and explain why the Greenland values are much in excess,
+compared to coeval Antarctic values. Part of the analysis deals with
+analytical issues, i.e., the techniques used to liberate and measure
+the CO_{2} content.
+
+Looking at the graph provided to help and explain at least part of the
+differences (their figure 4) prompted me to extract the data for a
+closer look.
+
+First, let's reproduce their graphs
+#+BEGIN_SRC R :file output/anklin_fig4.pdf
+  anklin_greenland <- read.delim("data/eurocore.dat", skip = 1)
+  anklin_antarctica <- read.delim("data/antarcticad47.dat", skip = 1)
+
+  anklin <- anklin_greenland %>%
+      select(-Delta_ppm) %>%
+      mutate(origin = "Greenland") %>%
+      rename(Dry = Dry_ppm, Melt = Melt_ppm) %>%
+      gather("Technique","CO2",2:3)
+
+  anklin_tmp <- anklin_antarctica %>%
+      select(-Delta_ppm) %>%
+      mutate(origin = "Antarctica") %>%
+      rename(Dry = Dry_ppm, Melt = Melt_ppm) %>%
+      gather("Technique","CO2",2:3)
+
+  anklin <- bind_rows(anklin, anklin_tmp)
+
+  ggplot(anklin) +
+      geom_point(aes(Age_AD, CO2, shape = Technique)) +
+      facet_grid(~origin)
+
+#+END_SRC
+Having reproduced their graphs, this time side by side and with the
+same scales, there is quite a bit of detail worth investigating.
+
+It appears that there is not much in the way of systematic offset
+between the Dry extraction technique measurements. Can we see this
+more clearly?
+#+BEGIN_SRC R :file output/anklin_box.pdf
+  ggplot(anklin, aes(Technique, CO2)) +
+      geom_boxplot() +
+      facet_grid(~origin)
+      
+#+END_SRC
+Yes, there is not really a systematic offset when CO_{2} is determined
+by the dry extraction technique. On the other hand, the melt-refreeze
+technique shows a systematic deviation as well as a great deal of
+spread. That is a disturbing result.
+
+A more quantitative assessment of the variability, or spread of the
+measurements, can be obtained get from the standard deviations
+#+BEGIN_SRC R 
+  anklin_greenland %>% select(-Age_AD) %>% summarise_all(funs(sd))
+  anklin_antarctica %>% select(-Age_AD) %>% summarise_all(funs(sd))
+#+END_SRC
+
+#+RESULTS[e7bc6c6ffd330dc51aab0ff3df4aa64aaad11059]:
+:    Dry_ppm Melt_ppm Delta_ppm
+: 1 5.954383 26.08135  27.47782
+:    Dry_ppm Melt_ppm Delta_ppm
+: 1 2.452395 28.44366  28.33111
+So we see that while the standard deviations obtained from the dry
+extraction technique are small, and similar to the measurement
+precision, the deviations for the melt-refreeze technique are very
+large, and essentially the same, both for the Greenland and the
+Antarctic samples. There is therefore little justification for a
+separate explanation for the Greenland data, as the variability (and
+hence unreliability) of the Antarctic data is just as large. If
+anything, the conclusion pushing itself forward is that the
+melt-refreeze technique is not fit for purpose.
 
 *** Calcium carbonate
 
