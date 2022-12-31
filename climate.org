@@ -770,8 +770,18 @@ put this on a more quantitative footing
       group_by(Technique, origin) %>%
       summarise(stdev = mean(CO2, na.rm = TRUE))
 #+END_SRC
-The 8 ppm offset between the Greenland and Antarctic mean values is
-indeed not overly concerning.
+Just to confirm
+#+BEGIN_SRC R
+  co2g <- anklin %>%
+      filter(Technique == "Dry", origin == "Greenland") %>%
+      select(CO2)
+  co2a <- anklin %>%
+      filter(Technique == "Dry", origin == "Antarctica") %>%
+      select(CO2)
+  t.test(co2g, co2a)
+#+END_SRC
+While the 8 ppm offset between the Greenland and Antarctic mean values is
+statistically significant, it is indeed not overly concerning.
 
 On the other hand, the melt-refreeze technique shows a systematic
 deviation as well as a great deal of spread. That is a disturbing
