@@ -732,15 +732,11 @@ First, let's reproduce their graphs
   anklin_antarctica <- read.delim("data/antarcticad47.dat", skip = 1)
 
   anklin <- anklin_greenland %>%
-      select(-Delta_ppm) %>%
       mutate(origin = "Greenland") %>%
-      rename(Dry = Dry_ppm, Melt = Melt_ppm) %>%
       gather("Technique","CO2",2:3)
 
   anklin_tmp <- anklin_antarctica %>%
-      select(-Delta_ppm) %>%
       mutate(origin = "Antarctica") %>%
-      rename(Dry = Dry_ppm, Melt = Melt_ppm) %>%
       gather("Technique","CO2",2:3)
 
   anklin <- bind_rows(anklin, anklin_tmp)
@@ -762,23 +758,30 @@ more clearly?
       facet_grid(~origin)
       
 #+END_SRC
-Yes, there is not really a systematic offset when CO_{2} is determined
-by the dry extraction technique. On the other hand, the melt-refreeze
-technique shows a systematic deviation as well as a great deal of
-spread. That is a disturbing result.
-
-A more quantitative assessment of the variability, or spread of the
-measurements, can be obtained get from the standard deviations
-#+BEGIN_SRC R 
-  anklin_greenland %>% select(-Age_AD) %>% summarise_all(funs(sd))
-  anklin_antarctica %>% select(-Age_AD) %>% summarise_all(funs(sd))
+Yes, there is not really much in the way of a systematic offset when
+CO_{2} is determined by the dry extraction technique. There may well
+be a significant local variation in the CO_{2} concentrations as
+captured by the Greenland ice. Also, there are more Greenland ice
+samples running over a wider timeframe than Antarctic samples. Let's
+put this on a more quantitative footing
+#+BEGIN_SRC R
+  anklin %>%
+      select(-Age_AD) %>%
+      group_by(Technique, origin) %>%
+      summarise(stdev = mean(CO2, na.rm = TRUE))
 #+END_SRC
+The 8 ppm offset between the Greenland and Antarctic mean values is
+indeed not overly concerning.
 
-#+RESULTS[e7bc6c6ffd330dc51aab0ff3df4aa64aaad11059]:
-:    Dry_ppm Melt_ppm Delta_ppm
-: 1 5.954383 26.08135  27.47782
-:    Dry_ppm Melt_ppm Delta_ppm
-: 1 2.452395 28.44366  28.33111
+On the other hand, the melt-refreeze technique shows a systematic
+deviation as well as a great deal of spread. That is a disturbing
+result. A more quantitative assessment of the variability, or spread
+of the measurements, can be obtained get from the standard deviations
+#+BEGIN_SRC R 
+  anklin %>%
+      group_by(Technique, origin) %>%
+      summarise(stdev = sd(CO2, na.rm = TRUE))
+#+END_SRC
 So we see that while the standard deviations obtained from the dry
 extraction technique are small, and similar to the measurement
 precision, the deviations for the melt-refreeze technique are very
