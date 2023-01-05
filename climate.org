@@ -713,14 +713,46 @@ present CO_{2} concentrations (blue line).
            y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
 
-**** Greenland-Antarctica CO_{2} concordance
 
-A discrepancy has been noted between the CO_{2} measurements in
-Greenland and Antarctic ice cores. \citet{anklin-al95:processes} set
-out to try and explain why the Greenland values are much in excess,
-compared to coeval Antarctic values. Part of the analysis deals with
-analytical issues, i.e., the techniques used to liberate and measure
-the CO_{2} content.
+*** Calcium carbonate
+
+Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
+source. As I came across a reference in
+\citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
+Thermal Maximum \citet{ajayi-al20:evaluation}, I noticed that most, if
+not all, of the work is based on bulk sediment samples, i.e., the
+carbonate component in the sediment is not split up. This is terrible,
+as it conflates a variety of fractionation processes. Changes in
+plankton composition (foram/nanno ratio: nannos are photosynthetic,
+forams are not), changes in (planktonic) foram species abundance
+(globigerinid-like species remaining in the photic zone,
+globorotaliid/morozovellid-like species occupying different water
+depths over their life cycle), and on top of all that the demonstrated
+pH-dependence of the C fractionation, all these varying processes are
+conflated, so that there is no way in which to retrieve any changes in
+isotope composition due to injection/availability of C sources. Hence,
+I cannot trust the published suggestions of differing amounts of C
+coming from different sources (e.g., marine, terrestrial, plants,
+melting permafrost, \&c.)
+
+As a result, I shall see if I can limit myself to use actual, directly
+measured values of CO_{2} and CH_{4} concentrations in air bubbles
+trapped in polar ice, and disregard any proxy-based data beyond the
+ice record. Then again, see \citet{anklin-al95:processes}. Oh dear.
+
+** Analytical Issues
+Going through the literature, I keep coming across problematic
+statements about the way in which data are obtained. The
+(physicochemical) analytical techniques really need close and critical
+scrutiny as the trustworthiness of the data is unfortunately not a
+given.
+*** Greenland-Antarctica CO_{2} concordance
+A discrepancy has been noted between the direct CO_{2} measurements in
+Greenland and Antarctic ice cores (i.e., from the trapped air
+bubbles). \citet{anklin-al95:processes} set out to try and explain why
+the Greenland values are much in excess, compared to coeval Antarctic
+values. Part of the analysis deals with analytical issues, i.e., the
+techniques used to liberate and measure the CO_{2} content.
 
 Looking at the graph provided to help and explain at least part of the
 differences (their figure 4) prompted me to extract the data for a
@@ -758,12 +790,12 @@ more clearly?
       facet_grid(~origin)
       
 #+END_SRC
-Yes, there is not really much in the way of a systematic offset when
-CO_{2} is determined by the dry extraction technique. There may well
-be a significant local variation in the CO_{2} concentrations as
-captured by the Greenland ice. Also, there are more Greenland ice
-samples running over a wider timeframe than Antarctic samples. Let's
-put this on a more quantitative footing
+Yes, there is a smallish systematic offset when CO_{2} is determined
+by the dry extraction technique. There may well be a significant local
+variation in the CO_{2} concentrations as captured by the Greenland
+ice. Also, there are more Greenland ice samples running over a wider
+timeframe than Antarctic samples. Let's put this on a more
+quantitative footing
 #+BEGIN_SRC R
   anklin %>%
       select(-Age_AD) %>%
@@ -781,7 +813,7 @@ Just to confirm
   t.test(co2g, co2a)
 #+END_SRC
 While the 8 ppm offset between the Greenland and Antarctic mean values is
-statistically significant, it is indeed not overly concerning.
+statistically significant, it may or may not be overly concerning.
 
 On the other hand, the melt-refreeze technique shows a systematic
 deviation as well as a great deal of spread. That is a disturbing
@@ -799,33 +831,13 @@ large, and essentially the same, both for the Greenland and the
 Antarctic samples. There is therefore little justification for a
 separate explanation for the Greenland data, as the variability (and
 hence unreliability) of the Antarctic data is just as large. If
-anything, the conclusion pushing itself forward is that the
-melt-refreeze technique is not fit for purpose.
+anything, the conclusion imposing itself is that the melt-refreeze
+technique is not fit for purpose.
 
-*** Calcium carbonate
-
-Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
-source. As I came across a reference in
-\citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
-Thermal Maximum \citet{ajayi-al20:evaluation}, I noticed that most, if
-not all, of the work is based on bulk sediment samples, i.e., the
-carbonate component in the sediment is not split up. This is terrible,
-as it conflates a variety of fractionation processes. Changes in
-plankton composition (foram/nanno ratio: nannos are photosynthetic,
-forams are not), changes in (planktonic) foram species abundance
-(globigerinid-like species remaining in the photic zone,
-globorotaliid/morozovellid-like species occupying different water
-depths over their life cycle), and on top of all that the demonstrated
-pH-dependence of the C fractionation, all these varying processes are
-conflated, so that there is no way in which to retrieve any changes in
-isotope composition due to injection/availability of C sources. Hence,
-I cannot trust the published suggestions of differing amounts of C
-coming from different sources (e.g., marine, terrestrial, plants,
-melting permafrost, \&c.)
-
-This unease is strengthened even further after looking a little more
-closely into the attempts to determine, or estimate, the earlier,
-geological, CO_{2} concentrations
+*** Boron as proxy for CO_{2}
+My earlier mentioned unease is strengthened even further after looking
+a little more closely into the attempts to determine, or estimate, the
+earlier, geological, CO_{2} concentrations
 \citep{haynes-honisch20:inventory}. There is no question that clear
 and well-defined changes have been documented in the stratigraphic
 record (isotopic composition, amounts of CaCO_{3}, and the
@@ -835,18 +847,70 @@ tentative, as so many assumptions are made, but remain untested
 done on a few extant planktonic species in the lab already shows the
 need for caution, so transplanting that approach to extinct lineages
 is not good practice at all. So many questions arise, none of which
-are addressed. Not good. \citet{vega-al20:piacenzian}).
+are addressed. Not good. 
 
-As a result, I shall limit myself to use actual, directly measured
-values of CO_{2} and CH_{4} concentrations in air bubbles trapped in
-polar ice, and disregard any proxy-based data beyond the ice record.
+Take \citet{delavega-al20:piacenzian} discussion. First, let's get the
+data (digitising their figure 1), which incorporates data from the
+sources listed here
+
+| core | species    | study                                  |
+|------+------------+----------------------------------------|
+|  999 | ruber      | \citet{martinez-boti-al15:sensitivity} |
+|  999 | sacculifer | \citet{seki-al10:alkenone}             |
+|  926 | sacculifer | \citet{sosdian-al18:neogene}           |
+|  999 | sacculifer | \citet{bartoli-al11:pliocene}          |
+
+#+BEGIN_SRC R :file output/delavega_boron.pdf
+  delavega_boron <- read.delim("data/delavega2020_boron.dat", skip = 5)
+
+  ggplot(delavega_boron) +
+      geom_point(aes(Age, Boron, colour = origin)) +
+      geom_line(aes(Age, Boron, colour = origin)) +
+      labs(title = "Boron offsets in Pliocene Foraminifera",
+           x = "Time (kY)",
+           y = expression(paste(delta ^{11}, 'B'))) +
+      theme(legend.position = "bottom")
+#+END_SRC
+This is an eloquent and unfortunate graph. The discrepancies in Boron
+values recorded in the same core by the planktonic foraminiferal
+species \textit{Globigerinoides ruber} and \textit{Globigerinoides
+sacculifer} at similar (same?) sample depths routinely exceed the
+variations recorded over the time interval in one and the same
+species. This is fundamentally problematical.
+
+A separate study by \citet{dyez-al18:variability} likewise contains a
+lot of Boron data.
+#+BEGIN_SRC R :file output/dyez_boron.pdf
+  dyez_boron <- read.delim("data/dyez2018.dat", skip = 4)
+
+  ggplot(dyez_boron) +
+      geom_point(aes(Age, Boron, colour = Site)) +
+      geom_line(aes(Age, Boron, colour = Site)) +
+      labs(title = "Boron offsets by Dyez et al., 2018",
+           x = "Time (kY)",
+           y = expression(paste(delta ^{11}, 'B'))) +
+      theme(legend.position = "bottom")
+#+END_SRC
+
+Using a set of assumptions, these lead to the following proposed
+atmospheric CO_{2} concentrations.
+#+BEGIN_SRC R :file output/dyez_co2.pdf
+  ggplot(dyez_boron) +
+      geom_point(aes(Age, co2_atmosphere, colour = Site)) +
+      geom_line(aes(Age, co2_atmosphere, colour = Site)) +
+      labs(title = "Atmospheric CO2 by Dyez et al., 2018",
+           x = "Time (kY)",
+           y = expression(paste(mu, 'atm'))) +
+      theme(legend.position = "bottom")
+
+#+END_SRC
 
 * Epilogue
 
 ** An aside on the possible use of Catastropy Theory
 There are indications that CO_{2} levels have to drop below 300-350
 ppm, before glacial-interglacial alternations kick off
-\citep{canadell-al21:IPCC6-biogeochemical,vega-al20:piacenzian}. If
+\citep{canadell-al21:IPCC6-biogeochemical,delavega-al20:piacenzian}. If
 the inferred concentrations of CO_{2} can be made robust (which is an
 open question for now, in view of my reservations re the way in which
 Boron is used as a proxy), this would be a very good indication that
