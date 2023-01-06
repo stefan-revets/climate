@@ -860,15 +860,17 @@ sources listed here
 |  926 | sacculifer | \citet{sosdian-al18:neogene}           |
 |  999 | sacculifer | \citet{bartoli-al11:pliocene}          |
 
-#+BEGIN_SRC R :file output/delavega_boron.pdf
+Note that for some unexplained reason, the y-axis with the pCO_{2}
+values on their figure 1 is logarithmic, and not linear.
+#+BEGIN_SRC R :file output/delavega_co2.pdf
   delavega_boron <- read.delim("data/delavega2020_boron.dat", skip = 5)
 
   ggplot(delavega_boron) +
       geom_point(aes(Age, Boron, colour = origin)) +
       geom_line(aes(Age, Boron, colour = origin)) +
-      labs(title = "Boron offsets in Pliocene Foraminifera",
+      labs(title = "pCO2 from Boron in Pliocene Foraminifera",
            x = "Time (kY)",
-           y = expression(paste(delta ^{11}, 'B'))) +
+           y = "pCO2") +
       theme(legend.position = "bottom")
 #+END_SRC
 This is an eloquent and unfortunate graph. The discrepancies in Boron
@@ -877,6 +879,64 @@ species \textit{Globigerinoides ruber} and \textit{Globigerinoides
 sacculifer} at similar (same?) sample depths routinely exceed the
 variations recorded over the time interval in one and the same
 species. This is fundamentally problematical.
+
+Their publication provides a link to supplementary materials,
+including a spreadsheet with data. Let's compare this with the data
+culled from the graph in the original paper.
+#+BEGIN_SRC R :file output/delavega_supp.pdf
+  delavega_sm <- read.delim("data/delavega2020_sm.dat", skip = 5)
+
+  ggplot(delavega_sm) +
+      geom_point(aes(Age, d11B, colour = Study)) +
+      geom_line(aes(Age, d11B, colour = Study)) +
+      labs(title = "Boron offsets in Pliocene Foraminifera",
+           x = "Time (kY)",
+           y = expression(paste(delta ^{11}, 'B'))) +
+      theme(legend.position = "bottom")
+#+END_SRC
+And, for their calculations of the CO_{2} changes
+#+BEGIN_SRC R :file output/delavega_supp_co2.pdf
+  ggplot(delavega_sm) +
+      geom_point(aes(Age, pCO2.av, colour = Study)) +
+      geom_line(aes(Age, pCO2.av, colour = Study)) +
+      labs(title = "CO2 from Boron in Pliocene Foraminifera",
+           x = "Time (kY)",
+           y = "pCO2") +
+      theme(legend.position = "bottom")
+#+END_SRC
+There is a significant discrepancy between the data tabulated in the
+supplementary materials document and the data plotted on their figure
+1: no data points lie above the 400 pCO_{2} mark, while the
+spreadsheet data does contain significantly higher values.
+
+It seems best, once again, to go to the original publications and try
+to obtain the data from there.
+
+So, let's turn to the \citet{martinez-boti-al15:sensitivity}
+directly. Fortunately, the supplementary materials of the article
+contains a spreadsheet with data of interest.
+#+BEGIN_SRC R :file output/martinez_supp.pdf
+  martinez_sm <- read.delim("data/martinez2015_boron.dat", skip = 5)
+
+  ggplot(martinez_sm) +
+      geom_point(aes(Age, Boron, colour = Site)) +
+      geom_line(aes(Age, Boron, colour = Site)) +
+      labs(title = "Boron offsets in Pliocene Foraminifera",
+           x = "Time (kY)",
+           y = expression(paste(delta ^{11}, 'B'))) +
+      theme(legend.position = "bottom")
+#+END_SRC
+
+And, after calculations (and assumptions!), estimates of CO_{2}
+#+BEGIN_SRC R :file output/martinez_supp_co2.pdf
+  ggplot(martinez_sm) +
+      geom_pointrange(aes(Age, pCO2, ymin=pCO2cil, ymax=pCO2ciu, colour = Site)) +
+      geom_line(aes(Age, pCO2, colour = Site)) +
+      labs(title = "CO2 from Boron in Pliocene Foraminifera",
+           x = "Time (kY)",
+           y = "pCO2") +
+      theme(legend.position = "bottom")
+#+END_SRC
 
 A separate study by \citet{dyez-al18:variability} likewise contains a
 lot of Boron data.
