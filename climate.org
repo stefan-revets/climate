@@ -866,19 +866,19 @@ values on their figure 1 is logarithmic, and not linear.
   delavega_boron <- read.delim("data/delavega2020_boron.dat", skip = 5)
 
   ggplot(delavega_boron) +
-      geom_point(aes(Age, Boron, colour = origin)) +
-      geom_line(aes(Age, Boron, colour = origin)) +
-      labs(title = "pCO2 from Boron in Pliocene Foraminifera",
+      geom_point(aes(Age, Boron, colour = study)) +
+      geom_line(aes(Age, Boron, colour = study)) +
+      labs(title = "de la Vega Fig 1 pCO2 from Boron in Pliocene Foraminifera",
            x = "Time (kY)",
            y = "pCO2") +
       theme(legend.position = "bottom")
 #+END_SRC
 This is an eloquent and unfortunate graph. The discrepancies in Boron
 values recorded in the same core by the planktonic foraminiferal
-species \textit{Globigerinoides ruber} and \textit{Globigerinoides
-sacculifer} at similar (same?) sample depths routinely exceed the
-variations recorded over the time interval in one and the same
-species. This is fundamentally problematical.
+species /Globigerinoides ruber/ and /Globigerinoides sacculifer/ at
+similar (same?) sample depths routinely exceed the variations recorded
+over the time interval in one and the same species. This is
+fundamentally problematical.
 
 Their publication provides a link to supplementary materials,
 including a spreadsheet with data. Let's compare this with the data
@@ -889,7 +889,7 @@ culled from the graph in the original paper.
   ggplot(delavega_sm) +
       geom_point(aes(Age, d11B, colour = Study)) +
       geom_line(aes(Age, d11B, colour = Study)) +
-      labs(title = "Boron offsets in Pliocene Foraminifera",
+      labs(title = "de la Vega spreadsheet Boron offsets in Pliocene Foraminifera",
            x = "Time (kY)",
            y = expression(paste(delta ^{11}, 'B'))) +
       theme(legend.position = "bottom")
@@ -899,7 +899,7 @@ And, for their calculations of the CO_{2} changes
   ggplot(delavega_sm) +
       geom_point(aes(Age, pCO2.av, colour = Study)) +
       geom_line(aes(Age, pCO2.av, colour = Study)) +
-      labs(title = "CO2 from Boron in Pliocene Foraminifera",
+      labs(title = "de la Vega spreadsheet CO2 from Boron in Pliocene Foraminifera",
            x = "Time (kY)",
            y = "pCO2") +
       theme(legend.position = "bottom")
@@ -907,10 +907,15 @@ And, for their calculations of the CO_{2} changes
 There is a significant discrepancy between the data tabulated in the
 supplementary materials document and the data plotted on their figure
 1: no data points lie above the 400 pCO_{2} mark, while the
-spreadsheet data does contain significantly higher values.
+spreadsheet data does contain significantly higher values. Note also
+the anomalous calculation of pCO_{2} from the Boron values from the
+Seki data: from boron values of around 18 (with only one single data
+point in the de la Vega data set falling to such a low value) arriving
+at pCO_{2} concentrations on a par with boron values of 19.5 in the
+Martinez-Boti and de la Vega data cannot be justified.
 
-It seems best, once again, to go to the original publications and try
-to obtain the data from there.
+It seems like a good idea to go back to the original publications and
+try to obtain the data from there.
 
 So, let's turn to the \citet{martinez-boti-al15:sensitivity}
 directly. Fortunately, the supplementary materials of the article
@@ -921,22 +926,26 @@ contains a spreadsheet with data of interest.
   ggplot(martinez_sm) +
       geom_point(aes(Age, Boron, colour = Site)) +
       geom_line(aes(Age, Boron, colour = Site)) +
-      labs(title = "Boron offsets in Pliocene Foraminifera",
+      labs(title = "Martinez-Boti Boron offsets in Pliocene Foraminifera",
            x = "Time (kY)",
            y = expression(paste(delta ^{11}, 'B'))) +
       theme(legend.position = "bottom")
 #+END_SRC
 
-And, after calculations (and assumptions!), estimates of CO_{2}
+And, after calculations (and assumptions!) by the authors, estimates
+of CO_{2}
 #+BEGIN_SRC R :file output/martinez_supp_co2.pdf
   ggplot(martinez_sm) +
       geom_pointrange(aes(Age, pCO2, ymin=pCO2cil, ymax=pCO2ciu, colour = Site)) +
       geom_line(aes(Age, pCO2, colour = Site)) +
-      labs(title = "CO2 from Boron in Pliocene Foraminifera",
+      labs(title = "Martinez-Boti CO2 from Boron in Pliocene Foraminifera",
            x = "Time (kY)",
            y = "pCO2") +
       theme(legend.position = "bottom")
 #+END_SRC
+Clearly, the originally published data do show pCO_{2} values well in
+excess of the 400 mark, quite a few reaching 450. So much for the
+\citet{delavega-al20:piacenzian} publication.
 
 A separate study by \citet{dyez-al18:variability} likewise contains a
 lot of Boron data.
@@ -964,6 +973,9 @@ atmospheric CO_{2} concentrations.
       theme(legend.position = "bottom")
 
 #+END_SRC
+
+The time has come to take a careful, critical, look at the nature of
+the link between boron and CO_{2}.
 
 * Epilogue
 
