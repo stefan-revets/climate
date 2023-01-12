@@ -13,6 +13,7 @@
 #+LATEX_HEADER: \usepackage{booktabs}
 #+LATEX_HEADER: \pagestyle{fancy}
 #+LATEX_HEADER: \renewcommand{\footrulewidth}{0.4pt}
+#+LATEX_HEADER: \newcommand{\isotope}[2]{\ensuremath{{^{#1}\mathrm{#2}}}}
 #+LATEX_HEADER: \lhead{}
 #+LATEX_HEADER: \rhead{}
 #+LATEX_HEADER: \lfoot{Climate Change}
@@ -621,8 +622,8 @@ i.e., simplified, conditions.
 When CO_{2} dissolves in water, it undergoes a two-step
 dissociation.
 \begin{eqnarray}
-CO_2 + H_2O & \rightleftharpoons & H^+ + HCO_3^ \\
-HCO_3^- & \rightleftharpoons & H^+ + CO_3^{2-}
+\mathrm{CO}_2 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons & \mathrm{H}^+ + \mathrm{HCO}_3^ \\
+\mathrm{HCO}_3^- & \rightleftharpoons & \mathrm{H}^+ + \mathrm{CO}_3^{2-}
 \end{eqnarray}
 
 \citet{dickson-goyet94:co2-seawater} gave a suite of standard
@@ -651,12 +652,12 @@ valid for $273 < T < 313$, again with T(\kelvin) and
 
 The equilibrium constant K$_0$ for the reaction 
 \begin{equation}
-CO_2(g) \rightleftharpoons CO^*_2(aq) 
+\mathrm{CO}_2(g) \rightleftharpoons \mathrm{CO}^*_2(aq) 
 \end{equation}
-(where CO$^*_2$ stands for sum of $[CO_2(aq)] + [HCO_3^-] + [CO_3^{2-}]$)
+(where CO$^*_2$ stands for sum of $[\mathrm{CO}_2(aq)] + [\mathrm{HCO}_3^-] + [\mathrm{CO}_3^{2-}]$)
 that is to say
 \begin{equation}
-K_0 = \frac{[CO^*_2]}{f(CO_2)}
+K_0 = \frac{[\mathrm{CO}^*_2]}{f(\mathrm{CO}_2)}
 \end{equation}
 comes again from \citet{weiss74:solubility} and is given as
 \begin{equation}
@@ -977,6 +978,89 @@ atmospheric CO_{2} concentrations.
 The time has come to take a careful, critical, look at the nature of
 the link between boron and CO_{2}.
 
+*** Boron basics
+The standard composition of boron is given by IUPAC (2003) as
+| isotope         | proportion |
+|-----------------+------------|
+| \isotope{10}{B} |   0.199(7) |
+| \isotope{11}{B} |   0.801(7) |
+yielding an overall atomic mass of 10.811(7)
+
+An isotopic standard has been prepared and certified by NIST
+\citep{catanzaro-al70:boric}, SRN-951, as boric acid H_{3}BO_{3}, with
+an absolute isotopic abundance ratio of 0.2473(2), or 
+| isotope         |  proportion |
+|-----------------+-------------|
+| \isotope{10}{B} | 0.19827(13) |
+| \isotope{11}{B} | 0.80173(13) |
+
+\delta\isotope{11}{B} is calculated by
+\begin{equation}
+\delta\isotope{11}{B} = \Bigg(\Bigg( \bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{sample}} / 
+\bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{ref}}\Bigg) -1 \Bigg) 1000
+\end{equation}
+and expressed in \permil
+
+Standard Mean composition of seawater \citep{dickson-goyet94:co2-seawater}
+| Species       | \mole\per\kilogram (sol) | \mole\per\kilogram (H_{2}O) |
+|---------------+--------------------------+-----------------------------|
+| Cl^{-}        |                  0.54586 |                     0.56576 |
+| SO_{4}^{2-}   |                  0.02824 |                     0.02927 |
+| Br^{-}        |                  0.00084 |                     0.00087 |
+| F^{-}         |                  0.00007 |                     0.00007 |
+| Na^{+}        |                  0.46906 |                     0.48616 |
+| Mg^{2+}       |                  0.05282 |                     0.05475 |
+| Ca^{2+}       |                  0.01028 |                     0.01065 |
+| K^{+}         |                  0.01021 |                     0.01058 |
+| Sr^{2+}       |                  0.00009 |                     0.00009 |
+| B(OH)_{3}     |                  0.00032 |                     0.00033 |
+| B(OH)_{4}^{-} |                  0.00010 |                     0.00010 |
+| CO_{2}        |                  0.00001 |                     0.00001 |
+| HCO_{3}^{-}   |                  0.00177 |                     0.00183 |
+| CO_{3}^{2-}   |                  0.00026 |                     0.00027 |
+| OH^{-}        |                  0.00001 |                     0.00001 |
+
+Boron is present in seawater as boric acid in equilibrium with the
+orthoborate ion, with the reaction
+\begin{equation}
+\mathrm{B(OH)}_3 + \mathrm{H}_2\mathrm{O} \rightleftharpoons \mathrm{H}^+ + \mathrm{B(OH)}_4^-
+\end{equation}
+The equilibrium constant K_{B} for this reaction is temperature and
+salinity dependent, and determined by
+\citet{dickson90:boric,dickson-goyet94:co2-seawater} as
+\begin{equation}
+\begin{split}
+\ln K_B & = \frac{1}{T}\bigg( -8966.90 - 2890.53\, \sqrt{S} - 77.942\, S + 1.728\, \sqrt{S^3} - 0.0996\, S^2 \bigg) \\
+        & + (148.0248 + 137.1942\, \sqrt{S} + 1.62142\, S) \\
+        & + (-24.4344 - 25.085\, \sqrt{S} - 0.2474\, S) \ln T \\
+        & + 0.053105\, \sqrt{S}\, T
+\end{split}
+\end{equation}
+
+In view of the isotopic composition of boron, there is also an
+equilibrium reaction at the level of the two isotopes, that is to say
+\begin{equation}
+\isotope{10}{B}\mathrm{(OH)}_3 + \isotope{11}{B}\mathrm{(OH)}_4^- \rightleftharpoons
+\isotope{11}{B}\mathrm{(OH)}_3 + \isotope{10}{B}\mathrm{(OH)}_4^-
+\end{equation}
+\citet{kakihana-al77:ionexchange} determined the equilibrium constant
+for this exchange and found it to be weakly temperature dependent
+
+| T(\kelvin) | K_{\isotope{10}{B}-\isotope{11}{B}} |
+|------------+-------------------------------------|
+|      273.1 |                              1.0206 |
+|      278.1 |                              1.0204 |
+|      288.1 |                              1.0199 |
+|      298.1 |                              1.0194 |
+|      313.1 |                              1.0187 |
+|      323.1 |                              1.0181 |
+|      333.1 |                              1.0177 |
+
+In principle, these equations should allow us to calculate the
+isotopic composition of dissolved marine boron for any temperature,
+salinity and pH conditions. That in turn provides a baseline against
+which to evaluate the uptake of boron in marine carbonates.
+
 * Epilogue
 
 ** An aside on the possible use of Catastropy Theory
@@ -987,6 +1071,15 @@ the inferred concentrations of CO_{2} can be made robust (which is an
 open question for now, in view of my reservations re the way in which
 Boron is used as a proxy), this would be a very good indication that
 the approach taken by catastrophe theory may be useful.
+
+A recent survey by \citet{cheng-al23:heat} suggests that heat started
+to accumulate in the oceans since around 1985 and this accumulation
+has not only continued but has grown now to record levels. The
+atmospheric CO_{2} record for 1985 shows that concentrations reached
+350 ppm and continued to grow ever since. This recorded combination
+suggests that a fundamental tipping point was reached around that
+time, and that a return to Pliocene conditions have become
+unavoidable.
 
 The scenario would run along these lines. As long as CO_{2}
 concentrations remain high enough, the greenhouse effect is
