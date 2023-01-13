@@ -979,14 +979,7 @@ The time has come to take a careful, critical, look at the nature of
 the link between boron and CO_{2}.
 
 *** Boron basics
-The standard composition of boron is given by IUPAC (2003) as
-| isotope         | proportion |
-|-----------------+------------|
-| \isotope{10}{B} |   0.199(7) |
-| \isotope{11}{B} |   0.801(7) |
-yielding an overall atomic mass of 10.811(7)
-
-An isotopic standard has been prepared and certified by NIST
+A boron isotopic standard has been prepared and certified by NIST
 \citep{catanzaro-al70:boric}, SRN-951, as boric acid H_{3}BO_{3}, with
 an absolute isotopic abundance ratio of 0.2473(2), or 
 | isotope         |  proportion |
@@ -996,12 +989,13 @@ an absolute isotopic abundance ratio of 0.2473(2), or
 
 \delta\isotope{11}{B} is calculated by
 \begin{equation}
-\delta\isotope{11}{B} = \Bigg(\Bigg( \bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{sample}} / 
+\delta\isotope{11}{B}(\permil) = \Bigg(\Bigg( \bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{sample}} / 
 \bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{ref}}\Bigg) -1 \Bigg) 1000
 \end{equation}
-and expressed in \permil
 
-Standard Mean composition of seawater \citep{dickson-goyet94:co2-seawater}
+We can see from the standard mean composition of seawater
+\citep{dickson-goyet94:co2-seawater} that boron occurs at
+\unit{0.00043}{\mole\per\kilogram)
 | Species       | \mole\per\kilogram (sol) | \mole\per\kilogram (H_{2}O) |
 |---------------+--------------------------+-----------------------------|
 | Cl^{-}        |                  0.54586 |                     0.56576 |
@@ -1021,9 +1015,10 @@ Standard Mean composition of seawater \citep{dickson-goyet94:co2-seawater}
 | OH^{-}        |                  0.00001 |                     0.00001 |
 
 Boron is present in seawater as boric acid in equilibrium with the
-orthoborate ion, with the reaction
+orthoborate ion, through the reaction
 \begin{equation}
 \mathrm{B(OH)}_3 + \mathrm{H}_2\mathrm{O} \rightleftharpoons \mathrm{H}^+ + \mathrm{B(OH)}_4^-
+\label{eqn:borate-equilibrium}
 \end{equation}
 The equilibrium constant K_{B} for this reaction is temperature and
 salinity dependent, and determined by
@@ -1036,6 +1031,52 @@ salinity dependent, and determined by
         & + 0.053105\, \sqrt{S}\, T
 \end{split}
 \end{equation}
+This equation gives us a means to evaluate the sensitivity of the
+equilibrium to changes in salinity and temperature
+#+BEGIN_SRC R :file output/boron_pKB.pdf
+  lnKB <- function(T, S = 35.0){
+      (-8966.9 - 2890.53 * sqrt(S) - 77.942 * S + 1.728 * S^(3/2) - 0.0996 * S^2) / T +
+      (148.0248 + 137.1942 * sqrt(S) + 1.62142 * S) +
+          (-24.4344 -25.085 * sqrt(S) - 0.2474 * S) * log(T) + 0.053105 * T * sqrt(S)
+  }
+
+  boron_k <- data.frame(T = seq(275, 300), S = 30.0) %>%
+      rbind(data.frame(T = seq(275, 300), S = 32.5)) %>%
+      rbind(data.frame(T = seq(275, 300), S = 35.0)) %>%
+      rbind(data.frame(T = seq(275, 300), S = 37.5)) %>%
+      rbind(data.frame(T = seq(275, 300), S = 40.0)) %>%
+      mutate(pKB = -lnKB(T, S) / log(10),
+             Salinity = as.factor(S))
+
+  ggplot(boron_k) +
+      geom_line(aes(T, pKB, colour = Salinity)) +
+      labs(title = "Boric Acid Equilibrium constant in seawater",
+           x = "T(Kelvin)",
+           y = "pK") +
+      theme(legend.position = "bottom")
+#+END_SRC
+The plot suggests that a difference of \unit{1}{\kelvin} has
+approximately the same effect as a difference of \unit{2}{\permil}
+salinity on the equilibrium constant.
+
+Equation \ref{eqn:borate-equilibrium} can be rewritten so that we can
+calculate the concentration of B(OH)^{-}_{4}, assuming a constant
+overall boron concentration [B]
+\begin{equation}
+[\mathrm{B(OH)}^-_4] = \frac{K_B \, [\mathrm{B}]}{[\mathrm{H}^+] + K_B}
+\end{equation}
+which brings in the dependency on the pH of seawater.
+
+#+BEGIN_SRC R :file output/boron_pH.pdf
+  boron_total <- 0.0043
+  boron_pH <- data.frame(pH = seq(6, 11, 0.1)) %>%
+      mutate(o_boron = exp(lnKB(T = 288, S = 35)) * boron_total / (10^(-pH) + exp(lnKB(T = 288, S = 35))))
+
+  ggplot(boron_pH) +
+      geom_line(aes(pH, o_boron))
+#+END_SRC
+And we can extend this analysis to include temperature and salinity
+dependency as well.
 
 In view of the isotopic composition of boron, there is also an
 equilibrium reaction at the level of the two isotopes, that is to say
