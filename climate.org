@@ -990,12 +990,11 @@ an absolute isotopic abundance ratio of 0.2473(2), or
 \delta\isotope{11}{B} is calculated by
 \begin{equation}
 \delta\isotope{11}{B}(\permil) = \Bigg(\Bigg( \bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{sample}} / 
-\bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{\mathrm{ref}}\Bigg) -1 \Bigg) 1000
+\bigg(\frac{\isotope{11}{B}}{\isotope{10}{B}}\bigg)_{951}\Bigg) - 1 \Bigg) 1000
 \end{equation}
 
-We can see from the standard mean composition of seawater
-\citep{dickson-goyet94:co2-seawater} that boron occurs at
-\unit{0.00043}{\mole\per\kilogram)
+\citet{dickson-goyet94:co2-seawater} listed the standard composition
+of seawater as
 | Species       | \mole\per\kilogram (sol) | \mole\per\kilogram (H_{2}O) |
 |---------------+--------------------------+-----------------------------|
 | Cl^{-}        |                  0.54586 |                     0.56576 |
@@ -1014,8 +1013,18 @@ We can see from the standard mean composition of seawater
 | CO_{3}^{2-}   |                  0.00026 |                     0.00027 |
 | OH^{-}        |                  0.00001 |                     0.00001 |
 
+In a recent study, \citet{foster-al10:boron} refined the boron numbers
+somewhat to a concentration of \unit{432.6}{\micro\mole\per\kilogram}
+seawater and specified a \delta\isotope{11}{B} of $39.61\pm
+0.04\permil$. From which we deduce the boron isotopic composition of
+seawater as
+| isotope         | proportion |
+|-----------------+------------|
+| \isotope{10}{B} | 0.19217    |
+| \isotope{11}{B} | 0.80783    |
+
 Boron is present in seawater as boric acid in equilibrium with the
-orthoborate ion, through the reaction
+orthoborate ion, as shown in the reaction
 \begin{equation}
 \mathrm{B(OH)}_3 + \mathrm{H}_2\mathrm{O} \rightleftharpoons \mathrm{H}^+ + \mathrm{B(OH)}_4^-
 \label{eqn:borate-equilibrium}
@@ -1055,56 +1064,185 @@ equilibrium to changes in salinity and temperature
            y = "pK") +
       theme(legend.position = "bottom")
 #+END_SRC
-The plot suggests that a difference of \unit{1}{\kelvin} has
+The plot indicates that a difference of \unit{1}{\kelvin} has
 approximately the same effect as a difference of \unit{2}{\permil}
-salinity on the equilibrium constant.
+salinity on the equilibrium constant (about 3%).
 
 Equation \ref{eqn:borate-equilibrium} can be rewritten so that we can
 calculate the concentration of B(OH)^{-}_{4}, assuming a constant
-overall boron concentration [B]
+overall boron concentration [B], at present
+\unit{0.00043}{\mole\per\kilogram}
 \begin{equation}
 [\mathrm{B(OH)}^-_4] = \frac{K_B \, [\mathrm{B}]}{[\mathrm{H}^+] + K_B}
 \end{equation}
 which brings in the dependency on the pH of seawater.
 
 #+BEGIN_SRC R :file output/boron_pH.pdf
-  boron_total <- 0.0043
-  boron_pH <- data.frame(pH = seq(6, 11, 0.1)) %>%
-      mutate(o_boron = exp(lnKB(T = 288, S = 35)) * boron_total / (10^(-pH) + exp(lnKB(T = 288, S = 35))))
+  boron_total <- 0.00043
+  boron_pH <- data.frame(pH = seq(6, 11, 0.1), T = 283) %>%
+      rbind(data.frame(pH = seq(6, 11, 0.1), T = 288)) %>%
+      rbind(data.frame(pH = seq(6, 11, 0.1), T = 293)) %>%
+      mutate(o_boron = exp(lnKB(T, S = 35)) * boron_total / (10^(-pH) + exp(lnKB(T, S = 35)))) %>%
+      mutate(Temperature = as.factor(T))
 
   ggplot(boron_pH) +
-      geom_line(aes(pH, o_boron))
+      geom_line(aes(pH, o_boron*1e6, colour = Temperature)) +
+      labs(title = "Seawater [o-Borate] pH dependence at different Temperatures",
+           x = "pH",
+           y = expression(paste('[o-Borate] (', mu, 'mol/kg)'))) +
+      theme(legend.position = "bottom")
 #+END_SRC
-And we can extend this analysis to include temperature and salinity
-dependency as well.
 
-In view of the isotopic composition of boron, there is also an
-equilibrium reaction at the level of the two isotopes, that is to say
+As boron is naturally made up by two isotopes, fractionation will take
+place in any chemical reaction. That is to say, the equilibium
+reaction shown above really is a double reaction:
 \begin{equation}
-\isotope{10}{B}\mathrm{(OH)}_3 + \isotope{11}{B}\mathrm{(OH)}_4^- \rightleftharpoons
-\isotope{11}{B}\mathrm{(OH)}_3 + \isotope{10}{B}\mathrm{(OH)}_4^-
+\begin{split}
+\isotope{10}{B}\mathrm{(OH)}_3 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons \mathrm{H}^+ + \isotope{10}{B}\mathrm{(OH)}_4^- \\
+\isotope{11}{B}\mathrm{(OH)}_3 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons \mathrm{H}^+ + \isotope{11}{B}\mathrm{(OH)}_4^- 
+\end{split}
+\label{eqn:borate-isotopes}
 \end{equation}
-\citet{kakihana-al77:ionexchange} determined the equilibrium constant
-for this exchange and found it to be weakly temperature dependent
+The initial attempt to determine the equilibrium cross constant by
+\citet{kakihana-al77:ionexchange} found it to deliver a relative
+enrichment of \isotope{10}{B} in the anion B(OH)^{-}_{4} with a weak
+temperature dependence.
 
-| T(\kelvin) | K_{\isotope{10}{B}-\isotope{11}{B}} |
-|------------+-------------------------------------|
-|      273.1 |                              1.0206 |
-|      278.1 |                              1.0204 |
-|      288.1 |                              1.0199 |
-|      298.1 |                              1.0194 |
-|      313.1 |                              1.0187 |
-|      323.1 |                              1.0181 |
-|      333.1 |                              1.0177 |
+#+tblname: kakihana
+|     T | K_isoB |
+|-------+--------|
+| 273.1 | 1.0206 |
+| 278.1 | 1.0204 |
+| 288.1 | 1.0199 |
+| 298.1 | 1.0194 |
+| 313.1 | 1.0187 |
+| 323.1 | 1.0182 |
+| 333.1 | 1.0177 |
 
-In principle, these equations should allow us to calculate the
-isotopic composition of dissolved marine boron for any temperature,
-salinity and pH conditions. That in turn provides a baseline against
-which to evaluate the uptake of boron in marine carbonates.
+A simple regression analysis gives us
+#+BEGIN_SRC R :var kakihana=kakihana
+  lm(K_isoB ~ T, data=kakihana)
+#+END_SRC
+
+#+RESULTS[f0c4a7d7c070672db8a467a5117812f9b20b48c4]:
+: 
+: Call:
+: lm(formula = K_isoB ~ T, data = kakihana)
+: 
+: Coefficients:
+: (Intercept)            T  
+:   1.0338678   -0.0000485
+And so we end up with the equation
+\begin{equation}
+K_{\isotope{10}{B}-\isotope{11}{B}} = 1.0339 - 0.0000485 \, T
+\end{equation}
+
+Subsequent additional studies re-evaluated these numbers;
+\citet{klochko-al06:fractionation} proposed the
+temperature-independent higher value of 1.0272 (or
+\unit{27.2}{\permil} enrichment of \isotope{10}{B} of the
+B(OH)^{-}_{4}), based on pH measurements of isotopically pure
+compounds. The implications of the shift from 1.0194 to 1.0272 on the
+calculation of pH, and from there CO_{2} concentrations is
+uncomfortably large.
+
+\citet{klochko-al06:fractionation} arrived at their higher values
+through pH measurements based on the following reasoning. The
+equilibrium equation \ref{eqn:borate-equilibrium} leads directly to
+\begin{equation}
+\mathrm{pH} = \mathrm{pK}_B + \log \frac{[\mathrm{B(OH)}^-_4]}{[\mathrm{B(OH)}_3]}
+\end{equation}
+Applying this formula to the equilibrium equation
+\ref{eqn:borate-isotopes} we can calculate the differences as
+\begin{equation}
+\Delta \mathrm{pH} = \mathrm{pK}_{\isotope{11}{B}} - \mathrm{pK}_{\isotope{10}{B}} + \log \frac{[\isotope{10}{B}\mathrm{(OH)}^-_4][\isotope{11}{B}\mathrm{(OH)}_3]}{[\isotope{10}{B}\mathrm{(OH)}_3][\isotope{11}{B}\mathrm{(OH)}^-_4]}
+\end{equation}
+Here, Klochko makes the assumption that when identical, separate
+solutions are made with the two isotopes, then
+\begin{equation}
+\frac{[\isotope{10}{B}\mathrm{(OH)}_3]}{[\isotope{10}{B}\mathrm{(OH)}^-_4]} = \frac{[\isotope{11}{B}\mathrm{(OH)}_3]}{[\isotope{11}{B}\mathrm{(OH)}^-_4]}
+\end{equation}
+Clearly, then
+\begin{equation}
+\Delta \mathrm{pH} = \mathrm{pK}_{\isotope{11-10}{B}}
+\end{equation}
+allowing the direct measurement through the difference in pH of the
+fractionation, as long as the conditions are identical for the two
+solutions. Their results in synthetic seawater are
+
+| H_{3}BO_{3} (\mole\per\kilogram) | T (\kelvin) |  K_{\isotope{11-10}{B}} | 2 \sigma | n |
+|----------------------------------+-------------+--------+----------+---|
+|                             0.01 |         298 | 1.0272 |   0.0006 | 5 |
+|                             0.05 |         298 | 1.0257 |   0.0012 | 4 |
+|                             0.05 |         298 | 1.0273 |   0.0003 | 4 |
+|                             0.05 |         298 | 1.0270 |   0.0019 | 6 |
+|                             0.05 |         313 | 1.0269 |   0.0027 | 6 |
+
+while in pure water we get
+
+| H_{3}BO_{3} (\mole\per\kilogram) | T (\kelvin) |  K_{\isotope{11-10}{B}} | 2 \sigma | n |
+|-------------+-----+--------+----------+---|
+|        0.05 | 298 | 1.0308 |   0.0023 | 6 |
+|        0.05 | 313 | 1.0289 |   0.0048 | 6 |
+
+which shows that the ionic strength of seawater, at least at
+\unit{298}{\kelvin}, significantly reduces the fractionation as
+compared to pure water.
+
+There is an important caveat to be made here. The necessary assumption
+that identical solutions of the borate will have identical proportions
+of boric acid to the borate ion is not verified. More importantly,
+from first principles I would expect there to be a difference: the
+heavier isotope will make the transition from the trihedral boric acid
+to the tetrahedral borate ion configuration less easily than is the
+case for the lighter isotope.
+
+Now to calculate and predict the \delta\isotope{11}{B} of seawater as a
+function of pH, and temperature.
+
+After a bit (!) of algebra, I have come up with the equation
+\begin{equation}
+\frac{[\isotope{11}{B}\mathrm{(OH)}^-_4]}{[\isotope{10}{B}\mathrm{(OH)}^-_4]} = \mathrm{K}_{\isotope{11-10}{B}} \frac{[\isotope{11}{B}]}{[\isotope{10}{B}]} \frac{[\mathrm{H}^+] + \mathrm{K}_B \mathrm{K}^{-r_{11}}_{\isotope{11-10}{B}}}{[\mathrm{H}^+] + \mathrm{K}_B \mathrm{K}^{r_{10}}_{\isotope{11-10}{B}}}
+\end{equation}
+in which $r_{10}, r_{11}$ stand for the proportion of the boron
+isotopes to the boron total in seawater.
+Let's check this one out
+#+BEGIN_SRC R :file output/borate_fractionation.pdf
+  K11_10 <- 1.019
+#  K11_10 <- 1.0272
+
+  B10_sea <- 0.19217
+  B11_sea <- 0.80783
+  B11_10_sea<- B11_sea / B10_sea
+
+  B10_951 <- 0.19827
+  B11_951 <- 0.80173
+  B11_10_951 <- B11_951 / B10_951
+
+  K_r11 <- K11_10^(-B11_sea)
+  K_r10 <- K11_10^B10_sea
+
+  boron_delta <- data.frame(pH = seq(6, 11, 0.1), T = 283) %>%
+      rbind(data.frame(pH = seq(6, 11, 0.1), T = 288)) %>%
+      rbind(data.frame(pH = seq(6, 11, 0.1), T = 293)) %>%
+      mutate(K_B = exp(lnKB(T, S = 35))) %>%
+      mutate(b_ratio = K11_10 * B11_10_sea * (10^(-pH) + K_B * K_r11) /
+                 (10^(-pH) + K_B * K_r10)) %>%
+      mutate(delta_B = (b_ratio / B11_10_951 - 1) * 1000,
+             Temperature = as.factor(T))
+
+  ggplot(boron_delta) +
+      geom_line(aes(pH, delta_B, colour = Temperature)) +
+      labs(title = "Borate fractionation in function of pH and Temperature",
+           x = "pH",
+           y = expression(paste(delta ^{11}, "B"))) +
+      theme(legend.position = "bottom")
+#+END_SRC
+
 
 * Epilogue
 
-** An aside on the possible use of Catastropy Theory
+** An aside on the possible use of Catastrophy Theory
 There are indications that CO_{2} levels have to drop below 300-350
 ppm, before glacial-interglacial alternations kick off
 \citep{canadell-al21:IPCC6-biogeochemical,delavega-al20:piacenzian}. If
