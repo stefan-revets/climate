@@ -1044,11 +1044,11 @@ This equation gives us a means to evaluate the sensitivity of the
 equilibrium to changes in salinity and temperature
 #+BEGIN_SRC R :file output/boron_pKB.pdf
   lnKB <- function(T, S = 35.0){
-      (-8966.9 - 2890.53 * sqrt(S) - 77.942 * S + 1.728 * S^(3/2) - 0.0996 *
-                                                            S^2) / T +
+      (-8966.9 - 2890.53 * sqrt(S) - 77.942 * S +
+       1.728 * S^(3/2) - 0.0996 * S^2) / T +
       (148.0248 + 137.1942 * sqrt(S) + 1.62142 * S) +
-          (-24.4344 -25.085 * sqrt(S) - 0.2474 * S) * log(T) + 0.053105 * T *
-      sqrt(S)
+      (-24.4344 -25.085 * sqrt(S) - 0.2474 * S) * log(T) +
+       0.053105 * T * sqrt(S)
   }
 
   boron_k <- data.frame(T = seq(275, 300), S = 30.0) %>%
@@ -1212,7 +1212,7 @@ constants, there is only the function obtained by
 \citet{dickson90:boric}. However, we can use the relation of the
 fractionation constant
 \begin{equation}
-\mathrm{K}_{\isotope{11-10}{B}} = \frac{\mathrm{K}_{\isotope{11}{B}}}{\mathrm{K}_{\isotope{10}{B}}}
+\mathrm{K}_{\isotope{11-10}{B}} = \frac{\mathrm{K}_{\isotope{10}{B}}}{\mathrm{K}_{\isotope{11}{B}}}
 \end{equation}
 and the (untested) assumption that the equilibrium constant K_{B} is
 in fact the weighted average of the isotopically pure constants, i.e.,
@@ -1222,15 +1222,15 @@ in fact the weighted average of the isotopically pure constants, i.e.,
 Setting the proportions of isotopes to total boron concentrations as R, we obtain
 \begin{equation}
 \begin{split}
-\mathrm{K}_{\isotope{10}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{1}{R_{10} + R_{11} \mathrm{K}_{\isotope{11-10}{B}}} \\
-\mathrm{K}_{\isotope{11}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{\mathrm{K}_{\isotope{11-10}{B}}}{R_{10} + R_{11} \mathrm{K}_{\isotope{11-10}{B}}}
+\mathrm{K}_{\isotope{10}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{\mathrm{K}_{\isotope{11-10}{B}}}{R_{11} + R_{10} \mathrm{K}_{\isotope{11-10}{B}}} \\
+\mathrm{K}_{\isotope{11}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{1}{R_{11} + R_{10} \mathrm{K}_{\isotope{11-10}{B}}}
 \end{split}
 \end{equation}
 
 Let's check this one out
 #+BEGIN_SRC R :file output/borate_fractionation.pdf
-  #K11_10 <- 1/1.019                     # Kakihana et al., 1977 value
-  K11_10 <- 1/1.0272                     # Klochcko et al., 2006 value
+  #K11_10 <- 1.019                     # Kakihana et al., 1977 value
+  K11_10 <- 1.0272                     # Klochcko et al., 2006 value
 
   B10_sea <- 0.192167
   B11_sea <- 0.807833
@@ -1240,14 +1240,14 @@ Let's check this one out
   B11_951 <- 0.80173
   R_951 <- B11_951 / B10_951
 
-  K_10B <- 1 / (B10_sea + B11_sea * K11_10)
-  K_11B <- K11_10 / (B10_sea + B11_sea * K11_10)
+  K_10B <- K11_10 / (B11_sea + B10_sea * K11_10)
+  K_11B <- 1 / (B11_sea + B10_sea * K11_10)
 
   boron_delta <- data.frame(pH = seq(7, 9, 0.1), T = 286) %>%
       rbind(data.frame(pH = seq(7, 9, 0.1), T = 288)) %>%
       rbind(data.frame(pH = seq(7, 9, 0.1), T = 290)) %>%
       mutate(K_B = exp(lnKB(T, S = 35))) %>%
-      mutate(B_ratio = R_sea * K11_10 * (10^(-pH) + K_B * K_10B)/
+      mutate(B_ratio = R_sea / K11_10 * (10^(-pH) + K_B * K_10B)/
                  (10^(-pH) + K_B * K_11B)) %>%
       mutate(delta_B = (B_ratio / R_951 - 1) * 1000,
              Temperature = as.factor(T))
