@@ -710,7 +710,7 @@ present CO_{2} concentrations (blue line).
       geom_line(aes(T, co2_280*1e6), colour = "blue") +
       geom_line(aes(T, co2_420*1e6), colour = "green") +    
       labs(title = "CO2 solubility in seawater",
-           x = "T (Kelvin)",
+           x = "T (K)",
            y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
 
@@ -1020,8 +1020,8 @@ seawater and specified a \delta\isotope{11}{B} of $39.61\pm
 seawater as
 | isotope         | proportion |
 |-----------------+------------|
-| \isotope{10}{B} | 0.19217    |
-| \isotope{11}{B} | 0.80783    |
+| \isotope{10}{B} | 0.192167   |
+| \isotope{11}{B} | 0.807833   |
 
 Boron is present in seawater as boric acid in equilibrium with the
 orthoborate ion, as shown in the reaction
@@ -1044,9 +1044,11 @@ This equation gives us a means to evaluate the sensitivity of the
 equilibrium to changes in salinity and temperature
 #+BEGIN_SRC R :file output/boron_pKB.pdf
   lnKB <- function(T, S = 35.0){
-      (-8966.9 - 2890.53 * sqrt(S) - 77.942 * S + 1.728 * S^(3/2) - 0.0996 * S^2) / T +
+      (-8966.9 - 2890.53 * sqrt(S) - 77.942 * S + 1.728 * S^(3/2) - 0.0996 *
+                                                            S^2) / T +
       (148.0248 + 137.1942 * sqrt(S) + 1.62142 * S) +
-          (-24.4344 -25.085 * sqrt(S) - 0.2474 * S) * log(T) + 0.053105 * T * sqrt(S)
+          (-24.4344 -25.085 * sqrt(S) - 0.2474 * S) * log(T) + 0.053105 * T *
+      sqrt(S)
   }
 
   boron_k <- data.frame(T = seq(275, 300), S = 30.0) %>%
@@ -1074,6 +1076,7 @@ overall boron concentration [B], at present
 \unit{0.00043}{\mole\per\kilogram}
 \begin{equation}
 [\mathrm{B(OH)}^-_4] = \frac{K_B \, [\mathrm{B}]}{[\mathrm{H}^+] + K_B}
+\label{eqn:borate_concentration}
 \end{equation}
 which brings in the dependency on the pH of seawater.
 
@@ -1082,12 +1085,13 @@ which brings in the dependency on the pH of seawater.
   boron_pH <- data.frame(pH = seq(6, 11, 0.1), T = 283) %>%
       rbind(data.frame(pH = seq(6, 11, 0.1), T = 288)) %>%
       rbind(data.frame(pH = seq(6, 11, 0.1), T = 293)) %>%
-      mutate(o_boron = exp(lnKB(T, S = 35)) * boron_total / (10^(-pH) + exp(lnKB(T, S = 35)))) %>%
+      mutate(o_boron = exp(lnKB(T, S = 35)) * boron_total /
+                 (10^(-pH) + exp(lnKB(T, S = 35)))) %>%
       mutate(Temperature = as.factor(T))
 
   ggplot(boron_pH) +
       geom_line(aes(pH, o_boron*1e6, colour = Temperature)) +
-      labs(title = "Seawater [o-Borate] pH dependence at different Temperatures",
+      labs(title = "Seawater [o-Borate] pH dependence",
            x = "pH",
            y = expression(paste('[o-Borate] (', mu, 'mol/kg)'))) +
       theme(legend.position = "bottom")
@@ -1197,48 +1201,64 @@ heavier isotope will make the transition from the trihedral boric acid
 to the tetrahedral borate ion configuration less easily than is the
 case for the lighter isotope.
 
-Now to calculate and predict the \delta\isotope{11}{B} of seawater as a
-function of pH, and temperature.
-
-After a bit (!) of algebra, I have come up with the equation
+Now to calculate and predict the \delta\isotope{11}{B} of seawater as
+a function of pH, and temperature. Starting from equation
+\ref{eqn:borate_concentration} we can bring in the isotopes, so that we get
 \begin{equation}
-\frac{[\isotope{11}{B}\mathrm{(OH)}^-_4]}{[\isotope{10}{B}\mathrm{(OH)}^-_4]} = \mathrm{K}_{\isotope{11-10}{B}} \frac{[\isotope{11}{B}]}{[\isotope{10}{B}]} \frac{[\mathrm{H}^+] + \mathrm{K}_B \mathrm{K}^{-r_{11}}_{\isotope{11-10}{B}}}{[\mathrm{H}^+] + \mathrm{K}_B \mathrm{K}^{r_{10}}_{\isotope{11-10}{B}}}
+\frac{[\isotope{11}{B}\mathrm{(OH)}^-_4]}{[\isotope{10}{B}\mathrm{(OH)}^-_4]} = \frac{[\isotope{11}{B}] \mathrm{K}_{\isotope{11}{B}}}{[\isotope{10}{B}] \mathrm{K}_{\isotope{10}{B}}} \frac{[\mathrm{H}^+] + \mathrm{K}_{\isotope{10}{B}}}{[\mathrm{H}^+] + \mathrm{K}_{\isotope{11}{B}}}
 \end{equation}
-in which $r_{10}, r_{11}$ stand for the proportion of the boron
-isotopes to the boron total in seawater.
+But we do not have direct access to the isotopicaly pure equilibrium
+constants, there is only the function obtained by
+\citet{dickson90:boric}. However, we can use the relation of the
+fractionation constant
+\begin{equation}
+\mathrm{K}_{\isotope{11-10}{B}} = \frac{\mathrm{K}_{\isotope{11}{B}}}{\mathrm{K}_{\isotope{10}{B}}}
+\end{equation}
+and the (untested) assumption that the equilibrium constant K_{B} is
+in fact the weighted average of the isotopically pure constants, i.e.,
+\begin{equation}
+\mathrm{K}_{\mathrm{B}} = \frac{[\isotope{11}{B}]}{[\mathrm{B}]} \mathrm{K}_{\isotope{11}{B}} + \frac{[\isotope{10}{B}]}{[\mathrm{B}]} \mathrm{K}_{\isotope{10}{B}}
+\end{equation}
+Setting the proportions of isotopes to total boron concentrations as R, we obtain
+\begin{equation}
+\begin{split}
+\mathrm{K}_{\isotope{10}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{1}{R_{10} + R_{11} \mathrm{K}_{\isotope{11-10}{B}}} \\
+\mathrm{K}_{\isotope{11}{B}} & = \mathrm{K}_{\mathrm{B}} \frac{\mathrm{K}_{\isotope{11-10}{B}}}{R_{10} + R_{11} \mathrm{K}_{\isotope{11-10}{B}}}
+\end{split}
+\end{equation}
+
 Let's check this one out
 #+BEGIN_SRC R :file output/borate_fractionation.pdf
-  K11_10 <- 1.019
-#  K11_10 <- 1.0272
+  #K11_10 <- 1/1.019                     # Kakihana et al., 1977 value
+  K11_10 <- 1/1.0272                     # Klochcko et al., 2006 value
 
-  B10_sea <- 0.19217
-  B11_sea <- 0.80783
-  B11_10_sea<- B11_sea / B10_sea
+  B10_sea <- 0.192167
+  B11_sea <- 0.807833
+  R_sea<- B11_sea / B10_sea
 
   B10_951 <- 0.19827
   B11_951 <- 0.80173
-  B11_10_951 <- B11_951 / B10_951
+  R_951 <- B11_951 / B10_951
 
-  K_r11 <- K11_10^(-B11_sea)
-  K_r10 <- K11_10^B10_sea
+  K_10B <- 1 / (B10_sea + B11_sea * K11_10)
+  K_11B <- K11_10 / (B10_sea + B11_sea * K11_10)
 
-  boron_delta <- data.frame(pH = seq(6, 11, 0.1), T = 283) %>%
-      rbind(data.frame(pH = seq(6, 11, 0.1), T = 288)) %>%
-      rbind(data.frame(pH = seq(6, 11, 0.1), T = 293)) %>%
+  boron_delta <- data.frame(pH = seq(7, 9, 0.1), T = 286) %>%
+      rbind(data.frame(pH = seq(7, 9, 0.1), T = 288)) %>%
+      rbind(data.frame(pH = seq(7, 9, 0.1), T = 290)) %>%
       mutate(K_B = exp(lnKB(T, S = 35))) %>%
-      mutate(b_ratio = K11_10 * B11_10_sea * (10^(-pH) + K_B * K_r11) /
-                 (10^(-pH) + K_B * K_r10)) %>%
-      mutate(delta_B = (b_ratio / B11_10_951 - 1) * 1000,
+      mutate(B_ratio = R_sea * K11_10 * (10^(-pH) + K_B * K_10B)/
+                 (10^(-pH) + K_B * K_11B)) %>%
+      mutate(delta_B = (B_ratio / R_951 - 1) * 1000,
              Temperature = as.factor(T))
 
   ggplot(boron_delta) +
       geom_line(aes(pH, delta_B, colour = Temperature)) +
-      labs(title = "Borate fractionation in function of pH and Temperature",
+      labs(title = "Borate fractionation in function of pH",
            x = "pH",
            y = expression(paste(delta ^{11}, "B"))) +
       theme(legend.position = "bottom")
 #+END_SRC
-
 
 * Epilogue
 
