@@ -975,8 +975,32 @@ atmospheric CO_{2} concentrations.
 
 #+END_SRC
 
+The wild variations shown on these graphs do not inspire much
+confidence. Let's turn to some statistics of this data set, and
+compare the \delta\isotope{11}{B} values for the different
+geochronological stages
+#+BEGIN_SRC R
+  dyez_boron %>%
+      filter(Age < 12) %>%
+      mutate(Stage = "Holocene") %>%
+      rbind(filter(dyez_boron, Age > 10 & Age < 2600) %>%
+      mutate(Stage = "Pleistocene")) %>%
+      rbind(filter(dyez_boron, Age > 2600) %>%
+      mutate(Stage = "Pliocene")) %>%
+      group_by(Site, Stage) %>%
+      summarise(average = mean(Boron), sigma = sd(Boron), n = n())
+#+END_SRC
+
+Clearly, no significant differences can be seen between the
+measurements in the three different stages, what is very much at
+variance with what one would expect from the knowledge we have of the
+different climatic conditions during those stages.  The differences
+between the Sites only serve to stress the point that differentiation
+is essentially meaningless for this dataset.
+
 The time has come to take a careful, critical, look at the nature of
-the link between boron and CO_{2}.
+the link between boron and CO_{2} and the methods and techniques to
+measure the isotopic composition of boron.
 
 *** Boron basics
 A boron isotopic standard has been prepared and certified by NIST
@@ -1123,24 +1147,6 @@ temperature dependence.
 | 323.1 | 1.0182 |
 | 333.1 | 1.0177 |
 
-A simple regression analysis gives us
-#+BEGIN_SRC R :var kakihana=kakihana
-  lm(K_isoB ~ T, data=kakihana)
-#+END_SRC
-
-#+RESULTS[f0c4a7d7c070672db8a467a5117812f9b20b48c4]:
-: 
-: Call:
-: lm(formula = K_isoB ~ T, data = kakihana)
-: 
-: Coefficients:
-: (Intercept)            T  
-:   1.0338678   -0.0000485
-And so we end up with the equation
-\begin{equation}
-K_{\isotope{10}{B}-\isotope{11}{B}} = 1.0339 - 0.0000485 \, T
-\end{equation}
-
 Subsequent additional studies re-evaluated these numbers;
 \citet{klochko-al06:fractionation} proposed the
 temperature-independent higher value of 1.0272 (or
@@ -1227,7 +1233,8 @@ Setting the proportions of isotopes to total boron concentrations as R, we obtai
 \end{split}
 \end{equation}
 
-Let's check this one out
+Let's see how these equations behave, and what the response is to
+different temperatures
 #+BEGIN_SRC R :file output/borate_fractionation.pdf
   #K11_10 <- 1.019                     # Kakihana et al., 1977 value
   K11_10 <- 1.0272                     # Klochcko et al., 2006 value
@@ -1259,6 +1266,65 @@ Let's check this one out
            y = expression(paste(delta ^{11}, "B"))) +
       theme(legend.position = "bottom")
 #+END_SRC
+Note that \citet{klochko-al06:fractionation} use a curve at
+\unit{298}{\kelvin}, which puts it even higher than the curves shown here
+(average seawater temperature is closer to \unit{290}{\kelvin}). The
+rather poor fit of their curve to the values measured in experiments
+with planktonic foraminifera becomes worse when using the curve
+corresponding to \unit{290}{\kelvin}.
+
+An interesting insight into the sensitivity to pH and temperature can
+be gained from the following query:
+#+BEGIN_SRC R
+  boron_delta %>% filter(pH == 8.1 | pH == 8.3) %>%
+      select(pH, T, delta_B) %>%
+      arrange(pH, T)
+#+END_SRC
+
+#+RESULTS[7fca570c0df0d4da0e28370f1da963c41e7a9f74]:
+:    pH   T  delta_B
+: 1 8.1 286 17.16365
+: 2 8.1 288 17.40407
+: 3 8.1 290 17.64943
+: 4 8.3 286 19.35042
+: 5 8.3 288 19.65940
+: 6 8.3 290 19.97184
+
+
+
+An ever greater sensitivity is to be found in the value of the
+fractionation constant, as already pointed out by
+\citet{klochko-al06:fractionation}.
+
+The study by
+\citet{tonarini-al07:intercomparison,gonfiantini-al07:intercomparison}
+adds further to the troubles of the \delta\isotope{11}{B} story. The
+actual measurement of the isotopic proportion is and remains
+surprisingly fickle, to the point where confidence intervals on
+reported numbers are uncomfortably wide. Here are the results obtained
+by 10 different labs, analysing an homogenous sample of
+(Mediterranean) seawater.
+
+| \delta\isotope{11}{B} | \sigma |  n | technique |
+|-----------------------+--------+----+-----------|
+|                 37.26 |   0.22 |  2 | PTIMS     |
+|                 38.84 |    0.4 |  6 | PTIMS     |
+|                 39.42 |   0.03 |  3 | PTIMS     |
+|                  40.8 |   0.12 | 11 | PTIMS     |
+|                 36.69 |   0.15 |  5 | PTIMS     |
+|                 39.34 |   0.14 |  4 | NTIMS     |
+|                 38.85 |   0.83 |  8 | NTIMS     |
+|                  37.3 |    0.9 |    | ICP-MS    |
+|                  33.7 |    6.4 |  4 | ICP-MS    |
+|                 34.75 |     20 |    | ICP-MS    |
+
+Clearly, the values and standard deviations of the analyses as
+reported are wide off the mark given the PTIMS population sample mean
+and standard deviation of \unit{38.6\pm1.66}{\permil}. Harking back to
+the graphs of the various data sets published and shown above, one
+cannot avoid the conclusion that the analytical techniques and
+protocols are insufficiently reliable and mature to allow any
+fine-grained analysis of palaeo-CO_{2} levels.
 
 * Epilogue
 
@@ -1287,7 +1353,7 @@ and maintain a hothouse Earth. As CO_{2} continues to be sequestered
 over geological time, a point is reached where the greenhouse effect
 can no longer sustain a permanent hothouse Earth, and the
 glacial-interglacial alternations become established. Then we need
-some quirck in the system so that an interglacial remains locked in
+some quirk in the system so that an interglacial remains locked in
 (i.e., the stable last interglacial). The massive injection of CO_{2}
 of the Anthropocene to concentrations encountered well before the
 glacial-interglacial alternations would then kick the entire system
