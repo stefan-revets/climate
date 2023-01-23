@@ -714,9 +714,7 @@ present CO_{2} concentrations (blue line).
            y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
 
-
 *** Calcium carbonate
-
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
 source. As I came across a reference in
 \citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
@@ -766,14 +764,9 @@ First, let's reproduce their graphs
 
   anklin <- anklin_greenland %>%
       mutate(origin = "Greenland") %>%
-      gather("Technique","CO2",2:3)
-
-  anklin_tmp <- anklin_antarctica %>%
-      mutate(origin = "Antarctica") %>%
-      gather("Technique","CO2",2:3)
-
-  anklin <- bind_rows(anklin, anklin_tmp)
-
+      gather("Technique","CO2",2:3) %>%
+      bind_rows(mutate(anklin_antarctica, origin = "Antarctica") %>%
+                gather("Technique", "CO2", 2:3))
   ggplot(anklin) +
       geom_point(aes(Age_AD, CO2, shape = Technique)) +
       facet_grid(~origin)
@@ -791,17 +784,18 @@ more clearly?
       facet_grid(~origin)
       
 #+END_SRC
-Yes, there is a smallish systematic offset when CO_{2} is determined
-by the dry extraction technique. There may well be a significant local
-variation in the CO_{2} concentrations as captured by the Greenland
-ice. Also, there are more Greenland ice samples running over a wider
-timeframe than Antarctic samples. Let's put this on a more
-quantitative footing
+Yes, there is a small systematic offset between the Antarctic and the
+Greenland ice when CO_{2} is determined by the dry extraction
+technique. There may well be a significant local variation in the
+CO_{2} concentrations as captured by the Greenland ice. Also, there
+are more Greenland ice samples running over a wider timeframe than
+Antarctic samples. Let's put this on a more quantitative footing
 #+BEGIN_SRC R
   anklin %>%
       select(-Age_AD) %>%
       group_by(Technique, origin) %>%
-      summarise(stdev = mean(CO2, na.rm = TRUE))
+      summarise(Average = mean(CO2, na.rm = TRUE),
+                Sigma = sd(CO2, na.rm = TRUE))
 #+END_SRC
 Just to confirm
 #+BEGIN_SRC R
@@ -813,27 +807,34 @@ Just to confirm
       select(CO2)
   t.test(co2g, co2a)
 #+END_SRC
-While the 8 ppm offset between the Greenland and Antarctic mean values is
-statistically significant, it may or may not be overly concerning.
+The 8 ppm offset between the Greenland and Antarctic mean values is
+statistically significant, and claimed by
+\citet{anklin-al95:processes} to be too large to be due to
+interhemispherical imbalances.
 
-On the other hand, the melt-refreeze technique shows a systematic
-deviation as well as a great deal of spread. That is a disturbing
-result. A more quantitative assessment of the variability, or spread
-of the measurements, can be obtained get from the standard deviations
-#+BEGIN_SRC R 
-  anklin %>%
-      group_by(Technique, origin) %>%
-      summarise(stdev = sd(CO2, na.rm = TRUE))
-#+END_SRC
-So we see that while the standard deviations obtained from the dry
-extraction technique are small, and similar to the measurement
-precision, the deviations for the melt-refreeze technique are very
-large, and essentially the same, both for the Greenland and the
-Antarctic samples. There is therefore little justification for a
-separate explanation for the Greenland data, as the variability (and
-hence unreliability) of the Antarctic data is just as large. If
-anything, the conclusion imposing itself is that the melt-refreeze
-technique is not fit for purpose.
+The melt-refreeze technique in turn shows a very substantial
+systematic deviation as well as a great deal of spread. That is a
+disturbing result. Looking at the standard deviations, we see that
+while the standard deviations obtained from the dry extraction
+technique are small, and similar to the measurement precision, the
+deviations for the melt-refreeze technique are very large, and
+essentially the same, both for the Greenland and the Antarctic
+samples. 
+
+The differences between the averages are certainly problematic, but
+the very large variability of the melt-refreeze technique alone is
+more than sufficient to remove any data so generated from
+consideration. The 8 ppm offset between the two datasets using the dry
+technique may well be not an issue: looking at the plots provided by
+https://gml.noaa.gov/ccgg/trends/gl_trend.html, differences from 8 to
+12 ppm between Barrow, Alaska and Antarctica have been a regular,
+yearly recurrence for the last decade. If anything, the graph strongly
+suggests that the Antarctic atmosphere is somehow ``buffered'', as
+both the intensity of the yearly oscillations and the secular trend
+are substantially smaller and behind the other stations.
+
+The conclusion that the melt-refreeze technique is not fit for purpose
+is inescapable.
 
 *** Boron as proxy for CO_{2}
 My earlier mentioned unease is strengthened even further after looking
