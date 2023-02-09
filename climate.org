@@ -783,10 +783,44 @@ Let's see this distribution for the Sun, with a temperature of some
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
 
-A great deal of effort has been expended on obtaining these absorption
-spectra, including quantum mechanical calculations
-\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}. The
-results can then be used to predict the amount of radiative forcing.
+A great deal of meticulous effort has been expended on obtaining these
+absorption spectra, including quantum mechanical calculations
+\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}.
+These efforts have culminated into a database which can be accessed
+on-line (https://hitran.org/) to obtain any desired data.  The level
+of detail captured in the database includes the separation of each
+isotope of the constituent atoms. The most abundant isotopic mix is
+marked with code number 1.
+
+A complete explanation of the  HITRAN data structure is as follows:
+
+| parameter     | field length | format | units                                                                         |
+|---------------+--------------+--------+-------------------------------------------------------------------------------|
+| M             |            2 | I2     | HITRAN molecule number code                                                   |
+| I             |            1 | I1     | ordering within molecule by terrestrial abundance                             |
+| \nu           |           12 | F12.6  | \centi\reciprocal\metre                                                       |
+| S             |           10 | E10.3  | \centi\reciprocal\metre\per\centi\rpsquare\metre molecule               |
+| A             |           10 | E10.3  | \reciprocal\second                                                            |
+| \gamma_{air}  |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
+| \gamma_{self} |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
+| E''           |           10 | F10.4  | \centi\reciprocal\metre                                                       |
+| n_{air}       |            4 | F4.2   | exponent of \gamma_{air}                                                      |
+| \delta_{air}  |            8 | F8.6   | \centi\reciprocal\metre atm^{-1}                                              |
+| V'            |           15 | A15    | Upper state global quanta                                                     |
+| V''           |           15 | A15    | Lower state global quanta                                                     |
+| Q'            |           15 | A15    | Upper state local quanta                                                      |
+| Q''           |           15 | A15    | Lower state local quanta                                                      |
+| Ierr          |            6 | 6I1    | accuracy codes for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air} |
+| Iref          |           12 | 6I2    | references for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air}     |
+| flag          |            1 | A1     |                                                                               |
+| g'            |            7 | F7.1   | weight of upper state                                                         |
+| g''           |            7 | F7.1   | weight of lower state                                                         |
+
+The two molecules on interest in the analysis here are H_{2}O (1) and
+CO_{2} (2). A query of the database for the most common isotopologues
+of these two molecules and including all the wavelengths for which
+data is available, yielded 319887 entries for H_{2}O and 174446
+entries for CO_{2}.
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
