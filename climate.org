@@ -781,6 +781,24 @@ Let's see this distribution for the Sun, with a temperature of some
 
 #+END_SRC
 
+The same calculation, but this time for the Earth, with an average
+temperature of \unit{288}{\kelvin}
+#+BEGIN_SRC R :file output/earth_spectrum.pdf
+  T_earth <- 288
+
+  earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
+      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
+             E2 = h_planck * c_light / (lambda * k_boltzmann * T_earth),
+             Energy = E1 / (exp(E2) - 1))
+
+  ggplot(earth_energy) +
+      geom_line(aes(lambda*1e6, Energy)) +
+      labs(title = "Earth Radiation, Black Body at 288 K",
+           x = expression(paste("Wavelength (", mu, "m)")),
+           y = "Energy (J/m3.m)")
+
+#+END_SRC
+
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
 
@@ -828,7 +846,7 @@ the data is presented in a Fortran-type format, i.e., columnar, there
 is a possibility of defining fields by their width, rather than the
 usual AWK field separator character.
 
-#+BEGIN_SRC awk :in-file data/hitran_co2.par :file cache/hitran_co2.dat
+#+BEGIN_SRC awk :in-file data/hitran_co2.par :file cache/hitran_co2.dat :results none
   BEGIN{OFS = ","
       FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
         print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
@@ -837,38 +855,13 @@ usual AWK field separator character.
   }
 #+END_SRC
 
-#+BEGIN_SRC awk :in-file data/hitran_h2o.par :file cache/hitran_h2o.dat
+#+BEGIN_SRC awk :in-file data/hitran_h2o.par :file cache/hitran_h2o.dat :results none
   BEGIN{OFS = ","
       FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
         print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
                energy_lower, n_air, delta_air"}
       {print $3, $4, $5, $6, $7, $8, $9, $10
   }
-#+END_SRC
-
-It is a straightforward matter to import these csv files
-
-#+BEGIN_SRC R
-  hitran_co2 <- read.csv("cache/hitran_co2.dat",
-                         fill = FALSE,
-                         stringsAsFactors = FALSE)
-  hitran_h2o <- read.csv("cache/hitran_h2o.dat",
-                         fill = FALSE,
-                         stringsAsFactors = FALSE)
-#+END_SRC
-
-Let's have a peek at the data for CO_{2}. As there are so many
-entries, let's take a subsample for plotting
-#+BEGIN_SRC R :file output/hitran_co2.pdf
-  hitran_co2 %>%
-      filter(nu > 500) %>%
-      sample_n(2500, replace = TRUE) %>%
-      ggplot() +
-      geom_line(aes(1e4/nu, log(intensity))) +
-      labs(title = "CO2 IR Absorption",
-           x = expression(paste("wavelength (", mu, "m)")),
-           y = "log(Intensity)")
-
 #+END_SRC
 
 The shape of an absorption peak is not as straightforward a matter as
@@ -886,6 +879,129 @@ where
 \nu_{ij}^* & = \nu_{ij} + \delta p_0 p
 \end{split}
 \end{equation}
+
+Fortunately, a fortran package with associated data files
+\citep{gordon-al22:hitran2020,lamouroux-al15:linemixing} is freely
+available from the hitran site and allows for easy experimentation.
+The following variables can be changed before carrying out the
+calculations
+
+| variable | unit                    | description                   |
+|----------+-------------------------+-------------------------------|
+| SgMinR   | \centi\reciprocal\metre | Minimum wavenumber            |
+| SgMaxR   | \centi\reciprocal\metre | Maximum wavenumber            |
+| dSg      | \centi\reciprocal\metre | Wavenumber step size          |
+| sTotMax  |                         | Band intensity cut-off        |
+| Temp     | K                       | Temperature                   |
+| Ptot     | atm                     | Total pressure                |
+| xCO2     |                         | CO_{2} mole fraction          |
+| xH2O     |                         | H_{2}O mole fraction          |
+| MixFull  | logical                 | Full line mixing calcs        |
+| MixSDV   | logical                 | Speed-dependent Voigt profile |
+
+The results of the calculations are stored in a file, all in
+\centi\reciprocal\metre
+
+| entry | description                                                  |
+|-------+--------------------------------------------------------------|
+| nu    | wave number                                                  |
+| AbsV  | Absorption coeffcient using Voigt line shape, no line mixing |
+| AbsY  | Absorption coefficient, first-order line mixing              |
+| AbsW  | Absorption coefficient, full diagonalisation line mixing     |
+
+As an example, here is the result of the mixing calculations centered
+around an absorpion peak at \unit{4.24}{\micro\metre} (or, in the cgs
+units used by the code, \unit{150}{\centi\reciprocal\metre} around
+\unit{2361}{\centi\reciprocal\metre})
+
+#+BEGIN_SRC R :file output/hitran_2350.pdf
+  hitran_2350 <- read.table("data/hitran_lm_2350.dat",
+                            col.names = c("nu","Voigt","First_Order","Full_Calc"))
+
+  ggplot(hitran_2350) +
+      geom_line(aes(nu, Full_Calc)) +
+      labs(title = "Absorption Coefficients, with Full line mixing",
+           x = expression(paste('Wave number ', (cm^{-1}))),
+           y = expression(paste('Absorption Coefficient ', (cm^{-1}))))
+#+END_SRC
+
+It is a straightforward matter to calculate the area under the curves
+(sum of all the values multiplied with the step size), and so we can
+assess the contributions of the various absorption bands.
+
+| wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |  IAbs_F |
+|-------------------------------------+--------------+---------+---------+---------|
+|                                 667 |         15.0 | 0.09658 | 0.09657 | 0.09664 |
+|                                2361 |         4.24 | 1.07069 | 1.07141 | 1.07130 |
+|                                3625 |         2.76 | 0.01197 | 0.01197 | 0.01197 |
+|                                3727 |         2.68 | 0.01775 | 0.01776 | 0.01776 |
+|                                4990 |         2.00 | 0.00039 | 0.00040 | 0.00040 |
+|                                5114 |         1.95 | 0.00013 | 0.00013 | 0.00013 |
+
+There are more bands present in the database, but their individual
+peak absorptions are less that 10^{-6} and can be neglected for our
+purposes.
+
+Let's explore the effects of changes in CO_{2} concentration,
+pressure, and temperature on the integrated absorption, using the the
+strongest peak (around \unit{2361}{\centi\reciprocal\metre}) as
+reference. The reference value is calculated with the following settings
+
+| variable | value        | unit                    |
+|----------+--------------+-------------------------|
+| dSg      | 0.01         | \centi\reciprocal\metre |
+| sTotMax  | 0.1 10^{-28} |                         |
+| Temp     | 290          | K                       |
+| Ptot     | 1.0          | atm                     |
+| xCO2     | 420 10^{-6}  |                         |
+| xH2O     | 0            |                         |
+| MixFull  | .True.       | logical                 |
+| MixSDV   | .False.      | logical                 |
+
+First, let's see what the effect is of changing the CO_{2} mole
+percentages
+
+| ppm CO_{2} |  IAbs_V |  IAbs_f |  IAbs_F |
+|------------+---------+---------+---------|
+|        105 | 0.26767 | 0.26785 | 0.26782 |
+|        210 | 0.53534 | 0.53570 | 0.53565 |
+|        420 | 1.07069 | 1.07141 | 1.07130 |
+
+The expectation of a linear relation between CO_{2} concentration and
+absorbance is clearly fulfilled.
+
+The same linear relation between pressure and absorbance is also
+clearly recovered
+| pressure (atm) |  IAbs_V |  IAbs_f |  IAbs_F |
+|----------------+---------+---------+---------|
+|            1.0 | 1.07069 | 1.07141 | 1.07130 |
+|            0.5 | 0.53553 | 0.53571 | 0.53562 |
+|            0.1 | 0.10690 | 0.10690 | 0.10702 |
+
+Changing the temperature yields the following values
+
+#+TBLNAME: Temp_Abs
+| Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
+|-------------+---------+---------+---------|
+|         200 | 1.55429 | 1.55567 | 1.55560 |
+|         210 | 1.48013 | 1.48139 | 1.48132 |
+|         220 | 1.41270 | 1.41385 | 1.41377 |
+|         230 | 1.35112 | 1.35220 | 1.35210 |
+|         240 | 1.29467 | 1.29566 | 1.29557 |
+|         250 | 1.24271 | 1.24365 | 1.24355 |
+|         260 | 1.19477 | 1.19564 | 1.19554 |
+|         270 | 1.15036 | 1.15117 | 1.15106 |
+|         280 | 1.10910 | 1.10987 | 1.10976 |
+|         290 | 1.07069 | 1.07141 | 1.07130 |
+
+#+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
+  ggplot(Temp_Abs) +
+      geom_point(aes(Temperature, IAbs_F)) +
+      xlim(200, 300) +
+      labs(title = "Integrated Absorbance in function of Temperature",
+           x = "Temperature (K)",
+           y = expression(paste('Absorbance ', (cm^{-1}))))
+#+END_SRC
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
