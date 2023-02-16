@@ -198,7 +198,7 @@ solar radiation and outgoing radiation.
   R_gas <- 8.314471               # J / K mol, Gas constant
   N_A <- 6.02214129e23            # / mol, Avogadro constant
   k_boltzmann <- 1.3806488e-23    # J / K, Boltzmann constant (R / N_A)
-  h_planck <- 6.62606957e-34      # J s, Plank constant
+  h_planck <- 6.62606957e-34      # J s, Planck constant
   c_light <- 299792458            # m / s, speed of light
   p0 <- 101325                    # Pa, standard pressure
 #+END_SRC
@@ -311,33 +311,47 @@ deuterium data from the Vostok core
 
 ** Exploration
 *** Insolation
-Let's have a look first at the insolation calculations. One obvious
+First, let's look at the results of the astronomical calculations
+#+BEGIN_SRC R :file output/insol_overview.pdf
+  insolation <- insol_pol %>%
+      gather("season","power", 2:4) %>%
+      mutate(latitude = "Polar") %>%
+      bind_rows(gather(insol_tem, "season", "power", 2:5) %>%
+                mutate(latitude = "Temperate")) %>%
+      bind_rows(gather(insol_tro, "season", "power", 2:5) %>%
+                mutate(latitude = "Tropical")) %>%
+      bind_rows(gather(insol_equ, "season", "power", 2:5) %>%
+                mutate(latitude = "Equatorial"))
+
+  ggplot(insolation) +
+      geom_line(aes(time, power, colour = season)) +
+      labs(title = "Overview of seasonal insolation at key latitudes",
+           x = "Time (Years)",
+           y = "Insolation (W/m2)") +
+      facet_wrap(~latitude) +
+      theme(legend.position = "bottom")
+#+END_SRC
+
+Let's see if anything can be gleaned from these values. One obvious
 avenue to pursue is to see how the summer-winter differences evolve?
-
 #+BEGIN_SRC R :file output/insol_delta.pdf
-  insol_del <- data.frame(time = insol_equ$time,
-                          equ_rel = 1 - insol_equ$december/insol_equ$june,
-                          tro_rel = 1 - insol_tro$december/insol_tro$june,
-                          tem_rel = 1 - insol_tem$december/insol_tem$june,
-                          pol_rel = 1)
-
-  insol_del %<>%
-      mutate(equ_abs = equ_rel * insol_equ$june,
-             tro_abs = tro_rel * insol_tro$june,
-             tem_abs = tem_rel * insol_tem$june,
-             pol_abs = insol_pol$june,
-             delta = equ_abs + tro_abs + tem_abs)
+  insol_del <- insol_equ %>%
+      mutate(deficit = june - december,
+             latitude = "Equatorial") %>%
+      bind_rows(insol_tro %>%
+                mutate(deficit = june - december,
+                       latitude = "Tropical")) %>%
+      bind_rows(insol_tem %>%
+                mutate(deficit = june - december,
+                       latitude = "Temperate")) %>%
+      select(-march, -june, -september, -december)
 
   ggplot(insol_del) +
-  #    geom_line(aes(time, delta)) +
-      geom_line(aes(time, equ_rel), color = 'blue') +
-      geom_line(aes(time, tro_rel), color = 'blue') +
-      geom_line(aes(time, tem_rel), color = 'blue') +
-  #    geom_line(aes(time, pol), color = 'blue') +
+      geom_line(aes(time, deficit, color = latitude)) +
       labs(title = "Relative Summer-Winter Insolation Deficit",
            x = "Time (Years)",
-           y = "Relative Deficit")
-
+           y = "Insolation Deficit (W/m2)") +
+      theme(legend.position = "bottom")
 #+END_SRC
 
 Let's have a look at the differences relative to the mean insolations
@@ -358,9 +372,8 @@ so that we can see the individual lines more clearly.
 
   ggplot(insol_rel) +
       geom_line(aes(time, equ - 0.5), color = 'red') +
-      geom_line(aes(time, tro), color = 'green') +
-      geom_line(aes(time, tem + 0.5), color = 'blue') +
-#      ylim(-1, 1) +
+      geom_line(aes(time, tro), color = 'blue') +
+      geom_line(aes(time, tem + 0.5), color = 'green') +
       labs(title = "Relative Summer-Winter Insolation Change",
            x = "Time (Years)",
            y = "Relative summer/winter insolation")
@@ -463,16 +476,21 @@ is based on modeling by \citet{dansgaard-johnsen69:model}
 *** Relations between insolation and isotope data
 How do these insolation differences relate to the GRIP ice signals?
 #+BEGIN_SRC R :file output/insol_grip.pdf
-    ggplot(insol_del) +
-        geom_line(aes(time, delta), color = 'blue') +
-        geom_line(aes(time, 30*del18O + 1600),
-                  data = grip, color = 'red') +
-        scale_y_continuous(sec.axis = sec_axis(~. / 30,
-                           name = expression(paste(delta ^{18}, 'O')))) +
-        xlim(0,250000) +
-        labs(title = "Insolation Deficit and GRIP O isotope",
-             x = "Time (Years)",
-             y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
+  insol_del %<>%
+      group_by(time) %>%
+      summarise(delta = sum(deficit)) %>%
+      ungroup()
+
+  ggplot(insol_del) +
+      geom_line(aes(time, delta), color = 'blue') +
+      geom_line(aes(time, 30*del18O + 1600),
+                data = grip, color = 'red') +
+      scale_y_continuous(sec.axis = sec_axis(~. / 30,
+                         name = expression(paste(delta ^{18}, 'O')))) +
+      xlim(0,250000) +
+      labs(title = "Insolation Deficit and GRIP O isotope",
+           x = "Time (Years)",
+           y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
 
 #+END_SRC
 
@@ -927,7 +945,11 @@ units used by the code, \unit{150}{\centi\reciprocal\metre} around
 
 It is a straightforward matter to calculate the area under the curves
 (sum of all the values multiplied with the step size), and so we can
-assess the contributions of the various absorption bands.
+assess the contributions of the various absorption bands. As the
+interval spans \unit{150}{\centi\reciprocal\metre}, the maximum area
+under the curve would stand at
+\unit{150}{\centi\reciprocal\metre}. Clearly, the amount of radiation
+absorption at these concentrations is small.
 
 | wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |  IAbs_F |
 |-------------------------------------+--------------+---------+---------+---------|
@@ -979,7 +1001,6 @@ clearly recovered
 |            0.1 | 0.10690 | 0.10690 | 0.10702 |
 
 Changing the temperature yields the following values
-
 #+TBLNAME: Temp_Abs
 | Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
 |-------------+---------+---------+---------|
@@ -994,6 +1015,7 @@ Changing the temperature yields the following values
 |         280 | 1.10910 | 1.10987 | 1.10976 |
 |         290 | 1.07069 | 1.07141 | 1.07130 |
 
+And a plot shows that this not a simple linear relation
 #+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
   ggplot(Temp_Abs) +
       geom_point(aes(Temperature, IAbs_F)) +
