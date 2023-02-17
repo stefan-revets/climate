@@ -348,37 +348,44 @@ avenue to pursue is to see how the summer-winter differences evolve?
 
   ggplot(insol_del) +
       geom_line(aes(time, deficit, color = latitude)) +
-      labs(title = "Relative Summer-Winter Insolation Deficit",
+      labs(title = "Summer-Winter Insolation Deficit",
            x = "Time (Years)",
            y = "Insolation Deficit (W/m2)") +
       theme(legend.position = "bottom")
 #+END_SRC
 
-Let's have a look at the differences relative to the mean insolations
-for each latitude and find out if these are essentially the same, or
-not. Let's offset the three zones from each other in the plot by 0.5,
-so that we can see the individual lines more clearly.
+Are there any differences relative to the mean insolations for each
+latitude, or are these essentially the same? Let's offset the three
+zones from each other in the plot by 0.5, so that we can see the
+individual lines more clearly.
 #+BEGIN_SRC R :file output/insol_rel.pdf
   insol_means_pol <- summarise_each(insol_pol, funs(mean))
   insol_means_tem <- summarise_each(insol_tem, funs(mean))
   insol_means_tro <- summarise_each(insol_tro, funs(mean))
   insol_means_equ <- summarise_each(insol_equ, funs(mean))
 
-  insol_rel <- data.frame(time = insol_equ$time,
-                          equ = (insol_equ$december / insol_means_equ$december)/(insol_equ$june / insol_means_equ$june),
-                          tro = (insol_tro$december / insol_means_tro$december)/(insol_tro$june / insol_means_tro$june),
-                          tem = (insol_tem$december / insol_means_tem$december)/(insol_tem$june / insol_means_tem$june),
-                          pol = 1)
+  insol_rel <- insol_equ %>%
+      mutate(deficit = december * insol_means_equ$june /
+                 (june * insol_means_equ$december),
+             latitude = "Equatorial") %>%
+      bind_rows(insol_tro %>%
+                mutate(deficit = december * insol_means_tro$june/
+                           (june * insol_means_tro$december),
+                       latitude = "Tropical")) %>%
+      bind_rows(insol_tem %>%
+                mutate(deficit = december * insol_means_tem$june/
+                           (june * insol_means_tem$december),
+                       latitude = "Temperate")) %>%
+      select(-march, -june, -september, -december)
 
   ggplot(insol_rel) +
-      geom_line(aes(time, equ - 0.5), color = 'red') +
-      geom_line(aes(time, tro), color = 'blue') +
-      geom_line(aes(time, tem + 0.5), color = 'green') +
-      labs(title = "Relative Summer-Winter Insolation Change",
+      geom_line(aes(time, deficit)) +
+      facet_wrap(~latitude, ncol = 1) +
+      labs(title = "Relative Winter-Summer Insolation Change",
            x = "Time (Years)",
-           y = "Relative summer/winter insolation")
-
+           y = "Relative insolation")
 #+END_SRC
+
 And that plot shows rather neatly that the deviations from the average
 insolation are indeed different at the different latitudes looked at.
 
@@ -391,8 +398,7 @@ Vostok (blue) data
       geom_line(aes(time, del18O), data = grip, color = "red") +
       geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
       geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
-#      xlim(0, 250000) +
-      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 8,
                          name = expression(paste(delta ^{2}, 'H')))) +
       labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
            x = "Time (Years)",
@@ -413,7 +419,7 @@ Let's look in a little more detail:
       geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
       geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
       xlim(0, 150000) +
-      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 8,
                          name = expression(paste(delta ^{2}, 'H')))) +
       labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
            x = "Time (Years)",
@@ -434,7 +440,7 @@ opposite direction:
       geom_line(aes(time, del18O - 6), data = gisp, color = "orange") +
       geom_line(aes(time, 40 + deuterium / 5), data = vostok, color = "blue") +
       xlim(0, 12000) +
-      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 40,
+      scale_y_continuous(sec.axis = sec_axis(~. * 5 - 8,
                          name = expression(paste(delta ^{2}, 'H')))) +
       labs(title = "Isotope data from Greenland and Antarctica Ice Cores",
            x = "Time (Years)",
@@ -476,16 +482,15 @@ is based on modeling by \citet{dansgaard-johnsen69:model}
 *** Relations between insolation and isotope data
 How do these insolation differences relate to the GRIP ice signals?
 #+BEGIN_SRC R :file output/insol_grip.pdf
-  insol_del %<>%
+  insol_del %>%
       group_by(time) %>%
       summarise(delta = sum(deficit)) %>%
-      ungroup()
-
-  ggplot(insol_del) +
+      ungroup() %>%
+      ggplot() +
       geom_line(aes(time, delta), color = 'blue') +
       geom_line(aes(time, 30*del18O + 1600),
                 data = grip, color = 'red') +
-      scale_y_continuous(sec.axis = sec_axis(~. / 30,
+      scale_y_continuous(sec.axis = sec_axis(~. / 30 - 53.3,
                          name = expression(paste(delta ^{18}, 'O')))) +
       xlim(0,250000) +
       labs(title = "Insolation Deficit and GRIP O isotope",
@@ -496,48 +501,52 @@ How do these insolation differences relate to the GRIP ice signals?
 
 And, what about the Vostok signals?
 #+BEGIN_SRC R :file output/insol_vostok.pdf
-    ggplot(insol_del) +
-        geom_line(aes(time, 5*deuterium + 2800),
-                  data = vostok, color = 'red') +
-        geom_line(aes(time, delta), color = 'blue') +
-        scale_y_continuous(sec.axis = sec_axis(~. / 5,
-                           name = 'Deuterium')) +
-        xlim(0,450000) +
-        labs(title = "Insolation Deficit and Vostok Deuterium",
-             x = "Time (Years)",
-             y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
+  insol_del %>%
+      group_by(time) %>%
+      summarise(delta = sum(deficit)) %>%
+      ungroup() %>%
+      ggplot() +
+      geom_line(aes(time, 5*deuterium + 2800),
+                data = vostok, color = 'red') +
+      geom_line(aes(time, delta), color = 'blue') +
+      scale_y_continuous(sec.axis = sec_axis(~. / 5 - 560,
+                         name = expression(paste(delta ^{2}, 'H')))) +
+      xlim(0,450000) +
+      labs(title = "Insolation Deficit and Vostok Deuterium",
+           x = "Time (Years)",
+           y = "Cumulated Mean Daily Insolation Deficit (W/m2)")
 
 #+END_SRC
 
 Maybe more can be gleaned from the relative insolation changes?
 For Greenland, that gives
 #+BEGIN_SRC R :file output/insol_rel_grip.pdf
-    ggplot(insol_rel) +
-        geom_line(aes(time, del18O),
-                  data = grip, color = 'red') +
-        geom_line(aes(time, 15 * tem - 50), color = 'blue') +
-        geom_line(aes(time, 15 * tro - 50), color = 'green') +
-#        scale_y_continuous(sec.axis = sec_axis(~. / 30,
-#                           name = expression(paste(delta ^{18}, 'O')))) +
-        xlim(0,150000) +
-        labs(title = "Insolation Deficit and GRIP O isotope",
-             x = "Time (Years)",
-             y = "Relative Summer/Winter Insolation proportion")
-
+  insol_rel %>%
+      filter(latitude == "Temperate") %>%
+      ggplot() +
+      geom_line(aes(time, del18O),
+                data = grip, color = 'red') +
+      geom_line(aes(time, 20 * deficit - 60)) +
+      scale_y_continuous(sec.axis = sec_axis(~. / 20 + 3)) +
+      xlim(0,150000) +
+      labs(title = "GRIP O isotope and Relative Insolation Deficit",
+           x = "Time (Years)",
+           y = expression(paste(delta ^{18}, 'O')))
 #+END_SRC
 
 and for Antarctica
 #+BEGIN_SRC R :file output/insol_rel_vostok.pdf
-    ggplot(insol_rel) +
-        geom_line(aes(time, deuterium),
-                  data = vostok, color = 'red') +
-        geom_line(aes(time, 100 * tro - 500), color = 'green') +
-        geom_line(aes(time, 100 * tem - 500), color = 'blue') +
-        xlim(0,250000) +
-        labs(title = "Insolation Deficit and Vostok Deuterium",
-             x = "Time (Years)",
-             y = "Relative Summer/Winter Insolation proportion")
-
+  insol_rel %>%
+      filter(latitude == "Temperate") %>%
+      ggplot() +
+      geom_line(aes(time, deuterium),
+                data = vostok, color = 'red') +
+      geom_line(aes(time, 100 * deficit - 550)) +
+      scale_y_continuous(sec.axis = sec_axis(~. / 100 + 5.5)) +
+      xlim(0,250000) +
+      labs(title = "Vostok Deuterium and Relative Insolation Deficit",
+           x = "Time (Years)",
+           y = expression(paste(delta ^{2}, 'H')))
 #+END_SRC
 
 ** Alternative approaches
