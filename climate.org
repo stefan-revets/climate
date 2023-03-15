@@ -355,9 +355,8 @@ avenue to pursue is to see how the summer-winter differences evolve?
 #+END_SRC
 
 Are there any differences relative to the mean insolations for each
-latitude, or are these essentially the same? Let's offset the three
-zones from each other in the plot by 0.5, so that we can see the
-individual lines more clearly.
+latitude, or are these essentially the same? 
+
 #+BEGIN_SRC R :file output/insol_rel.pdf
   insol_means_pol <- summarise_each(insol_pol, funs(mean))
   insol_means_tem <- summarise_each(insol_tem, funs(mean))
@@ -573,499 +572,17 @@ properties of the relevant elements described by the equations.
 [Question. Can we differentiate between ice volume and temperature
 changes, e.g., by using both Oxygen and Deuterium signals?]
 
-** A first principles approach
-Earth receives essentially all its energy from the Sun (heat loss due
-to cooling of the core and radiogenic heating amounts to
-\unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
-for the total solar energy delivered to the Earth). 
-
-In the absence of tectonic activity and of human interference, this
-received energy undergoes a number of conversions before ultimately
-being radiated out. The various conversion processes have their own
-response time, and they interact with each other. This results in a
-dynamic equilibrium, maintaining the temperature on Earth within
-fairly narrow bounds.
-
-A clear distinction has to be made between the changes in CO_{2} and
-CH_{4} concentrations and climate oscillations pre-Anthropocene and
-what is taking place now that a massive injection of CO_{2} has taken
-place, geologically speaking instantaneously. Pre-Anthropocene, the
-greenhouse gases did not drive climate change, if anything, they were
-part of the feedback responses. It is not at all clear if the
-geological concentrations and the temperatures/ice volumes can be used
-as a direct, simple proxy for the effects of the human-caused
-concentrations.
-
-The behaviour of CO_{2} also needs scrutiny. Sinks, both temporary
-(e.g., dissolved in seawater) and long-term ones (e.g. carbonates) and
-sources, deserve attention. Here, too, the transfer between reservoirs
-and the characteristic times of residence and transfer, are relevant.
-
-- Hydrosphere
-  - Cryosphere (volume, area)
-  - Oceans (temperature, heat content, CO_{2}, volume)
-- Atmosphere
-  - Water vapour (volume, heat content)
-  - Clouds (volume, heat content)
-  - Precipitation (volume, heat content)
-  - CO_{2} (amount, solubility)
-  - Temperature
-- Energy
-  - Incoming Solar Radiation
-  - Outgoing Earth Radiation
-
-Energy transfers
-- Evaporation
-- Condensation
-- Heating
-- Cooling
-- Radiation
-- Reflection (albedo)
-- Absorption (albedo)
-
-*** Atmosphere
-\citet{trenberth-smith05:atmosphere} provide a carefully argued
-calculation of the total mass of the atmosphere.
-
-The total mean mass amounts to \unit{5.1480}{\exad\kilogram} with an
-annual range due to water vapour of \unit{1.5}{\petad\kilogram}. The
-mean mass of water vapour is estimated as \unit{12.7}{\petad\kilogram}
-and the dry air mass as \unit{5.1352}{\exad\kilogram}.
-
-Composition of the atmosphere
-| component | fraction | mol mass |
-|-----------+----------+----------|
-| N_{2}     |   0.7808 |  28.0134 |
-| O_{2}     |   0.2094 |  31.8888 |
-| Ar        |   0.0093 |   39.948 |
-| CO_{2}    |   0.0004 |  43.8998 |
-which yields an average mol mass for air of 28.9395
-
-*** CO2
-**** Solubility in seawater
-
-While a great deal of work has been done on the behaviour and
-interactions of CO_{2} and water, that was less the case for
-interactions with seawater. The presence of the many different ions in
-seawater is a substantial impediment to physicochemical theories and
-calculations: the actual solution is quite a long way off from ideal,
-i.e., simplified, conditions.
-
-When CO_{2} dissolves in water, it undergoes a two-step
-dissociation.
-\begin{eqnarray}
-\mathrm{CO}_2 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons & \mathrm{H}^+ + \mathrm{HCO}_3^ \\
-\mathrm{HCO}_3^- & \rightleftharpoons & \mathrm{H}^+ + \mathrm{CO}_3^{2-}
-\end{eqnarray}
-
-\citet{dickson-goyet94:co2-seawater} gave a suite of standard
-procedures and calculations specifically to deal with CO_{2} and
-seawater. Amongst the useful equations, there is one to calculate the
-fugacity of CO_{2} as a component of a binary mixture
-\begin{equation}
-f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
-\end{equation}
-
-The first virial coefficient B can be calculated with an expression
-derived by \citet{weiss74:solubility}
-\begin{equation}
-B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
-\end{equation}
-valid for $265 < T < 320$, with T(\kelvin) and
-B(\centi\cubic\metre\per\mole).
-
-He also derived a means to estimate the cross virial coefficient for
-the CO_{2}-air mixture as
-\begin{equation}
-\delta(T) = 57.7 - 0.118 T
-\end{equation}
-valid for $273 < T < 313$, again with T(\kelvin) and
-\delta(\centi\cubic\metre\per\mole).
-
-The equilibrium constant K$_0$ for the reaction 
-\begin{equation}
-\mathrm{CO}_2(g) \rightleftharpoons \mathrm{CO}^*_2(aq) 
-\end{equation}
-(where CO$^*_2$ stands for sum of $[\mathrm{CO}_2(aq)] + [\mathrm{HCO}_3^-] + [\mathrm{CO}_3^{2-}]$)
-that is to say
-\begin{equation}
-K_0 = \frac{[\mathrm{CO}^*_2]}{f(\mathrm{CO}_2)}
-\end{equation}
-comes again from \citet{weiss74:solubility} and is given as
-\begin{equation}
-\ln K_0 = 93.4517 \frac{100}{T} - 60.2409 + 23.3585 \ln \frac{T}{100} + S (0.023517 - 0.023656 \frac{T}{100} + 0.0047036 (\frac{T}{100})^2)
-\end{equation}
-where the fugacity is expressed in atmospheres and the salinity S
-
-And so we can calculate for any given CO_{2} concentration in the air
-how much will be dissolved in seawater at a temperature T.
-#+BEGIN_SRC R
-  # Include conversion from cm3 to m3
-  delta <- function(T){(57.7 - 0.118 * T) * 1e-6}
-
-  b0 <- -1636.75
-  b1 <- 12.0408
-  b2 <- -3.279571e-2
-  b3 <- 3.165281e-5
-
-  # Include conversion from cm3 to m3
-  virial <- function(T){(b0 + b1 * T + b2 * T^2 + b3 * T^3) * 1e-6}
-
-  e0 <- 93.4517
-  e1 <- -60.2409
-  e2 <- 23.3585
-  e3 <- 0.023517
-  e4 <- -0.023656
-  e5 <- 0.0047036
-
-  lnK0 <- function(T, S = 35){
-      e0 * 100/T + e1 + e2 * log(T/100) + S * (e3 + e4 * T/100 + e5 *(T/100)^2)}
-
-  fugacity <- function(x, T, p){
-      x * p * exp((virial(T) + 2 * x^2 * delta(T)) * p / (R_gas * T))}
-
-  # the K0 calc assumes atmospheres, so bring in the Pa conversion with p0
-  co2aq <- function(x, T, p, S = 35){
-      exp(lnK0(T, S)) / p0 * fugacity(x, T, p)}
-#+END_SRC
-
-Having defined the various functions, let's have a look at the nature
-of the relations: include the pre-industrial (green line) and the
-present CO_{2} concentrations (blue line).
-
-#+BEGIN_SRC R :file output/co2sol.pdf
-  co2sol <- data.frame(T = seq(273, 300)) %>%
-      mutate(co2_280 = co2aq(280e-6, T, p0),
-             co2_420 = co2aq(420e-6, T, p0))
-
-  ggplot(co2sol) +
-      geom_line(aes(T, co2_280*1e6), colour = "blue") +
-      geom_line(aes(T, co2_420*1e6), colour = "green") +    
-      labs(title = "CO2 solubility in seawater",
-           x = "T (K)",
-           y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
-#+END_SRC
-
-*** Solar energy spectrum
-By comparing the solar radiation spectrum as it is emitted with that
-measured at the Earth's surface, we get information on how and how
-much energy is captured by the greenhouse gases, i.e., water vapour,
-CO_{2} and CH_{4}. Bringing in their absorption spectra should give us
-the means to calculate how much heat is retained as a function of
-their concentrations in the atmosphere. The principle appears simple,
-practice seems to present quite some difficulties.
-
-The Sun radiates energy out, the spectrum of which can be described
-remarkably well as that of a black body. That principle can of course
-also be applied to the Earth.
-
-Black body radiation was first analysed and described by
-\citet{planck00:energieverteilung} as
-\begin{equation}
-u(\nu, T) = \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1}
-\end{equation}
-with \nu the frequency of the radiation. Integrating over all the
-frequencies yields
-\begin{equation}
-\begin{split}
-R(T) & = \frac{\pi^2}{60 c^2 \hbar^3}k^4 T^4 \\
-     & = \sigma T^4
-\end{split}
-\end{equation}
-with \sigma the Stefan-Boltzman constant (as a combination of the
-other constants, we can calculate this very easily as
-\unit{567.0373}{\micro\watt\per\metre\squared\power{\kelvin}{4}).
-
-There is a caveat to be heeded here. The relation between frequency
-and wavelength cannot be used as is to convert the calculations from
-frequency-based values to wavelength-based ones, that is to say
-\begin{equation}
-\begin{split}
-u(\lambda, T) d\lambda & = -u(\epsilon, T) d\epsilon \\
-\frac{d\epsilon}{d\lambda} & = -\frac{h c}{\lambda^2}
-\end{split}
-\end{equation}
-and hence we get
-\begin{equation}
-u(\lambda, T) = \frac{8 \pi h c}{\lambda^5} \frac{1}{e^{h c /\lambda k T} - 1}
-\end{equation}
-
-Let's see this distribution for the Sun, with a temperature of some
-\unit{5778}{\kelvin}
-#+BEGIN_SRC R :file output/solar_spectrum.pdf
-  T_sun <- 5778
-
-  sun_energy <- data.frame(lambda = seq(100, 2500, 10)*1e-9) %>%
-      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
-             E2 = h_planck * c_light / (lambda * k_boltzmann * T_sun),
-             Energy = E1 / (exp(E2) - 1))
-
-  ggplot(sun_energy) +
-      geom_line(aes(lambda*1e9, Energy)) +
-      labs(title = "Solar Radiation, Black Body at 5778 K",
-           x = "Wavelength (nm)",
-           y = "Energy (J/m3.m)")
-
-#+END_SRC
-
-The same calculation, but this time for the Earth, with an average
-temperature of \unit{288}{\kelvin}
-#+BEGIN_SRC R :file output/earth_spectrum.pdf
-  T_earth <- 288
-
-  earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
-      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
-             E2 = h_planck * c_light / (lambda * k_boltzmann * T_earth),
-             Energy = E1 / (exp(E2) - 1))
-
-  ggplot(earth_energy) +
-      geom_line(aes(lambda*1e6, Energy)) +
-      labs(title = "Earth Radiation, Black Body at 288 K",
-           x = expression(paste("Wavelength (", mu, "m)")),
-           y = "Energy (J/m3.m)")
-
-#+END_SRC
-
-The next step in the process is accounting for the absorption by
-CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
-
-A great deal of meticulous effort has been expended on obtaining these
-absorption spectra, including quantum mechanical calculations
-\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}.
-These efforts have culminated into a database which can be accessed
-on-line (https://hitran.org/) to obtain any desired data.  The level
-of detail captured in the database includes the separation of each
-isotope of the constituent atoms. The most abundant isotopic mix is
-marked with code number 1.
-
-A complete explanation of the  HITRAN data structure is as follows:
-
-| parameter     | field length | format | units                                                                         |
-|---------------+--------------+--------+-------------------------------------------------------------------------------|
-| M             |            2 | I2     | HITRAN molecule number code                                                   |
-| I             |            1 | I1     | ordering within molecule by terrestrial abundance                             |
-| \nu           |           12 | F12.6  | \centi\reciprocal\metre                                                       |
-| S             |           10 | E10.3  | \centi\reciprocal\metre\per\centi\rpsquare\metre molecule               |
-| A             |           10 | E10.3  | \reciprocal\second                                                            |
-| \gamma_{air}  |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
-| \gamma_{self} |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
-| E''           |           10 | F10.4  | \centi\reciprocal\metre                                                       |
-| n_{air}       |            4 | F4.2   | exponent of \gamma_{air}                                                      |
-| \delta_{air}  |            8 | F8.6   | \centi\reciprocal\metre atm^{-1}                                              |
-| V'            |           15 | A15    | Upper state global quanta                                                     |
-| V''           |           15 | A15    | Lower state global quanta                                                     |
-| Q'            |           15 | A15    | Upper state local quanta                                                      |
-| Q''           |           15 | A15    | Lower state local quanta                                                      |
-| Ierr          |            6 | 6I1    | accuracy codes for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air} |
-| Iref          |           12 | 6I2    | references for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air}     |
-| flag          |            1 | A1     |                                                                               |
-| g'            |            7 | F7.1   | weight of upper state                                                         |
-| g''           |            7 | F7.1   | weight of lower state                                                         |
-
-The two molecules on interest in the analysis here are H_{2}O (1) and
-CO_{2} (2). A query of the database for the most common isotopologues
-of these two molecules and including all the wavelengths for which
-data is available, yielded 319887 entries for H_{2}O and 174446
-entries for CO_{2}.
-
-A neat way of bringing in the data is through an AWK script. Although
-the data is presented in a Fortran-type format, i.e., columnar, there
-is a possibility of defining fields by their width, rather than the
-usual AWK field separator character.
-
-#+BEGIN_SRC awk :in-file data/hitran_co2.par :file cache/hitran_co2.dat :results none
-  BEGIN{OFS = ","
-      FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
-        print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
-               energy_lower, n_air, delta_air"}
-      {print $3, $4, $5, $6, $7, $8, $9, $10
-  }
-#+END_SRC
-
-#+BEGIN_SRC awk :in-file data/hitran_h2o.par :file cache/hitran_h2o.dat :results none
-  BEGIN{OFS = ","
-      FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
-        print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
-               energy_lower, n_air, delta_air"}
-      {print $3, $4, $5, $6, $7, $8, $9, $10
-  }
-#+END_SRC
-
-The shape of an absorption peak is not as straightforward a matter as
-one might expect. An absorption line is broadened around its
-transition wavelength due to temperature, pressure, and presence of
-other molecules. In the lower atmosphere, the broadening of a line is
-largely driven by pressure, and can be modeled as a Lorentz profile:
-\begin{equation}
-f_L(\nu; \nu_{ij}, p, T) = \frac{1}{\pi} \frac{\gamma(p, T)}{\gamma(p, T)^2 + (\nu - \nu^*_{ij})^2}
-\end{equation}
-where
-\begin{equation}
-\begin{split}
-\gamma(p, T) & = \Bigg( \frac{T_0}{T} \Bigg)^{n_{air}} \bigg( \gamma_{air}(p_0, T_0)(p - p_{self}) + \gamma_{self}(p_0, T_0) p_{self} \bigg) \\
-\nu_{ij}^* & = \nu_{ij} + \delta p_0 p
-\end{split}
-\end{equation}
-
-Fortunately, a fortran package with associated data files
-\citep{gordon-al22:hitran2020,lamouroux-al15:linemixing} is freely
-available from the hitran site and allows for easy experimentation.
-The following variables can be changed before carrying out the
-calculations
-
-| variable | unit                    | description                   |
-|----------+-------------------------+-------------------------------|
-| SgMinR   | \centi\reciprocal\metre | Minimum wavenumber            |
-| SgMaxR   | \centi\reciprocal\metre | Maximum wavenumber            |
-| dSg      | \centi\reciprocal\metre | Wavenumber step size          |
-| sTotMax  |                         | Band intensity cut-off        |
-| Temp     | K                       | Temperature                   |
-| Ptot     | atm                     | Total pressure                |
-| xCO2     |                         | CO_{2} mole fraction          |
-| xH2O     |                         | H_{2}O mole fraction          |
-| MixFull  | logical                 | Full line mixing calcs        |
-| MixSDV   | logical                 | Speed-dependent Voigt profile |
-
-The results of the calculations are stored in a file, all in
-\centi\reciprocal\metre
-
-| entry | description                                                  |
-|-------+--------------------------------------------------------------|
-| nu    | wave number                                                  |
-| AbsV  | Absorption coeffcient using Voigt line shape, no line mixing |
-| AbsY  | Absorption coefficient, first-order line mixing              |
-| AbsW  | Absorption coefficient, full diagonalisation line mixing     |
-
-As an example, here is the result of the mixing calculations centered
-around an absorpion peak at \unit{4.24}{\micro\metre} (or, in the cgs
-units used by the code, \unit{150}{\centi\reciprocal\metre} around
-\unit{2361}{\centi\reciprocal\metre})
-
-#+BEGIN_SRC R :file output/hitran_2350.pdf
-  hitran_2350 <- read.table("data/hitran_lm_2350.dat",
-                            col.names = c("nu","Voigt","First_Order","Full_Calc"))
-
-  ggplot(hitran_2350) +
-      geom_line(aes(nu, Full_Calc)) +
-      labs(title = "Absorption Coefficients, with Full line mixing",
-           x = expression(paste('Wave number ', (cm^{-1}))),
-           y = expression(paste('Absorption Coefficient ', (cm^{-1}))))
-#+END_SRC
-
-It is a straightforward matter to calculate the area under the curves
-(sum of all the values multiplied with the step size), and so we can
-assess the contributions of the various absorption bands. As the
-interval spans \unit{150}{\centi\reciprocal\metre}, the maximum area
-under the curve would stand at
-\unit{150}{\centi\reciprocal\metre}. Clearly, the amount of radiation
-absorption at these concentrations is small.
-
-| wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |  IAbs_F |
-|-------------------------------------+--------------+---------+---------+---------|
-|                                 667 |         15.0 | 0.09658 | 0.09657 | 0.09664 |
-|                                2361 |         4.24 | 1.07069 | 1.07141 | 1.07130 |
-|                                3625 |         2.76 | 0.01197 | 0.01197 | 0.01197 |
-|                                3727 |         2.68 | 0.01775 | 0.01776 | 0.01776 |
-|                                4990 |         2.00 | 0.00039 | 0.00040 | 0.00040 |
-|                                5114 |         1.95 | 0.00013 | 0.00013 | 0.00013 |
-
-There are more bands present in the database, but their individual
-peak absorptions are less that 10^{-6} and can be neglected for our
-purposes.
-
-Let's explore the effects of changes in CO_{2} concentration,
-pressure, and temperature on the integrated absorption, using the the
-strongest peak (around \unit{2361}{\centi\reciprocal\metre}) as
-reference. The reference value is calculated with the following settings
-
-| variable | value        | unit                    |
-|----------+--------------+-------------------------|
-| dSg      | 0.01         | \centi\reciprocal\metre |
-| sTotMax  | 0.1 10^{-28} |                         |
-| Temp     | 290          | K                       |
-| Ptot     | 1.0          | atm                     |
-| xCO2     | 420 10^{-6}  |                         |
-| xH2O     | 0            |                         |
-| MixFull  | .True.       | logical                 |
-| MixSDV   | .False.      | logical                 |
-
-First, let's see what the effect is of changing the CO_{2} mole
-percentages
-
-| ppm CO_{2} |  IAbs_V |  IAbs_f |  IAbs_F |
-|------------+---------+---------+---------|
-|        105 | 0.26767 | 0.26785 | 0.26782 |
-|        210 | 0.53534 | 0.53570 | 0.53565 |
-|        420 | 1.07069 | 1.07141 | 1.07130 |
-
-The expectation of a linear relation between CO_{2} concentration and
-absorbance is clearly fulfilled.
-
-The same linear relation between pressure and absorbance is also
-clearly recovered
-| pressure (atm) |  IAbs_V |  IAbs_f |  IAbs_F |
-|----------------+---------+---------+---------|
-|            1.0 | 1.07069 | 1.07141 | 1.07130 |
-|            0.5 | 0.53553 | 0.53571 | 0.53562 |
-|            0.1 | 0.10690 | 0.10690 | 0.10702 |
-
-Changing the temperature yields the following values
-#+TBLNAME: Temp_Abs
-| Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
-|-------------+---------+---------+---------|
-|         200 | 1.55429 | 1.55567 | 1.55560 |
-|         210 | 1.48013 | 1.48139 | 1.48132 |
-|         220 | 1.41270 | 1.41385 | 1.41377 |
-|         230 | 1.35112 | 1.35220 | 1.35210 |
-|         240 | 1.29467 | 1.29566 | 1.29557 |
-|         250 | 1.24271 | 1.24365 | 1.24355 |
-|         260 | 1.19477 | 1.19564 | 1.19554 |
-|         270 | 1.15036 | 1.15117 | 1.15106 |
-|         280 | 1.10910 | 1.10987 | 1.10976 |
-|         290 | 1.07069 | 1.07141 | 1.07130 |
-
-And a plot shows that this not a simple linear relation
-#+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
-  ggplot(Temp_Abs) +
-      geom_point(aes(Temperature, IAbs_F)) +
-      xlim(200, 300) +
-      labs(title = "Integrated Absorbance in function of Temperature",
-           x = "Temperature (K)",
-           y = expression(paste('Absorbance ', (cm^{-1}))))
-#+END_SRC
-
-*** Calcium carbonate
-Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
-source. As I came across a reference in
-\citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
-Thermal Maximum \citet{ajayi-al20:evaluation}, I noticed that most, if
-not all, of the work is based on bulk sediment samples, i.e., the
-carbonate component in the sediment is not split up. This is terrible,
-as it conflates a variety of fractionation processes. Changes in
-plankton composition (foram/nanno ratio: nannos are photosynthetic,
-forams are not), changes in (planktonic) foram species abundance
-(globigerinid-like species remaining in the photic zone,
-globorotaliid/morozovellid-like species occupying different water
-depths over their life cycle), and on top of all that the demonstrated
-pH-dependence of the C fractionation, all these varying processes are
-conflated, so that there is no way in which to retrieve any changes in
-isotope composition due to injection/availability of C sources. Hence,
-I cannot trust the published suggestions of differing amounts of C
-coming from different sources (e.g., marine, terrestrial, plants,
-melting permafrost, \&c.)
-
-As a result, I shall see if I can limit myself to use actual, directly
-measured values of CO_{2} and CH_{4} concentrations in air bubbles
-trapped in polar ice, and disregard any proxy-based data beyond the
-ice record. Then again, see \citet{anklin-al95:processes}. Oh dear.
-
 ** Analytical Issues
-Going through the literature, I keep coming across problematic
-statements about the way in which data are obtained. The
+A crucial measure in all the analyses, models and discussions is the
+concentration of CO_{2}. Concentrations can be, and have been,
+measured directly by capturing air bubbles trapped in ice. Once ice
+cores are no longer available, proxies have been used to estimate
+concentrations. Going through the literature, I keep coming across
+problematic statements about the way in which data are obtained. The
 (physicochemical) analytical techniques really need close and critical
 scrutiny as the trustworthiness of the data is unfortunately not a
 given.
-*** Greenland-Antarctica CO_{2} concordance
+*** Greenland-Antarctica Ice-based CO_{2} concordance
 A discrepancy has been noted between the direct CO_{2} measurements in
 Greenland and Antarctic ice cores (i.e., from the trapped air
 bubbles). \citet{anklin-al95:processes} set out to try and explain why
@@ -1626,18 +1143,37 @@ reported numbers are uncomfortably wide. Here are the results obtained
 by 10 different labs, analysing an homogenous sample of
 (Mediterranean) seawater.
 
-| \delta\isotope{11}{B} | \sigma |  n | technique |
-|-----------------------+--------+----+-----------|
-|                 37.26 |   0.22 |  2 | PTIMS     |
-|                 38.84 |    0.4 |  6 | PTIMS     |
-|                 39.42 |   0.03 |  3 | PTIMS     |
-|                  40.8 |   0.12 | 11 | PTIMS     |
-|                 36.69 |   0.15 |  5 | PTIMS     |
-|                 39.34 |   0.14 |  4 | NTIMS     |
-|                 38.85 |   0.83 |  8 | NTIMS     |
-|                  37.3 |    0.9 |    | ICP-MS    |
-|                  33.7 |    6.4 |  4 | ICP-MS    |
-|                 34.75 |     20 |    | ICP-MS    |
+#+TBLNAME: tonarini
+| lab | \delta\isotope{11}{B} | \sigma |  n | technique |
+|-----+-----------------------+--------+----+-----------|
+| A   |                 36.69 |   0.15 |  5 | PTIMS     |
+| B   |                 37.26 |   0.22 |  2 | PTIMS     |
+| C   |                 38.84 |    0.4 |  6 | PTIMS     |
+| D   |                 39.42 |   0.03 |  3 | PTIMS     |
+| E   |                  40.8 |   0.12 | 11 | PTIMS     |
+| F   |                 38.85 |   0.83 |  8 | NTIMS     |
+| G   |                 39.34 |   0.14 |  4 | NTIMS     |
+| H   |                  37.3 |    0.9 |    | ICP-MS    |
+| I   |                  33.7 |    6.4 |  4 | ICP-MS    |
+| J   |                 34.75 |     20 |    | ICP-MS    |
+
+A simple plot shows all too clearly the problematic outcome of this
+exercise. In view of the very large standard deviations reported for 2
+of the ICP-MS analyses, these are omitted from the plot.
+
+#+BEGIN_SRC R :var tonarini=tonarini :file output/tonarini.pdf
+  names(tonarini) <- c("Lab", "delta_B", "sigma", "n", "technique")
+
+  tonarini %>%
+      filter(sigma < 6) %>%
+      mutate(delta_B_m = delta_B - 2 * sigma,
+             delta_B_M = delta_B + 2 * sigma) %>%
+      ggplot() +
+      geom_pointrange(aes(Lab, delta_B, ymin=delta_B_m, ymax=delta_B_M)) +
+      labs(title = "Interlaboratory Comparative Analysis of Sea water",
+           y = expression(paste(delta ^{11}, "B"))) +
+      facet_wrap(~technique, scales = "free_x")
+#+END_SRC
 
 Clearly, the values and standard deviations of the analyses as
 reported are wide off the mark given the PTIMS population sample mean
@@ -1647,6 +1183,508 @@ cannot avoid the conclusion that the analytical techniques and
 protocols are insufficiently reliable and mature to allow any
 fine-grained analysis of palaeo-CO_{2} levels.
 
+** A first principles approach
+Earth receives essentially all its energy from the Sun (heat loss due
+to cooling of the core and radiogenic heating amounts to
+\unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
+for the total solar energy delivered to the Earth). 
+
+In the absence of tectonic activity and of human interference, this
+received energy undergoes a number of conversions before ultimately
+being radiated out. The various conversion processes have their own
+response time, and they interact with each other. This results in a
+dynamic equilibrium, maintaining the temperature on Earth within
+fairly narrow bounds.
+
+A clear distinction has to be made between the changes in CO_{2} and
+CH_{4} concentrations and climate oscillations pre-Anthropocene and
+what is taking place now that a massive injection of CO_{2} has taken
+place, geologically speaking instantaneously. Pre-Anthropocene, the
+greenhouse gases did not drive climate change, if anything, they were
+part of the feedback responses. It is not at all clear if the
+geological concentrations and the temperatures/ice volumes can be used
+as a direct, simple proxy for the effects of the human-caused
+concentrations.
+
+The behaviour of CO_{2} also needs scrutiny. Sinks, both temporary
+(e.g., dissolved in seawater) and long-term ones (e.g. carbonates) and
+sources, deserve attention. Here, too, the transfer between reservoirs
+and the characteristic times of residence and transfer, are relevant.
+
+- Hydrosphere
+  - Cryosphere (volume, area)
+  - Oceans (temperature, heat content, CO_{2}, volume)
+- Atmosphere
+  - Water vapour (volume, heat content)
+  - Clouds (volume, heat content)
+  - Precipitation (volume, heat content)
+  - CO_{2} (amount, solubility)
+  - Temperature
+- Energy
+  - Incoming Solar Radiation
+  - Outgoing Earth Radiation
+
+Energy transfers
+- Evaporation
+- Condensation
+- Heating
+- Cooling
+- Radiation
+- Reflection (albedo)
+- Absorption (albedo)
+
+*** Atmosphere
+\citet{trenberth-smith05:atmosphere} provide a carefully argued
+calculation of the total mass of the atmosphere.
+
+The total mean mass amounts to \unit{5.1480}{\exad\kilogram} with an
+annual range due to water vapour of \unit{1.5}{\petad\kilogram}. The
+mean mass of water vapour is estimated as \unit{12.7}{\petad\kilogram}
+and the dry air mass as \unit{5.1352}{\exad\kilogram}.
+
+Composition of the atmosphere
+| component | fraction | mol mass |
+|-----------+----------+----------|
+| N_{2}     |   0.7808 |  28.0134 |
+| O_{2}     |   0.2094 |  31.8888 |
+| Ar        |   0.0093 |   39.948 |
+| CO_{2}    |   0.0004 |  43.8998 |
+which yields an average mol mass for air of 28.9395
+
+*** CO2
+**** Solubility in seawater
+
+While a great deal of work has been done on the behaviour and
+interactions of CO_{2} and water, that was less the case for
+interactions with seawater. The presence of the many different ions in
+seawater is a substantial impediment to physicochemical theories and
+calculations: the actual solution is quite a long way off from ideal,
+i.e., simplified, conditions.
+
+When CO_{2} dissolves in water, it undergoes a two-step
+dissociation.
+\begin{eqnarray}
+\mathrm{CO}_2 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons & \mathrm{H}^+ + \mathrm{HCO}_3^ \\
+\mathrm{HCO}_3^- & \rightleftharpoons & \mathrm{H}^+ + \mathrm{CO}_3^{2-}
+\end{eqnarray}
+
+\citet{dickson-goyet94:co2-seawater} gave a suite of standard
+procedures and calculations specifically to deal with CO_{2} and
+seawater. Amongst the useful equations, there is one to calculate the
+fugacity of CO_{2} as a component of a binary mixture
+\begin{equation}
+f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
+\end{equation}
+
+The first virial coefficient B can be calculated with an expression
+derived by \citet{weiss74:solubility}
+\begin{equation}
+B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
+\end{equation}
+valid for $265 < T < 320$, with T(\kelvin) and
+B(\centi\cubic\metre\per\mole).
+
+He also derived a means to estimate the cross virial coefficient for
+the CO_{2}-air mixture as
+\begin{equation}
+\delta(T) = 57.7 - 0.118 T
+\end{equation}
+valid for $273 < T < 313$, again with T(\kelvin) and
+\delta(\centi\cubic\metre\per\mole).
+
+The equilibrium constant K$_0$ for the reaction 
+\begin{equation}
+\mathrm{CO}_2(g) \rightleftharpoons \mathrm{CO}^*_2(aq) 
+\end{equation}
+(where CO$^*_2$ stands for sum of $[\mathrm{CO}_2(aq)] + [\mathrm{HCO}_3^-] + [\mathrm{CO}_3^{2-}]$)
+that is to say
+\begin{equation}
+K_0 = \frac{[\mathrm{CO}^*_2]}{f(\mathrm{CO}_2)}
+\end{equation}
+comes again from \citet{weiss74:solubility} and is given as
+\begin{equation}
+\ln K_0 = 93.4517 \frac{100}{T} - 60.2409 + 23.3585 \ln \frac{T}{100} + S (0.023517 - 0.023656 \frac{T}{100} + 0.0047036 (\frac{T}{100})^2)
+\end{equation}
+where the fugacity is expressed in atmospheres and the salinity S
+
+And so we can calculate for any given CO_{2} concentration in the air
+how much will be dissolved in seawater at a temperature T.
+#+BEGIN_SRC R
+  # Include conversion from cm3 to m3
+  delta <- function(T){(57.7 - 0.118 * T) * 1e-6}
+
+  b0 <- -1636.75
+  b1 <- 12.0408
+  b2 <- -3.279571e-2
+  b3 <- 3.165281e-5
+
+  # Include conversion from cm3 to m3
+  virial <- function(T){(b0 + b1 * T + b2 * T^2 + b3 * T^3) * 1e-6}
+
+  e0 <- 93.4517
+  e1 <- -60.2409
+  e2 <- 23.3585
+  e3 <- 0.023517
+  e4 <- -0.023656
+  e5 <- 0.0047036
+
+  lnK0 <- function(T, S = 35){
+      e0 * 100/T + e1 + e2 * log(T/100) + S * (e3 + e4 * T/100 + e5 *(T/100)^2)}
+
+  fugacity <- function(x, T, p){
+      x * p * exp((virial(T) + 2 * x^2 * delta(T)) * p / (R_gas * T))}
+
+  # the K0 calc assumes atmospheres, so bring in the Pa conversion with p0
+  co2aq <- function(x, T, p, S = 35){
+      exp(lnK0(T, S)) / p0 * fugacity(x, T, p)}
+#+END_SRC
+
+Having defined the various functions, let's have a look at the nature
+of the relations: include the pre-industrial (green line) and the
+present CO_{2} concentrations (blue line).
+
+#+BEGIN_SRC R :file output/co2sol.pdf
+  co2sol <- data.frame(T = seq(273, 300)) %>%
+      mutate(co2_280 = co2aq(280e-6, T, p0),
+             co2_420 = co2aq(420e-6, T, p0))
+
+  ggplot(co2sol) +
+      geom_line(aes(T, co2_280*1e6), colour = "blue") +
+      geom_line(aes(T, co2_420*1e6), colour = "green") +    
+      labs(title = "CO2 solubility in seawater",
+           x = "T (K)",
+           y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
+#+END_SRC
+
+*** Solar energy spectrum
+By comparing the solar radiation spectrum as it is emitted with that
+measured at the Earth's surface, we get information on how and how
+much energy is captured by the greenhouse gases, i.e., water vapour,
+CO_{2} and CH_{4}. Bringing in their absorption spectra should give us
+the means to calculate how much heat is retained as a function of
+their concentrations in the atmosphere. The principle appears simple,
+practice seems to present quite some difficulties.
+
+The Sun radiates energy out, the spectrum of which can be described
+remarkably well as that of a black body. That principle can of course
+also be applied to the Earth.
+
+Black body radiation was first analysed and described by
+\citet{planck00:energieverteilung} as
+\begin{equation}
+u(\nu, T) = \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1}
+\end{equation}
+with \nu the frequency of the radiation. Integrating over all the
+frequencies yields
+\begin{equation}
+\begin{split}
+R(T) & = \frac{\pi^2}{60 c^2 \hbar^3}k^4 T^4 \\
+     & = \sigma T^4
+\end{split}
+\end{equation}
+with \sigma the Stefan-Boltzman constant (as a combination of the
+other constants, we can calculate this very easily as
+\unit{567.0373}{\micro\watt\per\metre\squared\power{\kelvin}{4}}).
+
+There is a caveat to be heeded here. The relation between frequency
+and wavelength cannot be used as is to convert the calculations from
+frequency-based values to wavelength-based ones, that is to say
+\begin{equation}
+\begin{split}
+u(\lambda, T) d\lambda & = -u(\epsilon, T) d\epsilon \\
+\frac{d\epsilon}{d\lambda} & = -\frac{h c}{\lambda^2}
+\end{split}
+\end{equation}
+and hence we get
+\begin{equation}
+u(\lambda, T) = \frac{8 \pi h c}{\lambda^5} \frac{1}{e^{h c /\lambda k T} - 1}
+\end{equation}
+
+Let's see this distribution for the Sun, with a temperature of some
+\unit{5778}{\kelvin}
+#+BEGIN_SRC R :file output/solar_spectrum.pdf
+  T_sun <- 5778
+
+  sun_energy <- data.frame(lambda = seq(100, 2500, 10)*1e-9) %>%
+      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
+             E2 = h_planck * c_light / (lambda * k_boltzmann * T_sun),
+             Energy = E1 / (exp(E2) - 1))
+
+  ggplot(sun_energy) +
+      geom_line(aes(lambda*1e9, Energy)) +
+      labs(title = "Solar Radiation, Black Body at 5778 K",
+           x = "Wavelength (nm)",
+           y = "Energy (J/m3.m)")
+
+#+END_SRC
+
+The same calculation, but this time for the Earth, with an average
+temperature of \unit{288}{\kelvin}
+#+BEGIN_SRC R :file output/earth_spectrum.pdf
+  T_earth <- 288
+
+  earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
+      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
+             E2 = h_planck * c_light / (lambda * k_boltzmann * T_earth),
+             Energy = E1 / (exp(E2) - 1))
+
+  ggplot(earth_energy) +
+      geom_line(aes(lambda*1e6, Energy)) +
+      labs(title = "Earth Radiation, Black Body at 288 K",
+           x = expression(paste("Wavelength (", mu, "m)")),
+           y = "Energy (J/m3.m)")
+
+#+END_SRC
+
+The next step in the process is accounting for the absorption by
+CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
+
+A great deal of meticulous effort has been expended on obtaining these
+absorption spectra, including quantum mechanical calculations
+\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}.
+These efforts have culminated into a database which can be accessed
+on-line (https://hitran.org/) to obtain any desired data.  The level
+of detail captured in the database includes the separation of each
+isotope of the constituent atoms. The most abundant isotopic mix is
+marked with code number 1.
+
+A complete explanation of the  HITRAN data structure is as follows:
+
+| parameter     | field length | format | units                                                                         |
+|---------------+--------------+--------+-------------------------------------------------------------------------------|
+| M             |            2 | I2     | HITRAN molecule number code                                                   |
+| I             |            1 | I1     | ordering within molecule by terrestrial abundance                             |
+| \nu           |           12 | F12.6  | \centi\reciprocal\metre                                                       |
+| S             |           10 | E10.3  | \centi\reciprocal\metre\per\centi\rpsquare\metre molecule               |
+| A             |           10 | E10.3  | \reciprocal\second                                                            |
+| \gamma_{air}  |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
+| \gamma_{self} |            5 | F5.4   | HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm^{-1})                |
+| E''           |           10 | F10.4  | \centi\reciprocal\metre                                                       |
+| n_{air}       |            4 | F4.2   | exponent of \gamma_{air}                                                      |
+| \delta_{air}  |            8 | F8.6   | \centi\reciprocal\metre atm^{-1}                                              |
+| V'            |           15 | A15    | Upper state global quanta                                                     |
+| V''           |           15 | A15    | Lower state global quanta                                                     |
+| Q'            |           15 | A15    | Upper state local quanta                                                      |
+| Q''           |           15 | A15    | Lower state local quanta                                                      |
+| Ierr          |            6 | 6I1    | accuracy codes for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air} |
+| Iref          |           12 | 6I2    | references for \nu, S, \gamma_{air}, \gamma_{self}, n_{air}, \delta_{air}     |
+| flag          |            1 | A1     |                                                                               |
+| g'            |            7 | F7.1   | weight of upper state                                                         |
+| g''           |            7 | F7.1   | weight of lower state                                                         |
+
+The two molecules on interest in the analysis here are H_{2}O (1) and
+CO_{2} (2). A query of the database for the most common isotopologues
+of these two molecules and including all the wavelengths for which
+data is available, yielded 319887 entries for H_{2}O and 174446
+entries for CO_{2}.
+
+A neat way of bringing in the data is through an AWK script. Although
+the data is presented in a Fortran-type format, i.e., columnar, there
+is a possibility of defining fields by their width, rather than the
+usual AWK field separator character.
+
+#+BEGIN_SRC awk :in-file data/hitran_co2.par :file cache/hitran_co2.dat :results none
+  BEGIN{OFS = ","
+      FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
+        print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
+               energy_lower, n_air, delta_air"}
+      {print $3, $4, $5, $6, $7, $8, $9, $10
+  }
+#+END_SRC
+
+#+BEGIN_SRC awk :in-file data/hitran_h2o.par :file cache/hitran_h2o.dat :results none
+  BEGIN{OFS = ","
+      FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
+        print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
+               energy_lower, n_air, delta_air"}
+      {print $3, $4, $5, $6, $7, $8, $9, $10
+  }
+#+END_SRC
+
+The shape of an absorption peak is not as straightforward a matter as
+one might expect. An absorption line is broadened around its
+transition wavelength due to temperature, pressure, and presence of
+other molecules \citep{tennyson-al14:IUPAC}. In the lower atmosphere,
+the broadening of a line is largely driven by collisions with other
+molecules, and can be modeled by a Lorentz profile:
+\begin{equation}
+f_L(\nu; \nu_{ij}, p, T) = \frac{1}{\pi} \frac{\gamma(p, T)}{\gamma(p, T)^2 + (\nu - \nu^*_{ij})^2}
+\end{equation}
+where
+\begin{equation}
+\begin{split}
+\gamma(p, T) & = \Bigg( \frac{T_0}{T} \Bigg)^{n_{air}} \bigg( \gamma_{air}(p_0, T_0)(p - p_{self}) + \gamma_{self}(p_0, T_0) p_{self} \bigg) \\
+\nu_{ij}^* & = \nu_{ij} + \delta p_0 p
+\end{split}
+\end{equation}
+In addition, the thermal translational movement of the molecules also
+causes a Doppler effect, which shows up as a frequency shift. The
+resulting profile can be described by a Gaussian curve, 
+\begin{equation}
+F_D(\nu - \nu_0) = \sqrt{\frac{\ln 2}{\pi}} \frac{1}{\Gamma_D} e^{-\ln 2 (\frac{\nu - \nu_0}{\Gamma_D})^2}
+\end{equation}
+with \Gamma_{D} the Doppler half-width
+\begin{equation}
+\Gamma_D = \sqrt{\frac{2 \ln 2 k T}{m c^2}} \nu_0
+\end{equation}
+To account for both effects, these two profiles can be convoluted into
+a Voigt Profile
+\begin{equation}
+I(\nu) = \int^{\infty}_{-\infty} G(\nu') L(\nu - \nu') d\nu'
+\end{equation}
+which needs to be evaluated numerically \citep{thompson93:voigt}.
+
+Fortunately, a fortran package with associated data files
+\citep{gordon-al22:hitran2020,lamouroux-al15:linemixing} is freely
+available from https://hitran.org/supplementary/ and allows for easy
+experimentation.  The following variables can be changed before
+carrying out the calculations
+
+| variable | unit                    | description                   |
+|----------+-------------------------+-------------------------------|
+| SgMinR   | \centi\reciprocal\metre | Minimum wavenumber            |
+| SgMaxR   | \centi\reciprocal\metre | Maximum wavenumber            |
+| dSg      | \centi\reciprocal\metre | Wavenumber step size          |
+| sTotMax  |                         | Band intensity cut-off        |
+| Temp     | K                       | Temperature                   |
+| Ptot     | atm                     | Total pressure                |
+| xCO2     |                         | CO_{2} mole fraction          |
+| xH2O     |                         | H_{2}O mole fraction          |
+| MixFull  | logical                 | Full line mixing calcs        |
+| MixSDV   | logical                 | Speed-dependent Voigt profile |
+
+The results of the calculations are stored in a file, all in
+\centi\reciprocal\metre
+
+| entry | description                                                  |
+|-------+--------------------------------------------------------------|
+| nu    | wave number                                                  |
+| AbsV  | Absorption coeffcient using Voigt line shape, no line mixing |
+| AbsY  | Absorption coefficient, first-order line mixing              |
+| AbsW  | Absorption coefficient, full diagonalisation line mixing     |
+
+As an example, here is the result of the mixing calculations centered
+around an absorpion peak at \unit{4.24}{\micro\metre} (or, in the cgs
+units used by the code, \unit{150}{\centi\reciprocal\metre} around
+\unit{2361}{\centi\reciprocal\metre})
+
+#+BEGIN_SRC R :file output/hitran_2350.pdf
+  hitran_2350 <- read.table("data/hitran_lm_2350.dat",
+                            col.names = c("nu","Voigt","First_Order","Full_Calc"))
+
+  ggplot(hitran_2350) +
+      geom_line(aes(nu, Full_Calc)) +
+      labs(title = "Absorption Coefficients, with Full line mixing",
+           x = expression(paste('Wave number ', (cm^{-1}))),
+           y = expression(paste('Absorption Coefficient ', (cm^{-1}))))
+#+END_SRC
+
+It is a straightforward matter to calculate the area under the curves
+(sum of all the values multiplied with the step size), and so we can
+assess the contributions of the various absorption bands. As the
+interval spans \unit{150}{\centi\reciprocal\metre}, the maximum area
+under the curve would stand at
+\unit{150}{\centi\reciprocal\metre}. Clearly, the amount of radiation
+absorption at these concentrations is small.
+
+| wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |  IAbs_F |
+|-------------------------------------+--------------+---------+---------+---------|
+|                                 667 |         15.0 | 0.09658 | 0.09657 | 0.09664 |
+|                                2361 |         4.24 | 1.07069 | 1.07141 | 1.07130 |
+|                                3625 |         2.76 | 0.01197 | 0.01197 | 0.01197 |
+|                                3727 |         2.68 | 0.01775 | 0.01776 | 0.01776 |
+|                                4990 |         2.00 | 0.00039 | 0.00040 | 0.00040 |
+|                                5114 |         1.95 | 0.00013 | 0.00013 | 0.00013 |
+
+There are more bands present in the database, but their individual
+peak absorptions are less that 10^{-6} and can be neglected for our
+purposes.
+
+Let's explore the effects of changes in CO_{2} concentration,
+pressure, and temperature on the integrated absorption, using the the
+strongest peak (around \unit{2361}{\centi\reciprocal\metre}) as
+reference. The reference value is calculated with the following settings
+
+| variable | value        | unit                    |
+|----------+--------------+-------------------------|
+| dSg      | 0.01         | \centi\reciprocal\metre |
+| sTotMax  | 0.1 10^{-28} |                         |
+| Temp     | 290          | K                       |
+| Ptot     | 1.0          | atm                     |
+| xCO2     | 420 10^{-6}  |                         |
+| xH2O     | 0            |                         |
+| MixFull  | .True.       | logical                 |
+| MixSDV   | .False.      | logical                 |
+
+First, let's see what the effect is of changing the CO_{2} mole
+percentages
+
+| ppm CO_{2} |  IAbs_V |  IAbs_f |  IAbs_F |
+|------------+---------+---------+---------|
+|        105 | 0.26767 | 0.26785 | 0.26782 |
+|        210 | 0.53534 | 0.53570 | 0.53565 |
+|        420 | 1.07069 | 1.07141 | 1.07130 |
+
+The expectation of a linear relation between CO_{2} concentration and
+absorbance is clearly fulfilled.
+
+The same linear relation between pressure and absorbance is also
+clearly recovered
+| pressure (atm) |  IAbs_V |  IAbs_f |  IAbs_F |
+|----------------+---------+---------+---------|
+|            1.0 | 1.07069 | 1.07141 | 1.07130 |
+|            0.5 | 0.53553 | 0.53571 | 0.53562 |
+|            0.1 | 0.10690 | 0.10690 | 0.10702 |
+
+Changing the temperature yields the following values
+#+TBLNAME: Temp_Abs
+| Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
+|-------------+---------+---------+---------|
+|         200 | 1.55429 | 1.55567 | 1.55560 |
+|         210 | 1.48013 | 1.48139 | 1.48132 |
+|         220 | 1.41270 | 1.41385 | 1.41377 |
+|         230 | 1.35112 | 1.35220 | 1.35210 |
+|         240 | 1.29467 | 1.29566 | 1.29557 |
+|         250 | 1.24271 | 1.24365 | 1.24355 |
+|         260 | 1.19477 | 1.19564 | 1.19554 |
+|         270 | 1.15036 | 1.15117 | 1.15106 |
+|         280 | 1.10910 | 1.10987 | 1.10976 |
+|         290 | 1.07069 | 1.07141 | 1.07130 |
+
+And a plot shows that this not a simple linear relation
+#+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
+  ggplot(Temp_Abs) +
+      geom_point(aes(Temperature, IAbs_F)) +
+      xlim(200, 300) +
+      labs(title = "Integrated Absorbance in function of Temperature",
+           x = "Temperature (K)",
+           y = expression(paste('Absorbance ', (cm^{-1}))))
+#+END_SRC
+
+*** Calcium carbonate
+Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
+source. As I came across a reference in
+\citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
+Thermal Maximum \citet{ajayi-al20:evaluation}, I noticed that most, if
+not all, of the work is based on bulk sediment samples, i.e., the
+carbonate component in the sediment is not split up. This is terrible,
+as it conflates a variety of fractionation processes. Changes in
+plankton composition (foram/nanno ratio: nannos are photosynthetic,
+forams are not), changes in (planktonic) foram species abundance
+(globigerinid-like species remaining in the photic zone,
+globorotaliid/morozovellid-like species occupying different water
+depths over their life cycle), and on top of all that the demonstrated
+pH-dependence of the C fractionation, all these varying processes are
+conflated, so that there is no way in which to retrieve any changes in
+isotope composition due to injection/availability of C sources. Hence,
+I cannot trust the published suggestions of differing amounts of C
+coming from different sources (e.g., marine, terrestrial, plants,
+melting permafrost, \&c.)
+
+As a result, I shall see if I can limit myself to use actual, directly
+measured values of CO_{2} and CH_{4} concentrations in air bubbles
+trapped in polar ice, and disregard any proxy-based data beyond the
+ice record. Then again, see \citet{anklin-al95:processes}. Oh dear.
 * Epilogue
 
 ** An aside on the possible use of Catastrophy Theory
