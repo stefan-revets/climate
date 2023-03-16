@@ -200,6 +200,7 @@ solar radiation and outgoing radiation.
   k_boltzmann <- 1.3806488e-23    # J / K, Boltzmann constant (R / N_A)
   h_planck <- 6.62606957e-34      # J s, Planck constant
   c_light <- 299792458            # m / s, speed of light
+  sigma_stefan <- 5.670373e-8     # W / m^2 K^4, Stefan-Boltzmann constant
   p0 <- 101325                    # Pa, standard pressure
 #+END_SRC
 The various constants listed here have been taken from CODATA 2010.
@@ -1384,7 +1385,7 @@ R(T) & = \frac{\pi^2}{60 c^2 \hbar^3}k^4 T^4 \\
 \end{equation}
 with \sigma the Stefan-Boltzman constant (as a combination of the
 other constants, we can calculate this very easily as
-\unit{567.0373}{\micro\watt\per\metre\squared\power{\kelvin}{4}}).
+\unit{56.70373}{\nano\watt\per\metre\squared\fourth\kelvin}).
 
 There is a caveat to be heeded here. The relation between frequency
 and wavelength cannot be used as is to convert the calculations from
@@ -1404,11 +1405,11 @@ Let's see this distribution for the Sun, with a temperature of some
 \unit{5778}{\kelvin}
 #+BEGIN_SRC R :file output/solar_spectrum.pdf
   T_sun <- 5778
+  a1 <- 8 * pi * h_planck * c_light
+  a2 <- h_planck * c_light / (k_boltzmann * T_sun)
 
   sun_energy <- data.frame(lambda = seq(100, 2500, 10)*1e-9) %>%
-      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
-             E2 = h_planck * c_light / (lambda * k_boltzmann * T_sun),
-             Energy = E1 / (exp(E2) - 1))
+      mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)))
 
   ggplot(sun_energy) +
       geom_line(aes(lambda*1e9, Energy)) +
@@ -1423,10 +1424,11 @@ temperature of \unit{288}{\kelvin}
 #+BEGIN_SRC R :file output/earth_spectrum.pdf
   T_earth <- 288
 
+  a1 <- 8 * pi * h_planck * c_light
+  a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
   earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
-      mutate(E1 = 8 * pi * h_planck * c_light / lambda^5,
-             E2 = h_planck * c_light / (lambda * k_boltzmann * T_earth),
-             Energy = E1 / (exp(E2) - 1))
+      mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)))
 
   ggplot(earth_energy) +
       geom_line(aes(lambda*1e6, Energy)) +
