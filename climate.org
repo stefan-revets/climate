@@ -1379,13 +1379,21 @@ with \nu the frequency of the radiation. Integrating over all the
 frequencies yields
 \begin{equation}
 \begin{split}
-R(T) & = \frac{\pi^2}{60 c^2 \hbar^3}k^4 T^4 \\
-     & = \sigma T^4
+U(T) & = \int_0^\infty = \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1} \\
+     & = \frac{8 \pi^2}{60 c^3 h^3}k^4 T^4 \\
+     & = \frac{4}{c} \sigma T^4
 \end{split}
 \end{equation}
 with \sigma the Stefan-Boltzman constant (as a combination of the
 other constants, we can calculate this very easily as
-\unit{56.70373}{\nano\watt\per\metre\squared\fourth\kelvin}).
+\unit{56.70373}{\nano\watt\per\metre\squared\fourth\kelvin}). Note
+that the usual relation for black body radiation
+\begin{equation}
+R(T) = \sigma T^4
+\end{equation}
+is the result of additional, and very much needed, integration over
+all the angles of radiation of the previous integration: that one
+addresses the ``uni-directional'' flux of energy.
 
 There is a caveat to be heeded here. The relation between frequency
 and wavelength cannot be used as is to convert the calculations from
@@ -1402,13 +1410,13 @@ u(\lambda, T) = \frac{8 \pi h c}{\lambda^5} \frac{1}{e^{h c /\lambda k T} - 1}
 \end{equation}
 
 Let's see this distribution for the Sun, with a temperature of some
-\unit{5778}{\kelvin}
+\unit{5778}{\kelvin} 
 #+BEGIN_SRC R :file output/solar_spectrum.pdf
   T_sun <- 5778
   a1 <- 8 * pi * h_planck * c_light
   a2 <- h_planck * c_light / (k_boltzmann * T_sun)
 
-  sun_energy <- data.frame(lambda = seq(100, 2500, 10)*1e-9) %>%
+  sun_energy <- data.frame(lambda = seq(100, 5000, 10)*1e-9) %>%
       mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)))
 
   ggplot(sun_energy) +
@@ -1419,8 +1427,76 @@ Let's see this distribution for the Sun, with a temperature of some
 
 #+END_SRC
 
+Let's check these calculations and equations, and compare the
+(numerical) integration of the curve with the calculated energy, i.e.,
+#+BEGIN_SRC R
+  sun_integral <- (sum(sun_energy$Energy) * 1e-8 )
+  sun_blackbody <- sigma_stefan * T_sun^4
+
+  (sun_integral * c_light / 4) / sun_blackbody
+#+END_SRC
+
+That confirms the numerical calculations: in addition, a dimensional
+analysis likewise confirms the correctness of the need for the speed
+of light as part of the final calculation
+(\joule\per\metre\cubed $\times$ \metre\per\second $=$
+\watt\per\metre\squared).
+
+In order to calculate the actual energy distribution arriving on
+Earth, we need to scale the black body spectrum just calculated, that
+is to say, reduce it to the amount of energy arriving at the
+Earth. Let's turn to the insolation calculated earlier on from 
+\citet{laskar-al04:insolation}.
+
+#+BEGIN_SRC R :file output/solar_incoming.pdf
+  insolation %>%
+      group_by(time) %>%
+      summarise(energy=mean(power)) %>%
+      ggplot() +
+      geom_line(aes(time, energy)) +
+      labs(title = "Global yearly Average Insolation",
+           x = "Time (Years BP)",
+           y = "Energy (W/m2)")
+#+END_SRC
+
+And so we can confirm that that we do have
+\unit{341.57}{\watt\per\metre\squared} coming in, averaged over the
+globe and over the year. That allows us now to scale the energy of the
+solar spectrum arriving at the Earth
+#+BEGIN_SRC R :file output/solar_spectrum_scaled.pdf
+  solar_incoming <- 341.57
+  scale_factor <- solar_incoming * c_light / (4 * sigma_stefan * T_sun^4)
+
+  sun_energy %<>%
+      mutate(Energy = Energy * scale_factor)
+
+  ggplot(sun_energy) +
+      geom_line(aes(lambda*1e9, Energy)) +
+      labs(title = "Incoming Solar Radiation profile",
+           x = "Wavelength (nm)",
+           y = "Energy (W/m3)")
+
+#+END_SRC
+
+A quick check to see if this normalisation is correct:
+#+BEGIN_SRC R
+  sum(sun_energy$Energy) * 1e-8
+#+END_SRC
+which is sufficiently close to the expected value of
+\unit{341.57}{\watt\per\metre\squared}.
+
+This amount of incoming solar radiation gives us also a means of
+assessing to what extent the Earth can be considered as a black
+body. The amount of energy arriving at the Earth has to be radiated
+out again (if not, the Earth's temperature would increase), we can
+calculate the expected black body temperature as
+#+BEGIN_SRC R
+  (solar_incoming / sigma_stefan)^(1/4)
+#+END_SRC
+which is about \unit{10}{\kelvin} below the average Earth temperature.
+
 The same calculation, but this time for the Earth, with an average
-temperature of \unit{288}{\kelvin}
+temperature of \unit{288}{\kelvin} 
 #+BEGIN_SRC R :file output/earth_spectrum.pdf
   T_earth <- 288
 
@@ -1437,6 +1513,8 @@ temperature of \unit{288}{\kelvin}
            y = "Energy (J/m3.m)")
 
 #+END_SRC
+
+
 
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
