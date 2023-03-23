@@ -1493,28 +1493,13 @@ calculate the expected black body temperature as
 #+BEGIN_SRC R
   (solar_incoming / sigma_stefan)^(1/4)
 #+END_SRC
-which is about \unit{10}{\kelvin} below the average Earth temperature.
-
-The same calculation, but this time for the Earth, with an average
-temperature of \unit{288}{\kelvin} 
-#+BEGIN_SRC R :file output/earth_spectrum.pdf
-  T_earth <- 288
-
-  a1 <- 8 * pi * h_planck * c_light
-  a2 <- h_planck * c_light / (k_boltzmann * T_earth)
-
-  earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
-      mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)))
-
-  ggplot(earth_energy) +
-      geom_line(aes(lambda*1e6, Energy)) +
-      labs(title = "Earth Radiation, Black Body at 288 K",
-           x = expression(paste("Wavelength (", mu, "m)")),
-           y = "Energy (J/m3.m)")
-
-#+END_SRC
-
-
+which is about \unit{10}{\kelvin} below the current average Earth
+temperature of \unit{288}{\kelvin}. So, as expected, the Earth cannot
+be considered to be a true black body. In fact, about 30% of the
+incoming energy is reflected out \citep{trenberth-al09:budget}, not
+only underlining even more the deviation from black body assumptions,
+but also implying that the theoretical black body temperature would be
+even lower, i.e., \unit{254.8}{\kelvin}.
 
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
@@ -1740,6 +1725,35 @@ And a plot shows that this not a simple linear relation
            x = "Temperature (K)",
            y = expression(paste('Absorbance ', (cm^{-1}))))
 #+END_SRC
+
+Now, looking at the incoming solar radiation, the low amount of energy
+in the absorption bands of CO_{2} are obvious.  However, when we turn
+to the equivalent black body radiation emitted by the Earth, we get a
+different picture. Repeating the earlier calculations for the solar
+energy, but this time for the Earth (with an average temperature of
+\unit{288}{\kelvin}), and using the estimated value of
+\unit{238.5}{\watt\per\metre\squared} of outgoing radiation
+\citep{trenberth-al09:budget}, we get
+#+BEGIN_SRC R :file output/earth_spectrum.pdf
+    T_earth <- 288
+    earth_outgoing <- 238.5
+    scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
+
+    a1 <- 8 * pi * h_planck * c_light
+    a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
+    earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
+        mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
+               Energy = Energy * scale_factor)
+
+    ggplot(earth_energy) +
+        geom_line(aes(lambda*1e6, Energy)) +
+        labs(title = "Earth Radiation, Black Body at 288 K",
+             x = expression(paste("Wavelength (", mu, "m)")),
+             y = "Energy (W/m2)")
+#+END_SRC
+and so we see that a great deal of (outgoing) energy can be absorbed
+by CO_{2}, i.e., the actual greenhouse effect.
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
