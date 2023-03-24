@@ -1252,109 +1252,22 @@ Composition of the atmosphere
 | CO_{2}    |   0.0004 |  43.8998 |
 which yields an average mol mass for air of 28.9395
 
-*** CO2
-**** Solubility in seawater
+\citet{mlynczak-al16:spectroscopic} used a set of atmospheric
+profiles, based on the studies by McClatchey et al., 1972. These
+profiles include pressure, temperature, water and ozone content in
+function of height, differentiating tropical, mid-latitude and
+subarctic latitudes as well as summer/winter differentiation.
 
-While a great deal of work has been done on the behaviour and
-interactions of CO_{2} and water, that was less the case for
-interactions with seawater. The presence of the many different ions in
-seawater is a substantial impediment to physicochemical theories and
-calculations: the actual solution is quite a long way off from ideal,
-i.e., simplified, conditions.
+Let's have a quick, first look at some of the data
+#+BEGIN_SRC R :file output/atmosphere_profile.pdf
+  atm_trop <- read.table("data/grl54358_atmosphere_tropical.dat",
+                         col.names = c("height", "pressure",
+                                       "temperature", "water", "ozone"),
+                         skip = 2)
 
-When CO_{2} dissolves in water, it undergoes a two-step
-dissociation.
-\begin{eqnarray}
-\mathrm{CO}_2 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons & \mathrm{H}^+ + \mathrm{HCO}_3^ \\
-\mathrm{HCO}_3^- & \rightleftharpoons & \mathrm{H}^+ + \mathrm{CO}_3^{2-}
-\end{eqnarray}
-
-\citet{dickson-goyet94:co2-seawater} gave a suite of standard
-procedures and calculations specifically to deal with CO_{2} and
-seawater. Amongst the useful equations, there is one to calculate the
-fugacity of CO_{2} as a component of a binary mixture
-\begin{equation}
-f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
-\end{equation}
-
-The first virial coefficient B can be calculated with an expression
-derived by \citet{weiss74:solubility}
-\begin{equation}
-B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
-\end{equation}
-valid for $265 < T < 320$, with T(\kelvin) and
-B(\centi\cubic\metre\per\mole).
-
-He also derived a means to estimate the cross virial coefficient for
-the CO_{2}-air mixture as
-\begin{equation}
-\delta(T) = 57.7 - 0.118 T
-\end{equation}
-valid for $273 < T < 313$, again with T(\kelvin) and
-\delta(\centi\cubic\metre\per\mole).
-
-The equilibrium constant K$_0$ for the reaction 
-\begin{equation}
-\mathrm{CO}_2(g) \rightleftharpoons \mathrm{CO}^*_2(aq) 
-\end{equation}
-(where CO$^*_2$ stands for sum of $[\mathrm{CO}_2(aq)] + [\mathrm{HCO}_3^-] + [\mathrm{CO}_3^{2-}]$)
-that is to say
-\begin{equation}
-K_0 = \frac{[\mathrm{CO}^*_2]}{f(\mathrm{CO}_2)}
-\end{equation}
-comes again from \citet{weiss74:solubility} and is given as
-\begin{equation}
-\ln K_0 = 93.4517 \frac{100}{T} - 60.2409 + 23.3585 \ln \frac{T}{100} + S (0.023517 - 0.023656 \frac{T}{100} + 0.0047036 (\frac{T}{100})^2)
-\end{equation}
-where the fugacity is expressed in atmospheres and the salinity S
-
-And so we can calculate for any given CO_{2} concentration in the air
-how much will be dissolved in seawater at a temperature T.
-#+BEGIN_SRC R
-  # Include conversion from cm3 to m3
-  delta <- function(T){(57.7 - 0.118 * T) * 1e-6}
-
-  b0 <- -1636.75
-  b1 <- 12.0408
-  b2 <- -3.279571e-2
-  b3 <- 3.165281e-5
-
-  # Include conversion from cm3 to m3
-  virial <- function(T){(b0 + b1 * T + b2 * T^2 + b3 * T^3) * 1e-6}
-
-  e0 <- 93.4517
-  e1 <- -60.2409
-  e2 <- 23.3585
-  e3 <- 0.023517
-  e4 <- -0.023656
-  e5 <- 0.0047036
-
-  lnK0 <- function(T, S = 35){
-      e0 * 100/T + e1 + e2 * log(T/100) + S * (e3 + e4 * T/100 + e5 *(T/100)^2)}
-
-  fugacity <- function(x, T, p){
-      x * p * exp((virial(T) + 2 * x^2 * delta(T)) * p / (R_gas * T))}
-
-  # the K0 calc assumes atmospheres, so bring in the Pa conversion with p0
-  co2aq <- function(x, T, p, S = 35){
-      exp(lnK0(T, S)) / p0 * fugacity(x, T, p)}
-#+END_SRC
-
-Having defined the various functions, let's have a look at the nature
-of the relations: include the pre-industrial (green line) and the
-present CO_{2} concentrations (blue line).
-
-#+BEGIN_SRC R :file output/co2sol.pdf
-  co2sol <- data.frame(T = seq(273, 300)) %>%
-      mutate(co2_280 = co2aq(280e-6, T, p0),
-             co2_420 = co2aq(420e-6, T, p0))
-
-  ggplot(co2sol) +
-      geom_line(aes(T, co2_280*1e6), colour = "blue") +
-      geom_line(aes(T, co2_420*1e6), colour = "green") +    
-      labs(title = "CO2 solubility in seawater",
-           x = "T (K)",
-           y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
+  ggplot(atm_trop) +
+      geom_line(aes(height, pressure)) +
+      geom_line(aes(height, temperature))
 #+END_SRC
 
 *** Solar energy spectrum
@@ -1475,7 +1388,6 @@ solar spectrum arriving at the Earth
       labs(title = "Incoming Solar Radiation profile",
            x = "Wavelength (nm)",
            y = "Energy (W/m3)")
-
 #+END_SRC
 
 A quick check to see if this normalisation is correct:
@@ -1501,6 +1413,142 @@ only underlining even more the deviation from black body assumptions,
 but also implying that the theoretical black body temperature would be
 even lower, i.e., \unit{254.8}{\kelvin}.
 
+Now, looking at the incoming solar radiation, the low amount of energy
+in the absorption bands of CO_{2} are obvious.  However, when we turn
+to the equivalent black body radiation emitted by the Earth, we get a
+different picture. Repeating the earlier calculations for the solar
+energy, but this time for the Earth (with an average temperature of
+\unit{288}{\kelvin}), and using the estimated value of
+\unit{238.5}{\watt\per\metre\squared} of outgoing radiation
+\citep{trenberth-al09:budget}, we get
+#+BEGIN_SRC R :file output/earth_spectrum.pdf
+  T_earth <- 288
+  earth_outgoing <- 238.5
+  scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
+
+  a1 <- 8 * pi * h_planck * c_light
+  a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
+  earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
+      mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
+             Energy = Energy * scale_factor)
+
+  ggplot(earth_energy) +
+      geom_line(aes(lambda*1e6, Energy)) +
+      labs(title = "Earth Radiation, Black Body at 288 K",
+           x = expression(paste("Wavelength (", mu, "m)")),
+           y = "Energy (W/m2)")
+#+END_SRC
+
+and so we see that a great deal of (outgoing) energy can be absorbed
+by CO_{2}, i.e., the actual greenhouse effect.
+
+*** CO2
+**** Solubility in seawater
+
+While a great deal of work has been done on the behaviour and
+interactions of CO_{2} and water, that was less the case for
+interactions with seawater. The presence of the many different ions in
+seawater is a substantial impediment to physicochemical theories and
+calculations: the actual solution is quite a long way off from ideal,
+i.e., simplified, conditions.
+
+When CO_{2} dissolves in water, it undergoes a two-step
+dissociation.
+\begin{eqnarray}
+\mathrm{CO}_2 + \mathrm{H}_2\mathrm{O} & \rightleftharpoons & \mathrm{H}^+ + \mathrm{HCO}_3^ \\
+\mathrm{HCO}_3^- & \rightleftharpoons & \mathrm{H}^+ + \mathrm{CO}_3^{2-}
+\end{eqnarray}
+
+\citet{dickson-goyet94:co2-seawater} gave a suite of standard
+procedures and calculations specifically to deal with CO_{2} and
+seawater. Amongst the useful equations, there is one to calculate the
+fugacity of CO_{2} as a component of a binary mixture
+\begin{equation}
+f = [x] p e^{(\frac{B_x(T) + 2 [x]^2 \delta_{xy}(T)) p}{R T}}
+\end{equation}
+
+The first virial coefficient B can be calculated with an expression
+derived by \citet{weiss74:solubility}
+\begin{equation}
+B(T) = -1636.75 + 12.0408 T - 3.27957 10^{-2} T^2 + 3.16528 10^{-5} T^3
+\end{equation}
+valid for $265 < T < 320$, with T(\kelvin) and
+B(\centi\cubic\metre\per\mole).
+
+He also derived a means to estimate the cross virial coefficient for
+the CO_{2}-air mixture as
+\begin{equation}
+\delta(T) = 57.7 - 0.118 T
+\end{equation}
+valid for $273 < T < 313$, again with T(\kelvin) and
+\delta(\centi\cubic\metre\per\mole).
+
+The equilibrium constant K$_0$ for the reaction 
+\begin{equation}
+\mathrm{CO}_2(g) \rightleftharpoons \mathrm{CO}^*_2(aq) 
+\end{equation}
+(where CO$^*_2$ stands for sum of $[\mathrm{CO}_2(aq)] + [\mathrm{HCO}_3^-] + [\mathrm{CO}_3^{2-}]$)
+that is to say
+\begin{equation}
+K_0 = \frac{[\mathrm{CO}^*_2]}{f(\mathrm{CO}_2)}
+\end{equation}
+comes again from \citet{weiss74:solubility} and is given as
+\begin{equation}
+\ln K_0 = 93.4517 \frac{100}{T} - 60.2409 + 23.3585 \ln \frac{T}{100} + S (0.023517 - 0.023656 \frac{T}{100} + 0.0047036 (\frac{T}{100})^2)
+\end{equation}
+where the fugacity is expressed in atmospheres and the salinity S
+
+And so we can calculate for any given CO_{2} concentration in the air
+how much will be dissolved in seawater at a temperature T.
+#+BEGIN_SRC R
+  # Include conversion from cm3 to m3
+  delta <- function(T){(57.7 - 0.118 * T) * 1e-6}
+
+  b0 <- -1636.75
+  b1 <- 12.0408
+  b2 <- -3.279571e-2
+  b3 <- 3.165281e-5
+
+  # Include conversion from cm3 to m3
+  virial <- function(T){(b0 + b1 * T + b2 * T^2 + b3 * T^3) * 1e-6}
+
+  e0 <- 93.4517
+  e1 <- -60.2409
+  e2 <- 23.3585
+  e3 <- 0.023517
+  e4 <- -0.023656
+  e5 <- 0.0047036
+
+  lnK0 <- function(T, S = 35){
+      e0 * 100/T + e1 + e2 * log(T/100) + S * (e3 + e4 * T/100 + e5 *(T/100)^2)}
+
+  fugacity <- function(x, T, p){
+      x * p * exp((virial(T) + 2 * x^2 * delta(T)) * p / (R_gas * T))}
+
+  # the K0 calc assumes atmospheres, so bring in the Pa conversion with p0
+  co2aq <- function(x, T, p, S = 35){
+      exp(lnK0(T, S)) / p0 * fugacity(x, T, p)}
+#+END_SRC
+
+Having defined the various functions, let's have a look at the nature
+of the relations: include the pre-industrial (green line) and the
+present CO_{2} concentrations (blue line).
+
+#+BEGIN_SRC R :file output/co2sol.pdf
+  co2sol <- data.frame(T = seq(273, 300)) %>%
+      mutate(co2_280 = co2aq(280e-6, T, p0),
+             co2_420 = co2aq(420e-6, T, p0))
+
+  ggplot(co2sol) +
+      geom_line(aes(T, co2_280*1e6), colour = "blue") +
+      geom_line(aes(T, co2_420*1e6), colour = "green") +    
+      labs(title = "CO2 solubility in seawater",
+           x = "T (K)",
+           y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
+#+END_SRC
+
+**** Energy Absorption
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
 
@@ -1725,35 +1773,6 @@ And a plot shows that this not a simple linear relation
            x = "Temperature (K)",
            y = expression(paste('Absorbance ', (cm^{-1}))))
 #+END_SRC
-
-Now, looking at the incoming solar radiation, the low amount of energy
-in the absorption bands of CO_{2} are obvious.  However, when we turn
-to the equivalent black body radiation emitted by the Earth, we get a
-different picture. Repeating the earlier calculations for the solar
-energy, but this time for the Earth (with an average temperature of
-\unit{288}{\kelvin}), and using the estimated value of
-\unit{238.5}{\watt\per\metre\squared} of outgoing radiation
-\citep{trenberth-al09:budget}, we get
-#+BEGIN_SRC R :file output/earth_spectrum.pdf
-    T_earth <- 288
-    earth_outgoing <- 238.5
-    scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
-
-    a1 <- 8 * pi * h_planck * c_light
-    a2 <- h_planck * c_light / (k_boltzmann * T_earth)
-
-    earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
-        mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
-               Energy = Energy * scale_factor)
-
-    ggplot(earth_energy) +
-        geom_line(aes(lambda*1e6, Energy)) +
-        labs(title = "Earth Radiation, Black Body at 288 K",
-             x = expression(paste("Wavelength (", mu, "m)")),
-             y = "Energy (W/m2)")
-#+END_SRC
-and so we see that a great deal of (outgoing) energy can be absorbed
-by CO_{2}, i.e., the actual greenhouse effect.
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
