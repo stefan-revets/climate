@@ -1253,22 +1253,74 @@ Composition of the atmosphere
 which yields an average mol mass for air of 28.9395
 
 \citet{mlynczak-al16:spectroscopic} used a set of atmospheric
-profiles, based on the studies by McClatchey et al., 1972. These
-profiles include pressure, temperature, water and ozone content in
-function of height, differentiating tropical, mid-latitude and
-subarctic latitudes as well as summer/winter differentiation.
+profiles, based on the studies by
+\citet{mcclatchey-al72:atmosphere}. These profiles include pressure,
+temperature, water and ozone content in function of height,
+differentiating tropical, mid-latitude and subarctic latitudes as well
+as summer/winter differentiation.
 
-Let's have a quick, first look at some of the data
+Let's have a quick, first look at the data, with pressures in Pa,
+temperature in K, and water content in \gram\per\metre\cubed
 #+BEGIN_SRC R :file output/atmosphere_profile.pdf
-  atm_trop <- read.table("data/grl54358_atmosphere_tropical.dat",
+  atm_equ <- read.table("data/grl54358_atmosphere_tropical.dat",
                          col.names = c("height", "pressure",
                                        "temperature", "water", "ozone"),
-                         skip = 2)
+                         skip = 2) %>%
+      mutate(pressure = pressure * 100,
+             latitude = "Equatorial") %>%
+      select(-ozone)
 
-  ggplot(atm_trop) +
-      geom_line(aes(height, pressure)) +
-      geom_line(aes(height, temperature))
+  atm_mid_s <- read.table("data/grl54358_atmosphere_midlat_summer.dat",
+                           col.names = c("height", "pressure",
+                                       "temperature", "water", "ozone"),
+                           skip = 2) %>%
+      mutate(pressure = pressure * 100,
+             latitude = "Temperate",
+             season = "Summer") %>%
+      select(-ozone)
+
+  atm_mid_w <- read.table("data/grl54358_atmosphere_midlat_winter.dat",
+                           col.names = c("height", "pressure",
+                                       "temperature", "water", "ozone"),
+                           skip = 2) %>%
+      mutate(pressure = pressure * 100,
+             latitude = "Temperate",
+             season = "Winter") %>%
+      select(-ozone)
+
+  atm_pol_s <- read.table("data/grl54358_atmosphere_subarctic_summer.dat",
+                           col.names = c("height", "pressure",
+                                       "temperature", "water", "ozone"),
+                           skip = 2) %>%
+      mutate(pressure = pressure * 100,
+             latitude = "Polar",
+             season = "Summer") %>%
+      select(-ozone)
+
+  atm_pol_w <- read.table("data/grl54358_atmosphere_subarctic_winter.dat",
+                           col.names = c("height", "pressure",
+                                       "temperature", "water", "ozone"),
+                           skip = 2) %>%
+      mutate(pressure = pressure * 100,
+             latitude = "Polar",
+             season = "Winter") %>%
+      select(-ozone)
+
+  atmosphere <- atm_equ %>%
+      gather("property", "value", 2:4) %>%
+      bind_rows(gather(atm_mid_s, "property", "value", 2:4)) %>%
+      bind_rows(gather(atm_mid_w, "property", "value", 2:4)) %>%
+      bind_rows(gather(atm_pol_s, "property", "value", 2:4)) %>%
+      bind_rows(gather(atm_pol_w, "property", "value", 2:4))
+
+  ggplot(atmosphere) +
+      geom_line(aes(height, value, colour = season)) +
+      facet_wrap(~latitude+property, scales = "free_y") +
+      theme(legend.position = "bottom") +
+      labs(x = "Height (km)")
+
 #+END_SRC
+
 
 *** Solar energy spectrum
 By comparing the solar radiation spectrum as it is emitted with that
