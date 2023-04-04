@@ -1451,6 +1451,7 @@ Earth. Let's turn to the insolation calculated earlier on from
       summarise(energy=mean(power)) %>%
       ggplot() +
       geom_line(aes(time, energy)) +
+      ylim(200, 400) +
       labs(title = "Global yearly Average Insolation",
            x = "Time (Years BP)",
            y = "Energy (W/m2)")
@@ -1490,12 +1491,31 @@ calculate the expected black body temperature as
   (solar_incoming / sigma_stefan)^(1/4)
 #+END_SRC
 which is about \unit{10}{\kelvin} below the current average Earth
-temperature of \unit{288}{\kelvin}. So, as expected, the Earth cannot
-be considered to be a true black body. In fact, about 30% of the
-incoming energy is reflected out \citep{trenberth-al09:budget}, not
-only underlining even more the deviation from black body assumptions,
-but also implying that the theoretical black body temperature would be
-even lower, i.e., \unit{254.8}{\kelvin}.
+temperature of \unit{288}{\kelvin}. So, as expected, the Earth does
+not behave as a black body. In fact, about 30% of the incoming energy
+is reflected out \citep{trenberth-al09:budget} implying that the
+theoretical black body temperature would be even lower, i.e.,
+\unit{254.8}{\kelvin} (and further reinforcing the deviation from
+black body assumptions).
+
+In principle, we can calculate the expected black body temperature of
+any of the planets, as some elementary algebra tells us that
+\begin{equation}
+T_{\mathrm{Planet}} = \sqrt{\frac{R_{\mathrm{Sun}}}{2 R_{\mathrm{orbit}}}} \, T_{\mathrm{Sun}}
+\end{equation}
+assuming of course that any planetary albedo will be zero
+
+So, given a solar radius of \unit{695508}{\kilo\metre} and a
+temperature of \unit{5778}{\kelvin}, we predict
+
+| Planet  | distance (km) | T_{Black Body} (K) |
+|---------+---------------+--------------------|
+| Mercury |      57909227 |             447.75 |
+| Venus   |     108209475 |             327.55 |
+| Earth   |     149598262 |             278.58 |
+| Mars    |     227943824 |             225.68 |
+| Jupiter |     778340821 |             122.13 |
+| Saturn  |    1426666422 |              90.20 |
 
 Now, looking at the incoming solar radiation, the low amount of energy
 in the absorption bands of CO_{2} are obvious.  However, when we turn
