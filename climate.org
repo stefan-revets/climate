@@ -1234,6 +1234,39 @@ Energy transfers
 - Reflection (albedo)
 - Absorption (albedo)
 
+*** Ice
+The glacial-interglacial alternations characterising the Pleistocene,
+with ice volumes freezing and melting require substantial amounts of
+energy. Indeed, the latent heat of freezing/melting of water amounts
+to \unit{334}{\kilo\joule\per\kilogram}.
+
+| T (\kelvin) | c_{p} (\joule\per\kilogram\usk\kelvin) | \rho (\kilogram\per\metre\cubed) |
+|-------------+----------------------------------------+----------------------------------|
+| 273         | 2050                                   | 916.2                            |
+| 268         | 2027                                   | 917.5                            |
+| 263         | 2000                                   | 918.9                            |
+| 258         | 1972                                   | 919.4                            |
+| 253         | 1943                                   | 919.4                            |
+| 248         | 1913                                   | 919.6                            |
+| 243         | 1882                                   | 920.0                            |
+
+We can estimate the amount of energy required to make the
+Pleistocene-Holocene transition from the change in sea level. The Last
+Glacial Maximum was characterised by a sea level drop of some
+\unit{125}{\metre}. \citet{charette-smith10:volume} give the global
+ocean area to be \unit{361.84}{\megad\kilo\metre\squared}. Hence the
+volume of ice that disappeared equates to
+\unit{45.23}{\petad\metre\cubed}, or, with a density of
+\unit{916.5}{\kilogram\per\metre\cubed}, some
+\unit{41.44}{\exad\kilogram}. To melt such an amount of ice then
+requires \unit{13.837}{\yottad\joule}.
+
+It is sobering to reflect on the estimate by \citet{cheng-al23:heat}
+of the additional amount of heat stored in the oceans since the
+1980ies of about \unit{350}{\zettad\joule}. That translates into an
+amount of energy enough to melt ice that would raise the global sea
+level with \unit{3.16}{\metre}.
+
 *** Atmosphere
 \citet{trenberth-smith05:atmosphere} provide a carefully argued
 calculation of the total mass of the atmosphere.
@@ -1320,7 +1353,6 @@ temperature in K, and water content in \gram\per\metre\cubed
       labs(x = "Height (km)")
 
 #+END_SRC
-
 
 *** Solar energy spectrum
 By comparing the solar radiation spectrum as it is emitted with that
