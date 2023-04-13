@@ -1878,6 +1878,42 @@ And a plot shows that this not a simple linear relation
            y = expression(paste('Absorbance ', (cm^{-1}))))
 #+END_SRC
 
+Hence, the interplay between temperature and pressure in the
+atmospheric column needs to be brought into consideration, as the
+supra-linear temperature absorbance will offset the linear pressure
+absorbance effect. This can be shown by using the values of
+temperature, pressure and water content of the earlier mentioned model
+atmosphere profiles, and calculating the integrated absorbance at 420
+ppm CO_{2}, again \unit{150}{\centi\reciprocal\metre} around the
+\unit{2361}{\centi\reciprocal\metre} wave number. From the atmospheric
+profile for a mid-latitude summer, we then obtain
+
+| h (\kilo\metre) | P (\kilo\pascal) | T (\kelvin) | H_{2}O (ppm) | Absorption |
+|-----------------+------------------+-------------+--------------+------------|
+|             0.0 |            101.3 |       294.2 |        18800 |    1.05665 |
+|             1.0 |            90.11 |       289.7 |        13800 |    0.96523 |
+|             2.0 |            80.02 |       285.2 |         9680 |    0.87213 |
+|             3.0 |            70.90 |       279.2 |         5980 |    0.78962 |
+|             4.0 |            62.66 |       273.2 |         3810 |    0.71370 |
+|             5.0 |            55.22 |       267.2 |         2230 |    0.64252 |
+|             6.0 |            48.54 |       261.2 |         1510 |    0.57757 |
+|             7.0 |            42.53 |       254.7 |         1020 |    0.51862 |
+|             8.0 |            37.13 |       248.2 |          646 |    0.46469 |
+|             9.0 |            32.31 |       241.7 |          413 |    0.41549 |
+|            10.0 |            28.01 |       235.3 |          247 |    0.37001 |
+|            11.0 |            24.19 |       228.8 |         95.6 |    0.32891 |
+|            12.0 |            20.80 |       222.3 |         29.4 |    0.29099 |
+|            13.0 |            17.80 |       215.8 |          8.0 |    0.25655 |
+|            14.0 |            15.21 |       215.7 |          5.0 |    0.21918 |
+|            15.0 |            12.99 |       215.7 |          3.4 |    0.18745 |
+|            20.0 |             5.93 |       219.2 |          3.3 |    0.08360 |
+|            25.0 |             2.76 |       225.1 |          4.2 |    0.03854 |
+|            30.0 |             1.32 |       233.7 |          4.7 |    0.01714 |
+
+which shows very nicely that the absorption does indeed decrease less
+rapidly than what the pressure profile alone would dictate.
+
+
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
 source. As I came across a reference in
