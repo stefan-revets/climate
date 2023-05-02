@@ -1773,7 +1773,7 @@ other molecules \citep{tennyson-al14:IUPAC}. In the lower atmosphere,
 the broadening of a line is largely driven by collisions with other
 molecules, and can be modeled by a Lorentz profile:
 \begin{equation}
-f_L(\nu; \nu_{ij}, p, T) = \frac{1}{\pi} \frac{\gamma(p, T)}{\gamma(p, T)^2 + (\nu - \nu^*_{ij})^2}
+L(\nu; \nu_{ij}, p, T) = \frac{1}{\pi} \frac{\gamma(p, T)}{\gamma(p, T)^2 + (\nu - \nu^*_{ij})^2}
 \end{equation}
 where
 \begin{equation}
@@ -1786,7 +1786,7 @@ In addition, the thermal translational movement of the molecules also
 causes a Doppler effect, which shows up as a frequency shift. The
 resulting profile can be described by a Gaussian curve, 
 \begin{equation}
-F_D(\nu - \nu_0) = \sqrt{\frac{\ln 2}{\pi}} \frac{1}{\Gamma_D} e^{-\ln 2 (\frac{\nu - \nu_0}{\Gamma_D})^2}
+G(\nu - \nu_0) = \sqrt{\frac{\ln 2}{\pi}} \frac{1}{\Gamma_D} e^{-\ln 2 (\frac{\nu - \nu_0}{\Gamma_D})^2}
 \end{equation}
 with \Gamma_{D} the Doppler half-width
 \begin{equation}
@@ -1824,6 +1824,10 @@ reveals that the absorption coefficient is standardised to the number
 of CO_{2} molecules per \metre\cubed, i.e., the mole fraction,
 temperature and pressure are used to calculate the number of
 molecules: the absorption is then multiplied with this ``density''.
+
+\begin{equation}
+d_{\mathrm{CO}_2} = \frac{p N_A x_{\mathrm{CO}_2}}{R T}
+\end{equation}
 
 | entry | description                                                  |
 |-------+--------------------------------------------------------------|
@@ -1868,11 +1872,10 @@ This table also shows that the bands around 3625 and
 \unit{3727}{\centi\reciprocal\metre}, which are entirely subsumed in
 one of the H_{2}O bands, account for barely 2.5% of the overall absorption.
 
-Let's explore the effects of changes in CO_{2} concentration,
-pressure, and temperature on the integrated absorption, using the
-strongest peak (around \unit{2361}{\centi\reciprocal\metre}) as
-reference. The reference value is calculated with the following
-settings
+Let's explore the effects of changes in pressure and temperature on
+the integrated absorption, using the strongest peak (around
+\unit{2361}{\centi\reciprocal\metre}) as reference. The reference
+value is calculated with the following settings
 
 | variable | value        | unit                    |
 |----------+--------------+-------------------------|
@@ -1885,26 +1888,31 @@ settings
 | MixFull  | .True.       | logical                 |
 | MixSDV   | .False.      | logical                 |
 
-First, let's see what the effect is of changing the CO_{2} mole
-percentages
+Perusal of the equations above hint that concentration differences in
+CO_{2} will have very little effect on the individual absorption,
+particularly at the ppm concentrations we are dealing with here.
 
-| ppm CO_{2} |  IAbs_V |  IAbs_f |  IAbs_F |
-|------------+---------+---------+---------|
-|        105 | 0.26767 | 0.26785 | 0.26782 |
-|        210 | 0.53534 | 0.53570 | 0.53565 |
-|        420 | 1.07069 | 1.07141 | 1.07130 |
+First, the dependence between absorbance and pressure
+#+TBLNAME: Press_Abs
+| pressure |  IAbs_V |  IAbs_f |  IAbs_F |
+|----------+---------+---------+---------|
+|      1.0 | 1.07069 | 1.07141 | 1.07130 |
+|      0.5 | 0.53553 | 0.53571 | 0.53562 |
+|      0.1 | 0.10690 | 0.10690 | 0.10702 |
+|     0.05 | 0.05282 | 0.05282 | 0.05321 |
+|     0.01 | 0.00891 | 0.00891 | 0.01045 |
 
-Of course, we have to undo the density effect first
+#+BEGIN_SRC R :var Press_Abs=Press_Abs :file output/hitran_PA.pdf
+  Press_Abs %>%
+      mutate(Abs_F = IAbs_F / (pressure * Press_Abs$IAbs_F[1])) %>%
+      ggplot() +
+      geom_point(aes(pressure * p0/1000, Abs_F)) +
+      labs(title = "Relative Absorbance in function of Pressure",
+           x = "Pressure (kPa)",
+           y = "Relative Absorbance")
+#+END_SRC
 
-That also applies to any effect of pressure on absorbance
-
-| pressure (atm) |  IAbs_V |  IAbs_f |  IAbs_F |
-|----------------+---------+---------+---------|
-|            1.0 | 1.07069 | 1.07141 | 1.07130 |
-|            0.5 | 0.53553 | 0.53571 | 0.53562 |
-|            0.1 | 0.10690 | 0.10690 | 0.10702 |
-
-Changing the temperature yields the following values
+Turning now to the temperature yields the following values
 #+TBLNAME: Temp_Abs
 | Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
 |-------------+---------+---------+---------|
@@ -1919,24 +1927,28 @@ Changing the temperature yields the following values
 |         280 | 1.10910 | 1.10987 | 1.10976 |
 |         290 | 1.07069 | 1.07141 | 1.07130 |
 
-again, the density effect has to be removed here as well
+again, removing the density effect then yields
 #+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
-  ggplot(Temp_Abs) +
-      geom_point(aes(Temperature, IAbs_F / Temperature)) +
-      xlim(200, 300) +
-      labs(title = "Integrated Absorbance in function of Temperature",
+  Temp_Abs %>%
+      mutate(Abs_F = IAbs_F * Temperature /
+                 (Temp_Abs$IAbs_F[1]* Temp_Abs$Temperature[1])) %>%
+      ggplot() +
+      geom_point(aes(Temperature, Abs_F)) +
+      labs(title = "Relative Absorbance in function of Temperature",
            x = "Temperature (K)",
-           y = expression(paste('Absorbance ', (cm^{-1}))))
+           y = "Relative Absorbance")
 #+END_SRC
 
-Hence, the interplay between temperature and pressure in the
-atmospheric column needs to be brought into consideration, as the
-supra-linear temperature absorbance will offset the linear pressure
-absorbance effect. This can be shown by using the values of
-temperature, pressure and water content of the earlier mentioned model
-atmosphere profiles, and calculating the integrated absorbance at 420
-ppm CO_{2}, again \unit{150}{\centi\reciprocal\metre} around the
-\unit{2361}{\centi\reciprocal\metre} wave number. From the atmospheric
+These last two graphs show that the relative effects of pressure and
+temperature ranges encountered in the atmosphere on the absorbance are
+tiny in comparison with the changes in CO_{2} concentrations.
+
+Let's check to what extent this effect plays out on the typical
+atmospheric p,T profile.  Let's use the values of temperature,
+pressure and water content of the earlier mentioned model atmosphere
+profiles, and calculating the integrated absorbance at 420 ppm CO_{2},
+again \unit{150}{\centi\reciprocal\metre} around the
+\unit{2360}{\centi\reciprocal\metre} wave number. From the atmospheric
 profile for a mid-latitude summer, we then obtain
 
 #+TBLNAME: abs_mid_summer
@@ -1958,9 +1970,9 @@ profile for a mid-latitude summer, we then obtain
 |            13.0 |            17.80 |       215.8 |          8.0 |    0.25655 |
 |            14.0 |            15.21 |       215.7 |          5.0 |    0.21918 |
 |            15.0 |            12.99 |       215.7 |          3.4 |    0.18485 |
-|            20.0 |             5.93 |       217.9 |          3.2 |    0.08360 |
-|            25.0 |             3.21 |       223.9 |          4.0 |    0.04389 |
-|            30.0 |             1.53 |       231.6 |          4.6 |    0.01999 |
+|            20.0 |             5.93 |       219.2 |          3.3 |    0.08360 |
+|            25.0 |             2.76 |       225.1 |          4.2 |    0.04389 |
+|            30.0 |             1.32 |       233.7 |          4.7 |    0.01999 |
 
 
 #+BEGIN_SRC R :var abs_profile=abs_mid_summer :file output/abs_profile.pdf
