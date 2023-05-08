@@ -1748,23 +1748,31 @@ which shows rather nicely that there are essentially three regions in
 which CO_{2} absorption can take place unhindered by the presence of
 water vapour (around 667, 2360 and
 \unit{5000}{\centi\reciprocal\metre}, the bands around 3600 and
-\unit{3700}{\centi\reciprocal\metre} are already saturated by the
-H_{2}O absorption).
+\unit{3700}{\centi\reciprocal\metre} appear to be largely saturated by
+the H_{2}O absorption).
 
-Taking a closer look around the \unit{5000}{\centi\reciprocal\metre}
-region shows that a small amount of absorption can take place here:
+Taking a closer look around these four regions
 #+BEGIN_SRC R :file output/absorption_details.pdf
   hitran_abs %>%
+      filter(nu > 590 & nu < 740) %>%
+      mutate(region = 665) %>%
+      bind_rows(filter(hitran_abs, nu > 2265 & nu < 2415) %>%
+                mutate(region = 2340)) %>%
+      bind_rows(filter(hitran_abs, nu > 3550 & nu < 3800) %>%
+                mutate(region = 3625)) %>%
+      bind_rows(filter(hitran_abs, nu > 4800 & nu < 5050) %>%
+                mutate(region = 4900)) %>%
       filter(intensity > 1e-25) %>%
       ggplot() +
       geom_line(aes(nu, intensity, colour = molecule)) +
-      xlim(4500,5500) +
-      ylim(0, 1e-20) +
+      facet_wrap(~region,scales="free") +
       labs(title = "HITRAN Absorption Intensities",
            x = expression(paste("Wave number ", (cm^{-1}))),
            y = "Intensity") +
       theme(legend.position = "bottom")
 #+END_SRC
+we get a first good inkling of the relative importance of the
+different bands.
 
 The shape of an absorption peak is not as straightforward a matter as
 one might expect. An absorption line is broadened around its
@@ -1845,51 +1853,11 @@ The output format is as follows
 | AbsY  | Absorption coefficient, first-order line mixing              |
 | AbsW  | Absorption coefficient, full diagonalisation line mixing     |
 
-As an example, here is the result of the mixing calculations centered
-around an absorption peak at \unit{4.24}{\micro\metre} (or, in the cgs
-units used by the code, \unit{150}{\centi\reciprocal\metre} around
-\unit{2361}{\centi\reciprocal\metre})
-
-#+BEGIN_SRC R :file output/hitran_2350.pdf
-  hitran_2350 <- read.table("data/hitran_lm_2350.dat",
-                            col.names = c("nu","Voigt","First_Order","Full_Calc"))
-
-  ggplot(hitran_2350) +
-      geom_line(aes(nu, Voigt)) +
-      labs(title = "Absorption Coefficients, with Voigt Profile",
-           x = expression(paste('Wave number ', (cm^{-1}))),
-           y = expression(paste('Absorption Coefficient ', (cm^{-1}/m^3))))
-#+END_SRC
-
-It is a straightforward matter to calculate the area under the curves
-(sum of all the values multiplied with the step size), and so we can
-assess the contributions of the various absorption bands. As the
-interval spans \unit{150}{\centi\reciprocal\metre}, the maximum area
-under the curve would stand at
-\unit{150}{\centi\reciprocal\metre}. Clearly, the amount of radiation
-absorption at these concentrations is small.
-
-| wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |
-|-------------------------------------+--------------+---------+---------|
-|                                 665 |         15.0 | 0.09656 | 0.09659 |
-|                                2340 |         4.27 | 1.07276 | 1.07349 |
-|                                3625 |         2.76 | 0.01197 | 0.01197 |
-|                                3725 |         2.68 | 0.01775 | 0.01776 |
-|                                4845 |         2.06 | 0.00009 | 0.00009 |
-|                                5000 |         2.00 | 0.00040 | 0.00040 |
-
-This table also shows that the bands around 3625 and
-\unit{3727}{\centi\reciprocal\metre}, which are entirely subsumed in
-one of the H_{2}O bands, account for barely 2.5% of the overall
-absorption, while the bands around
-\unit{5000}{\centi\reciprocal\metre} account for even less than
-that. This shows us that we only need to consider the bands around 665
-and \unit{2340}{\centi\reciprocal\metre}.
-
-Let's explore the effects of changes in pressure and temperature on
-the integrated absorption, using the strongest peak (around
-\unit{2340}{\centi\reciprocal\metre}) as reference. The reference
-value is calculated with the following settings
+As an example, let's calculate the absorption centered around an
+absorption peak at \unit{4.24}{\micro\metre} (or, in the cgs units
+used by the code, \unit{150}{\centi\reciprocal\metre} around
+\unit{2361}{\centi\reciprocal\metre}) with the other parameter values
+as listed in the table
 
 | variable | value        | unit                    |
 |----------+--------------+-------------------------|
@@ -1902,58 +1870,176 @@ value is calculated with the following settings
 | MixFull  | .False.      | logical                 |
 | MixSDV   | .True.       | logical                 |
 
-Perusal of the equations above hint that concentration differences in
-CO_{2} will have very little effect on the individual absorption,
+We can use a shell script to store the desired parameters and their
+values into the expected lm_input.in file and then run the modified
+lm_calc program. Let's move the output of the calculations to the
+cache directory, where we can access it for further scrutiny
+
+#+BEGIN_SRC sh :session *bash* :results none :eval never
+  cd hitran2020
+  cat > lm_input.in <<EOF
+  SgMinR  2275.0
+  SgMaxR  2425.0
+  dSg     0.01
+  sTotMax 0.1e-28
+  Temp    290
+  Ptot    1.0
+  xCO2    420.e-6
+  xH2O    0
+  MixFull 0
+  MixSDV  1
+  EOF
+
+  ./lm_calc
+  mv ABSCO_HIT2020.dat ../cache/hitran_lm_2350.dat
+  cd ..
+#+END_SRC
+
+And here is a plot of the results
+#+BEGIN_SRC R :file output/hitran_2350.pdf
+  hitran_2350 <- read.table("cache/hitran_lm_2350.dat",
+                            col.names = c("nu","Voigt","First_Order","Full_Calc"))
+
+  ggplot(hitran_2350) +
+      geom_line(aes(nu, Voigt)) +
+      labs(title = "Absorption Coefficients, with Voigt Profile",
+           x = expression(paste('Wave number ', (cm^{-1}))),
+           y = expression(paste('Absorption Coefficient ', (cm^{-1}/m^3))))
+#+END_SRC
+
+It is a straightforward matter to calculate the area under the curves
+(sum of all the values multiplied with the step size), and so we can
+assess the contributions of the various absorption bands.
+
+| wave number \centi\reciprocal\metre | \micro\metre |  IAbs_V |  IAbs_f |
+|-------------------------------------+--------------+---------+---------|
+|                                 665 |         15.0 | 0.09656 | 0.09659 |
+|                                2340 |         4.27 | 1.07276 | 1.07349 |
+|                                3625 |         2.76 | 0.01197 | 0.01197 |
+|                                3725 |         2.68 | 0.01775 | 0.01776 |
+|                                4845 |         2.06 | 0.00009 | 0.00009 |
+|                                5000 |         2.00 | 0.00040 | 0.00040 |
+
+As the intervals span \unit{150}{\centi\reciprocal\metre}, the maximum
+area under the curve would stand at
+\unit{150}{\centi\reciprocal\metre}, and the numbers above should be
+divided by this. Clearly, the amount of radiation absorption at these
+concentrations is small.
+
+The table shows that the bands around 3625 and
+\unit{3727}{\centi\reciprocal\metre}, which as we have already had
+some indication of, are largely subsumed in one of the H_{2}O bands,
+account for barely 2.5% of the overall absorption, while the bands
+around \unit{5000}{\centi\reciprocal\metre} account for even less than
+that. So, keeping only the bands around 665 and
+\unit{2340}{\centi\reciprocal\metre} in consideration would cover
+about 98% of the total possible absorption.
+
+We are now in a position to explore the effects of changes in pressure
+and temperature on the integrated absorption. Perusal of the Lorentz
+and Gau\ss profile equations above hint that concentration differences
+in CO_{2} will have very little effect on the individual absorption,
 particularly at the ppm concentrations we are dealing with here.
+Let's use the strongest absorption band (around
+\unit{2340}{\centi\reciprocal\metre}) and retain the other parameters
+as already used previously.
 
 First, the dependence between absorbance and pressure
-#+TBLNAME: Press_Abs
-| pressure |  IAbs_V |  IAbs_f |  IAbs_F |
-|----------+---------+---------+---------|
-|      1.0 | 1.07069 | 1.07141 | 1.07130 |
-|      0.5 | 0.53553 | 0.53571 | 0.53562 |
-|      0.1 | 0.10690 | 0.10690 | 0.10702 |
-|     0.05 | 0.05282 | 0.05282 | 0.05321 |
-|     0.01 | 0.00891 | 0.00891 | 0.01045 |
+#+BEGIN_SRC sh :session *bash* :results none :eval never
+  cd hitran2020
+  cat > lm_input.stub <<EOF
+  SgMinR  2275.0
+  SgMaxR  2425.0
+  dSg     0.01
+  sTotMax 0.1e-28
+  Temp    290
+  xCO2    420.e-6
+  xH2O    0
+  MixFull 0
+  MixSDV  1
+  Ptot    1.0
+  EOF
 
-#+BEGIN_SRC R :var Press_Abs=Press_Abs :file output/hitran_PA.pdf
+  for p in 1.0 0.5 0.1 0.05 0.01; do
+      head -9 lm_input.stub > lm_input.in
+      cat >> lm_input.in <<EOF
+  Ptot    $p
+  EOF
+
+  ./lm_calc
+
+  awk -v press=$p '{AbsV += $2;AbsL += $3}END{print press, AbsV/100, AbsL/100}'
+  ABSCO_HIT2020.dat >> ../cache/lm_calc_p.dat
+
+  done
+  cd ..
+#+END_SRC
+
+Let's plot the results of the integrated speed-dependent Voigt
+absorption, relative to the base case
+#+BEGIN_SRC R :file output/hitran_PA.pdf
+  Press_Abs <- read.table("cache/lm_calc_p.dat",
+                          col.names = c("pressure", "AbsV", "AbsL"))
+
   Press_Abs %>%
-      mutate(Abs_V = IAbs_V / (pressure * Press_Abs$IAbs_V[1])) %>%
+      mutate(Voigt = AbsV / (pressure * Press_Abs$AbsV[1])) %>%
       ggplot() +
-      geom_point(aes(pressure * p0/1000, Abs_V)) +
+      geom_point(aes(pressure * p0/1000, Voigt)) +
       labs(title = "Relative Absorbance in function of Pressure",
            x = "Pressure (kPa)",
-           y = "Relative Absorbance")
+           y = "Relative Speed-dependent Voigt Absorbance")
 #+END_SRC
+
+Clearly, the dependence to pressure is very small indeed.
 
 Turning now to the temperature yields the following values
-#+TBLNAME: Temp_Abs
-| Temperature |  IAbs_V |  IAbs_f |  IAbs_F |
-|-------------+---------+---------+---------|
-|         200 | 1.55429 | 1.55567 | 1.55560 |
-|         210 | 1.48013 | 1.48139 | 1.48132 |
-|         220 | 1.41270 | 1.41385 | 1.41377 |
-|         230 | 1.35112 | 1.35220 | 1.35210 |
-|         240 | 1.29467 | 1.29566 | 1.29557 |
-|         250 | 1.24271 | 1.24365 | 1.24355 |
-|         260 | 1.19477 | 1.19564 | 1.19554 |
-|         270 | 1.15036 | 1.15117 | 1.15106 |
-|         280 | 1.10910 | 1.10987 | 1.10976 |
-|         290 | 1.07069 | 1.07141 | 1.07130 |
+#+BEGIN_SRC sh :session *bash* :results none :eval never
+    cd hitran2020
+    cat > lm_input.stub <<EOF
+    SgMinR  2275.0
+    SgMaxR  2425.0
+    dSg     0.01
+    sTotMax 0.1e-28
+    Ptot    1.0
+    xCO2    420.e-6
+    xH2O    0
+    MixFull 0
+    MixSDV  1
+    Temp    290
+    EOF
 
-again, removing the density effect then yields
-#+BEGIN_SRC R :var Temp_Abs=Temp_Abs :file output/hitran_TA.pdf
-  Temp_Abs %>%
-      mutate(Abs_V = IAbs_V * Temperature /
-                 (Temp_Abs$IAbs_V[1]* Temp_Abs$Temperature[1])) %>%
-      ggplot() +
-      geom_point(aes(Temperature, Abs_V)) +
-      labs(title = "Relative Absorbance in function of Temperature",
-           x = "Temperature (K)",
-           y = "Relative Absorbance")
+    for T in 290 280 270 260 250 240 230 220 210 200; do
+        head -9 lm_input.stub > lm_input.in
+        cat >> lm_input.in <<EOF
+    Temp    $T
+    EOF
+
+    ./lm_calc
+
+    awk -v Temp=$T '{AbsV += $2;AbsL += $3}END{print Temp, AbsV/100, AbsL/100}'
+    ABSCO_HIT2020.dat >> ../cache/lm_calc_T.dat
+
+    done
+    cd ..
 #+END_SRC
 
-These last two graphs show that the relative effects of pressure and
+again, removing the density effect of the Temperature changes and
+normalising to the base case, we get the plot
+#+BEGIN_SRC R :file output/hitran_TA.pdf
+  Temp_Abs <- read.table("cache/lm_calc_T.dat",
+                          col.names = c("Temperature", "AbsV", "AbsL"))
+
+  Temp_Abs %>%
+      mutate(Voigt = AbsV * Temperature /
+                 (Temp_Abs$AbsV[1] * Temp_Abs$Temperature[1])) %>%
+      ggplot() +
+      geom_point(aes(Temperature, Voigt)) +
+      labs(title = "Relative Absorbance in function of Temperature",
+           x = "Temperature (K)",
+           y = "Relative Speed-dependent Voigt Absorbance")
+#+END_SRC
+
+The last two graphs show that the relative effects of pressure and
 temperature ranges encountered in the atmosphere on the absorbance are
 tiny in comparison with the changes in CO_{2} concentrations.
 
