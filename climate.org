@@ -2048,21 +2048,41 @@ atmospheric p,T profile.  Let's use the values of temperature,
 pressure and water content of the earlier mentioned model atmosphere
 profiles, and calculating the integrated absorbance at 420 ppm CO_{2},
 again \unit{150}{\centi\reciprocal\metre} around the
-\unit{2360}{\centi\reciprocal\metre} wave number. From the atmospheric
-profile for a mid-latitude summer, we then obtain
+\unit{2360}{\centi\reciprocal\metre} wave number.
+
+#+BEGIN_SRC sh :session *bash* :results none :eval never
+  cd hitran2020
+
+  awk 'NR > 2 && $1 < 46 {print "SgMinR  2275.0\nSgMaxR  2425.0\ndSg     0.01\nTotMax  0.1e-28\nxCO2    420.e-6\nMixFull 0\nMixSDV  1\nTemp    "$3 "\nPtot    "$2/1013.25 "\nxH2O    "$4}' ../data/grl54358_atmosphere_midlat_summer.dat > lm_input.new
+
+  for i in `awk 'BEGIN { for( i=1; i<=46; i++ ) print i }'`; do
+      my_n=$(($i*10))
+      my_h=$(($i-1))
+      head -$my_n lm_input.new | tail -10 > lm_input.in
+      ./lm_calc
+      awk -v h=$my_h '{AbsV += $2;AbsL += $3}END{print h, AbsV/100, AbsL/100}' ABSCO_HIT2020.dat >> ../cache/atm_profile_results.dat 
+  done
+
+  cd ..
+#+END_SRC
+
+From the atmospheric profile for a mid-latitude summer, we then obtain
 
 #+BEGIN_SRC R :file output/abs_profile.pdf
   abs_profile <-
-      read.table("data/atm_profile_abs.dat",
-                 col.names = c("Height", "Pressure", "Temperature", "P_atm",
-                               "Water", "Abs_Voigt", "Abs_fo", "Abs_fl"),
-                 skip = 1)
+      read.table("cache/atm_profile_results.dat",
+                 col.names = c("height", "AbsV", "AbsF"))
+
+  abs_profile %<>%
+      left_join(atm_mid_s, by="height") %>%
+      mutate(AbsV = AbsV / 150,
+             AbsF = AbsF / 150)
 
   ggplot(abs_profile) +
-      geom_line(aes(Height, Abs_Voigt)) +
-      labs(title = "Atmospheric Absorption Profile",
+      geom_line(aes(height, AbsV)) +
+      labs(title = "Mid-latitude Summer Atmospheric Absorption Profile",
            x = "Height (km)",
-           y = "Absorption")
+           y = expression(paste('Absorption Coefficient ', (cm^{-1}/m^3))))
 #+END_SRC
 
 As the density of CO_{2} is the main driver in this absorption
@@ -2072,17 +2092,18 @@ the atmospheric conditions
 #+BEGIN_SRC R :file output/abs_profile_molecule.pdf
   xCO2 <- 420e-6
   abs_profile %<>%
-      mutate(CO2 = Pressure * N_A * xCO2 / (R_gas * Temperature),
-             Voigt = Abs_Voigt / CO2,
-             First = Abs_fo / CO2,
-             Full = Abs_fl / CO2)
+      mutate(CO2 = pressure * N_A * xCO2 / (R_gas * temperature),
+             Voigt = AbsV / CO2,
+             First = AbsF / CO2)
 
   ggplot(abs_profile) +
-      geom_line(aes(Height, Voigt*1e23)) +
+      geom_line(aes(height, Voigt / abs_profile$Voigt[1])) +
       labs(title = "Molecule-specific  Absorption Profile",
            x = "Height (km)",
-           y = expression(paste("Absorption ", (10^{-23}))))
+           y = "Relative Absorption ")
 #+END_SRC
+
+which is consistent with the pressure-temperature dependence examined above.
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
