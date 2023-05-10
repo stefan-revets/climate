@@ -1654,6 +1654,7 @@ present CO_{2} concentrations (blue line).
 #+END_SRC
 
 **** Energy Absorption
+
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
 
@@ -1772,7 +1773,52 @@ Taking a closer look around these four regions
       theme(legend.position = "bottom")
 #+END_SRC
 we get a first good inkling of the relative importance of the
-different bands.
+different bands. But we also need to bring into consideration the
+amount of energy available for absorption, i.e., where these
+absorption bands fall in the Earth's black body spectrum
+
+| wave number \centi\reciprocal\metre | \micro\metre |
+|-------------------------------------+--------------|
+| 665 (590-740)                       | 16.95-13.51  |
+| 2340 (2265-2415)                    | 4.42-4.14    |
+| 5000 (4925-5075)                    | 2.03-1.97    |
+
+Let's calculate the energy available to these absorption bands
+#+BEGIN_SRC R 
+  earth_avail <- data.frame(lambda = seq(13.50,16.95,0.1)*1e-6,
+                            band = "0665", stringsAsFactors = FALSE) %>%
+      bind_rows(data.frame(lambda = seq(4.14,4.42,0.02)*1e-6,
+                           band = "2340", stringsAsFactors = FALSE)) %>%
+      bind_rows(data.frame(lambda = seq(1.97,2.03,0.005)*1e-6,
+                           band = "5000", stringsAsFactors = FALSE))
+
+  lambda_steps <- data.frame(band = c("0665", "2340", "5000"),
+                             stepsize = c(0.1e-6, 0.02e-6, 0.005e-6),
+                             stringsAsFactors = FALSE)
+
+  T_earth <- 288
+  earth_outgoing <- 238.5
+  scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
+  a1 <- 8 * pi * h_planck * c_light
+  a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
+  earth_avail %>%
+      mutate(energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
+             energy = energy * scale_factor) %>%
+      group_by(band) %>%
+      summarise_at("energy", sum) %>%
+      ungroup() %>%
+      left_join(lambda_steps, by = "band") %>%
+      mutate(energy = energy * stepsize) %>%
+      select(-stepsize)
+
+#+END_SRC
+
+which shows the significant differences between the different
+regions. Clearly, the region of the
+\unit{665}{\centi\reciprocal\metre} is almost a hundred times larger
+than the next band, and even more so for other regions. It would be
+wise, then, to investigate this region more closely.
 
 The shape of an absorption peak is not as straightforward a matter as
 one might expect. An absorption line is broadened around its
@@ -1854,9 +1900,9 @@ The output format is as follows
 | AbsW  | Absorption coefficient, full diagonalisation line mixing     |
 
 As an example, let's calculate the absorption centered around an
-absorption peak at \unit{4.24}{\micro\metre} (or, in the cgs units
+absorption peak at \unit{15}{\micro\metre} (or, in the cgs units
 used by the code, \unit{150}{\centi\reciprocal\metre} around
-\unit{2361}{\centi\reciprocal\metre}) with the other parameter values
+\unit{665}{\centi\reciprocal\metre}) with the other parameter values
 as listed in the table
 
 | variable | value        | unit                    |
@@ -1878,8 +1924,8 @@ cache directory, where we can access it for further scrutiny
 #+BEGIN_SRC sh :session *bash* :results none :eval never
   cd hitran2020
   cat > lm_input.in <<EOF
-  SgMinR  2275.0
-  SgMaxR  2425.0
+  SgMinR  590.0
+  SgMaxR  740.0
   dSg     0.01
   sTotMax 0.1e-28
   Temp    290
@@ -1891,16 +1937,16 @@ cache directory, where we can access it for further scrutiny
   EOF
 
   ./lm_calc
-  mv ABSCO_HIT2020.dat ../cache/hitran_lm_2350.dat
+  mv ABSCO_HIT2020.dat ../cache/hitran_lm_665.dat
   cd ..
 #+END_SRC
 
 And here is a plot of the results
-#+BEGIN_SRC R :file output/hitran_2350.pdf
-  hitran_2350 <- read.table("cache/hitran_lm_2350.dat",
+#+BEGIN_SRC R :file output/hitran_665.pdf
+  hitran_665 <- read.table("cache/hitran_lm_665.dat",
                             col.names = c("nu","Voigt","First_Order","Full_Calc"))
 
-  ggplot(hitran_2350) +
+  ggplot(hitran_665) +
       geom_line(aes(nu, Voigt)) +
       labs(title = "Absorption Coefficients, with Voigt Profile",
            x = expression(paste('Wave number ', (cm^{-1}))),
@@ -1940,16 +1986,15 @@ and temperature on the integrated absorption. Perusal of the Lorentz
 and Gau\ss profile equations above hint that concentration differences
 in CO_{2} will have very little effect on the individual absorption,
 particularly at the ppm concentrations we are dealing with here.
-Let's use the strongest absorption band (around
-\unit{2340}{\centi\reciprocal\metre}) and retain the other parameters
-as already used previously.
 
 First, the dependence between absorbance and pressure
 #+BEGIN_SRC sh :session *bash* :results none :eval never
   cd hitran2020
+  rm -f ../cache/lm_calc_p.dat
+
   cat > lm_input.stub <<EOF
-  SgMinR  2275.0
-  SgMaxR  2425.0
+  SgMinR  590.0
+  SgMaxR  740.0
   dSg     0.01
   sTotMax 0.1e-28
   Temp    290
@@ -1968,8 +2013,8 @@ First, the dependence between absorbance and pressure
 
   ./lm_calc
 
-  awk -v press=$p '{AbsV += $2;AbsL += $3}END{print press, AbsV/100, AbsL/100}'
-  ABSCO_HIT2020.dat >> ../cache/lm_calc_p.dat
+  awk -v press=$p '{AbsV += $2;AbsL += $3}END{print press, AbsV/100, AbsL/100}' \
+      ABSCO_HIT2020.dat >> ../cache/lm_calc_p.dat
 
   done
   cd ..
@@ -1994,33 +2039,35 @@ Clearly, the dependence to pressure is very small indeed.
 
 Turning now to the temperature yields the following values
 #+BEGIN_SRC sh :session *bash* :results none :eval never
-    cd hitran2020
-    cat > lm_input.stub <<EOF
-    SgMinR  2275.0
-    SgMaxR  2425.0
-    dSg     0.01
-    sTotMax 0.1e-28
-    Ptot    1.0
-    xCO2    420.e-6
-    xH2O    0
-    MixFull 0
-    MixSDV  1
-    Temp    290
-    EOF
+  cd hitran2020
+  rm -f ../cache/lm_calc_T.dat
 
-    for T in 290 280 270 260 250 240 230 220 210 200; do
-        head -9 lm_input.stub > lm_input.in
-        cat >> lm_input.in <<EOF
-    Temp    $T
-    EOF
+  cat > lm_input.stub <<EOF
+  SgMinR  590.0
+  SgMaxR  740.0
+  dSg     0.01
+  sTotMax 0.1e-28
+  Ptot    1.0
+  xCO2    420.e-6
+  xH2O    0
+  MixFull 0
+  MixSDV  1
+  Temp    290
+  EOF
 
-    ./lm_calc
+  for T in 290 280 270 260 250 240 230 220 210 200; do
+      head -9 lm_input.stub > lm_input.in
+      cat >> lm_input.in <<EOF
+  Temp    $T
+  EOF
 
-    awk -v Temp=$T '{AbsV += $2;AbsL += $3}END{print Temp, AbsV/100, AbsL/100}'
-    ABSCO_HIT2020.dat >> ../cache/lm_calc_T.dat
+  ./lm_calc
 
-    done
-    cd ..
+  awk -v Temp=$T '{AbsV += $2;AbsL += $3}END{print Temp, AbsV/100, AbsL/100}' \
+      ABSCO_HIT2020.dat >> ../cache/lm_calc_T.dat
+
+  done
+  cd ..
 #+END_SRC
 
 again, removing the density effect of the Temperature changes and
@@ -2048,19 +2095,21 @@ atmospheric p,T profile.  Let's use the values of temperature,
 pressure and water content of the earlier mentioned model atmosphere
 profiles, and calculating the integrated absorbance at 420 ppm CO_{2},
 again \unit{150}{\centi\reciprocal\metre} around the
-\unit{2360}{\centi\reciprocal\metre} wave number.
+\unit{665}{\centi\reciprocal\metre} wave number.
 
 #+BEGIN_SRC sh :session *bash* :results none :eval never
   cd hitran2020
+  rm -f ../cache/atm_profile_results.dat
 
-  awk 'NR > 2 && $1 < 46 {print "SgMinR  2275.0\nSgMaxR  2425.0\ndSg     0.01\nTotMax  0.1e-28\nxCO2    420.e-6\nMixFull 0\nMixSDV  1\nTemp    "$3 "\nPtot    "$2/1013.25 "\nxH2O    "$4}' ../data/grl54358_atmosphere_midlat_summer.dat > lm_input.new
+  awk 'NR > 2 && $1 < 46 {print "SgMinR  590.0\nSgMaxR  740.0\ndSg     0.01\nTotMax  0.1e-28\nxCO2    420.e-6\nMixFull 0\nMixSDV  1\nTemp    "$3 "\nPtot    "$2/1013.25 "\nxH2O    "$4}' ../data/grl54358_atmosphere_midlat_summer.dat > lm_input.new
 
   for i in `awk 'BEGIN { for( i=1; i<=46; i++ ) print i }'`; do
       my_n=$(($i*10))
       my_h=$(($i-1))
       head -$my_n lm_input.new | tail -10 > lm_input.in
       ./lm_calc
-      awk -v h=$my_h '{AbsV += $2;AbsL += $3}END{print h, AbsV/100, AbsL/100}' ABSCO_HIT2020.dat >> ../cache/atm_profile_results.dat 
+      awk -v h=$my_h '{AbsV += $2;AbsL += $3}END{print h, AbsV/100, AbsL/100}' \
+          ABSCO_HIT2020.dat >> ../cache/atm_profile_results.dat 
   done
 
   cd ..
@@ -2104,6 +2153,7 @@ the atmospheric conditions
 #+END_SRC
 
 which is consistent with the pressure-temperature dependence examined above.
+
 
 *** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
