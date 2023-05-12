@@ -1691,11 +1691,11 @@ A complete explanation of the  HITRAN data structure is as follows:
 | g'            |            7 | F7.1   | weight of upper state                                                         |
 | g''           |            7 | F7.1   | weight of lower state                                                         |
 
-The two molecules on interest in the analysis here are H_{2}O (1) and
-CO_{2} (2). A query of the database for the most common isotopologues
-of these two molecules and including all the wavelengths for which
-data is available, yielded 319887 entries for H_{2}O and 174446
-entries for CO_{2}.
+The two molecules on interest in the analysis here are H_{2}O and
+CO_{2}. A query of the database for the most common isotopologues of
+these two molecules and including all the wavelengths for which data
+is available, yielded 319887 entries for H_{2}O and 174446 entries for
+CO_{2}.
 
 A neat way of bringing in the data is through an AWK script. Although
 the data is presented in a Fortran-type format, i.e., columnar, there
@@ -1802,7 +1802,7 @@ Let's calculate the energy available to these absorption bands
   a1 <- 8 * pi * h_planck * c_light
   a2 <- h_planck * c_light / (k_boltzmann * T_earth)
 
-  earth_avail %>%
+  earth_avail %<>%
       mutate(energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
              energy = energy * scale_factor) %>%
       group_by(band) %>%
@@ -2131,11 +2131,51 @@ From the atmospheric profile for a mid-latitude summer, we then obtain
       geom_line(aes(height, AbsV)) +
       labs(title = "Mid-latitude Summer Atmospheric Absorption Profile",
            x = "Height (km)",
-           y = expression(paste('Absorption Coefficient ', (cm^{-1}/m^3))))
+           y = expression(paste('Absorption Coefficient ', (m^{-3}))))
 #+END_SRC
 
+We can calculate the total absorption of this atmospheric column from
+\begin{equation}
+A = 1 - \prod_1^n (1 - a_i)
+\end{equation}
+where $a_i$ stands for the absorption in a volume element $i$. Bearing
+in mind that the HITRAN calculations have been carried out for
+\unit{1}{\cubic\metre} at \unit{1}{\kilo\metre} intervals in the
+atmospheric column, it is a good idea to extend the calculations by
+interpolating the volume element absorptions.
+
+#+BEGIN_SRC R 
+  band_energy <- earth_avail$energy[earth_avail$band == "0665"]
+
+  absorption <- data.frame(h = seq(1, 45, 0.001)) %>%
+      mutate(AbsV = interp1(abs_profile$h, abs_profile$AbsV, h,
+                            method = "spline"),
+             AbsF = interp1(abs_profile$h, abs_profile$AbsF, h,
+                            method = "spline"),
+             transV = cumprod(1 - AbsV),
+             transF = cumprod(1 - AbsF)) %>%
+      summarise_all(min) %>%
+      mutate(Voigt = 1 - transV,
+             Line = 1 - transF) %>%
+      select(Voigt, Line) %>%
+      mutate(Voigt_Abs = Voigt * band_energy,
+             Line_Abs = Line * band_energy)
+
+#+END_SRC
+
+Now we can run a suite of different CO_{2} concentrations and see how
+the absorption, and absorbed energy, changes.
+
+|              | CO_{2} (ppm) | Absorption (Voigt) | Absorbed (\watt\per\metre\squared) |
+|--------------+--------------+--------------------+------------------------------------|
+| Glacial      |          180 |            0.87569 |                              33.63 |
+| Interglacial |          280 |            0.96097 |                              36.91 |
+| Pliocene?    |          360 |            0.98455 |                              37.81 |
+| Present Day  |          420 |            0.99229 |                              38.11 |
+
+
 As the density of CO_{2} is the main driver in this absorption
-profile, let's see how the individual molecule absorption changes with
+profile, let's see how the individual molecule absorption varies with
 the atmospheric conditions
 
 #+BEGIN_SRC R :file output/abs_profile_molecule.pdf
@@ -2152,7 +2192,8 @@ the atmospheric conditions
            y = "Relative Absorption ")
 #+END_SRC
 
-which is consistent with the pressure-temperature dependence examined above.
+which is consistent with the pressure-temperature dependencies we've
+looked at earlier.
 
 
 *** Calcium carbonate
