@@ -180,7 +180,7 @@ well as the means to calculate the relation between concentration and
 amount of heat converted/trapped by these gases from the (incoming)
 solar radiation and outgoing radiation.
 
-* Calculations
+* Analyses
 :PROPERTIES:
 :session: *R*
 :cache: yes
@@ -1184,8 +1184,14 @@ cannot avoid the conclusion that the analytical techniques and
 protocols are insufficiently reliable and mature to allow any
 fine-grained analysis of palaeo-CO_{2} levels.
 
-** A first principles approach
-*** Overview
+* A first principles approach
+:PROPERTIES:
+:session: *R*
+:cache: yes
+:results: output graphics
+:exports: both
+:END:
+
 Earth receives essentially all its energy from the Sun (heat loss due
 to cooling of the core and radiogenic heating amounts to
 \unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
@@ -1235,7 +1241,7 @@ Energy transfers
 - Reflection (albedo)
 - Absorption (albedo)
 
-*** Ice
+** Ice
 The glacial-interglacial alternations characterising the Pleistocene,
 with ice volumes freezing and melting require substantial amounts of
 energy. Indeed, the latent heat of freezing/melting of water amounts
@@ -1268,7 +1274,7 @@ of the additional amount of heat stored in the oceans since the
 amount of energy enough to melt ice that would raise the global sea
 level with \unit{3.16}{\metre}.
 
-*** Atmosphere
+** Atmosphere
 \citet{trenberth-smith05:atmosphere} provide a carefully argued
 calculation of the total mass of the atmosphere.
 
@@ -1355,7 +1361,7 @@ temperature in K, and water content in \gram\per\metre\cubed
 
 #+END_SRC
 
-*** Solar energy spectrum
+** Solar energy spectrum
 By comparing the solar radiation spectrum as it is emitted with that
 measured at the Earth's surface, we get information on how and how
 much energy is captured by the greenhouse gases, i.e., water vapour,
@@ -1548,8 +1554,8 @@ energy, but this time for the Earth (with an average temperature of
 and so we see that a great deal of (outgoing) energy can be absorbed
 by CO_{2}, i.e., the actual greenhouse effect.
 
-*** CO2
-**** Solubility in seawater
+** CO2
+*** Solubility in seawater
 
 While a great deal of work has been done on the behaviour and
 interactions of CO_{2} and water, that was less the case for
@@ -1653,7 +1659,7 @@ present CO_{2} concentrations (blue line).
            y = expression(paste('[CO2(aq)] (', mu, 'mol/kg)')))
 #+END_SRC
 
-**** Energy Absorption
+*** Energy Absorption
 
 The next step in the process is accounting for the absorption by
 CO_{2}, and also H_{2}O as parts of their absorption spectra overlap.
@@ -1775,8 +1781,7 @@ Taking a closer look around these four regions
 we get a first good inkling of the relative importance of the
 different bands. But we also need to bring into consideration the
 amount of energy available for absorption, i.e., where these
-absorption bands fall in the Earth's black body spectrum
-
+absorption bands fall in the Earth's black body spectrum.
 
 Let's calculate the energy available to these absorption bands
 #+BEGIN_SRC R 
@@ -1806,7 +1811,6 @@ Let's calculate the energy available to these absorption bands
       left_join(lambda_steps, by = "band") %>%
       mutate(energy = energy * stepsize) %>%
       select(-stepsize)
-
 #+END_SRC
 
 | wave number \centi\reciprocal\metre | \micro\metre | energy (\watt\per\metre\squared) |
@@ -1820,6 +1824,34 @@ regions. Clearly, the region of the
 \unit{665}{\centi\reciprocal\metre} is almost a hundred times larger
 than the next band, and even more so for other regions. It would be
 wise, then, to investigate this region more closely.
+
+On the subject of energy available for absorption, let's take the
+opportunity to document the relation between (assumed black body)
+temperature and energy. Given different earth surface temperatures,
+how much energy is then radiated out again in the CO_{2} absorption
+regions of interest? We can get the values from simply running the
+code snippet just above for a suite of temperatures: that gives for
+the \unit{665}{\centi\reciprocal\metre} band
+
+| T (\kelvin) | Energy (\watt\per\metre\squared) |
+|-------------+----------------------------------|
+|         250 |                            40.22 |
+|         255 |                            40.12 |
+|         260 |                            39.97 |
+|         265 |                            39.77 |
+|         270 |                            39.54 |
+|         275 |                            39.27 |
+|         280 |                            38.95 |
+|         285 |                            38.62 |
+|         290 |                            38.26 |
+|         300 |                            37.46 |
+
+The paradox of larger amounts of energy available at lower temperature
+(within the range explored here) where one would expect the opposite
+is simply due to the shape of the black body curve and the spot
+occupied by the band of interest. The relevance of this
+counterintuitive finding lies with the suggestion that more energy is
+available for absorption by CO_{2} in the colder regions.
 
 The shape of an absorption peak is not as straightforward a matter as
 one might expect. An absorption line is broadened around its
@@ -2253,8 +2285,7 @@ the atmospheric conditions
 which is consistent with the pressure-temperature dependencies we've
 looked at earlier.
 
-
-*** Calcium carbonate
+** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
 source. As I came across a reference in
 \citet{canadell-al21:IPCC6-biogeochemical} on Palaeocene-Eocene
