@@ -1292,6 +1292,30 @@ Composition of the atmosphere
 | CO_{2}    |   0.0004 |  43.8998 |
 which yields an average mol mass for air of 28.9395
 
+Assuming a homogeneous mix throughout the atmospheric column, these
+numbers allow us to calculate the absolute amount of CO_{2} in the
+atmosphere, given concentration measurements (with M mass, MM molar
+mass and [x] concentration), i.e.,
+
+\begin{equation}
+\mathrm{M_{CO_2}} = \frac{\mathrm{M_{air}}}{\mathrm{MM_{air}}} [x_{\mathrm{CO_2}}] \mathrm{MM_{CO_2}}
+\end{equation}
+
+And so we get for the conditions of relevant geological times
+
+|              | CO_{2} (ppm) | CO_{2} (\petad\kilogram) |
+|--------------+--------------+--------------------------|
+| Glacial      |          180 |                   1.4056 |
+| Interglacial |          280 |                   2.1866 |
+| Pliocene(?)  |          350 |                   2.7332 |
+| Present Day  |          420 |                   3.2799 |
+
+which suggests that the Glacial-Interglacial alternations correspond
+to some \unit{781}{\terad\kilogram} CO_{2} (or
+\unit{17.79}{\petad\mole}) entering and leaving the atmosphere. It
+also tells us that we have currently \unit{1.0933}{\petad\kilogram} in
+excess of Interglacial amounts of CO_{2} in the atmosphere.
+
 \citet{mlynczak-al16:spectroscopic} used a set of atmospheric
 profiles, based on the studies by
 \citet{mcclatchey-al72:atmosphere}. These profiles include pressure,
