@@ -33,10 +33,13 @@ In one of our monthly discussions, Birger asked if there was a proper
 understanding of the processes and mechanisms driving climate change
 (on a geological timescale). The glacial-interglacial alternations
 have been documented to go back some considerable time, and
-Milankovitch cycles are usually put forward as explanation. My
-impression is that we don't really understand what is going on, but it
-seemed only fair to look a little closer into what has been proposed
-over the years.
+Milankovitch cycles are usually put forward as explanation. Realising
+that I don't known enough, with a vague impression that we don't
+really understand what is going on, it seemed only fair to take a more
+careful, closer look at what has been proposed over the years. The
+much increased visibility of the IPCC reports and COP meetings made it
+much easier to gain access to more recent, more detailed information
+and data.
 
 A considerable amount of work has been expended already, using the
 Milankovitch cycles as a basis \citep{milankovitch20:theorie},
@@ -60,17 +63,17 @@ apparently unprecedented 10 kY of stable climate? The Greenland and
 Antarctica isotope curves and CO_{2} curves appear to be quite
 similar, but which one changes first? That is, in the (pre-human
 intervention) past, are the changing CO_{2} concentrations a cause or
-an effect of the temperature changes? What is the role of CO_{2} in
-the Dansgaard-Oescher cycles; an enabler, a moderator, an accelerator?
-How come that the there is no discernable insolation change comparable
-to the Dansgaard-Oescher cycle time intervals?
+an effect of the temperature changes? What, if any, is the role of
+CO_{2} in the Dansgaard-Oescher cycles; an enabler, a moderator, an
+accelerator?  How come that there is no discernable insolation
+change comparable to the Dansgaard-Oescher cycle time intervals?
 
-The curves do show similarities to curves of limit cycles, `chaotic'
-systems, or strange attractor systems. It was rather nice then, to
-come across a paper \citep{steffen-al18:trajectories} that sketches
-this possible mechanism. Another intrigueing discussion was presented
-by \citet{baez12:twf319}, and then there is the endogenous,
-Lotka-Volterra like modelling as well
+These Dansgaard-Oescher curves do show similarities to curves of limit
+cycles, `chaotic' systems, or strange attractor systems. It was rather
+nice then, to come across a paper \citep{steffen-al18:trajectories}
+that sketches this possible mechanism. Another intrigueing discussion
+was presented by \citet{baez12:twf319}, and then there is the
+endogenous, Lotka-Volterra like modelling as well
 \citep{maslov14:self-organisation}.
 
 In order to try and get a better understanding of the whole thing,
@@ -83,13 +86,14 @@ absorb and emit energy, all of which comes from the Sun. As the Earth
 turns around its own axis, around the Sun, rotating on its titled,
 wobbling axis, the amount of energy coming down and hence available
 for reflection, absorption and emission changes at a wide variety of
-time scales. Some of that solar energy is variously trapped by water
-vapour, CO_{2} and CH_{4} in the atmosphere, as well as by the oceans
-and the continents, and downgraded to heat in the process. Part of
-that heat is then radiated out again into space, so that temperature
-on Earth remains within limits. There is of course the additional
-redistribution across the Earth of the absorbed heat, adding
-substantial complexity to the entire process.
+time scales (even if the total amount of energy coming in remains
+substantially the same). Some of that solar energy is variously
+trapped by water vapour, CO_{2} and CH_{4} in the atmosphere, as well
+as by the oceans and the continents, and downgraded to heat in the
+process. Part of that heat is then radiated out again into space, so
+that temperature on Earth remains within limits. There is of course
+the additional redistribution across the Earth of the absorbed heat,
+adding substantial complexity to the entire process.
 
 \citet{milankovitch20:theorie} used the Stockwell-Pilgrim values for
 eccentricity, obliquity and precession to calculate the incoming solar
@@ -175,10 +179,11 @@ the same samples: interpolation would dilute the reliability of the
 data for study and analysis.
 
 ** Heat capture
-I need to track down the absorption spectrum of CO_{2} and H_{2}O, as
-well as the means to calculate the relation between concentration and
-amount of heat converted/trapped by these gases from the (incoming)
-solar radiation and outgoing radiation.
+The absorption spectrum of CO_{2} and H_{2}O, as well as the means to
+calculate the relation between concentration and amount of heat
+converted/trapped by these gases from the (incoming) solar radiation
+and outgoing radiation, are brought together at the
+https://hitran.org/ site.
 
 * Analyses
 :PROPERTIES:
@@ -2426,6 +2431,7 @@ The following table gives prototypical examples for equations showing each type 
 | $x^2y+y^4+ux^2+vy^2+wx+ty$    | parabolic umbilic catastrophe                  |
 
 * References
+The org-mode source and associated files reside at https://github.com/stefan-revets/climate
 
 \bibliographystyle{plainnat}
 \bibliography{climate}
