@@ -178,6 +178,11 @@ that the measurements of these gases also has isotope measurements in
 the same samples: interpolation would dilute the reliability of the
 data for study and analysis.
 
+Daily CO_{2} measurements from 1971 onwards at Barrow, Alaska, Mauna
+Loa, Hawaii, American Samoa, and Antarctica, provided by NOAA
+\citep{thoning-al22:NOAA-CO2}
+https://gml.noaa.gov/aftp/data/trace_gases/co2/in-situ/surface/
+
 ** Heat capture
 The absorption spectrum of CO_{2} and H_{2}O, as well as the means to
 calculate the relation between concentration and amount of heat
@@ -553,6 +558,48 @@ and for Antarctica
            x = "Time (Years)",
            y = expression(paste(delta ^{2}, 'H')))
 #+END_SRC
+
+*** Rise of CO_{2}
+NOAA has been collecting atmospheric CO_{2} concentrations for some 50
+years \citep{thoning-al22:NOAA-CO2} at 4 stations (Mauna Loa, Barrow,
+American Samoa and Antarctica).
+
+#+BEGIN_SRC R :file output/noaa_co2.pdf
+  noaa_barrow <- read.table('data/co2_brw_surface_daily.txt',
+                            header = TRUE, skip = 149)
+  noaa_maunaloa <- read.table('data/co2_mlo_surface_daily.txt',
+                              header = TRUE, skip = 149)
+  noaa_samoa <- read.table('data/co2_smo_surface_daily.txt',
+                           header = TRUE, skip = 149)
+  noaa_antarctica <- read.table('data/co2_spo_surface_daily.txt',
+                                header = TRUE, skip = 149)
+
+  noaa_co2 <- noaa_barrow %>%
+      bind_rows(noaa_maunaloa) %>%
+      bind_rows(noaa_samoa) %>%
+      bind_rows(noaa_antarctica) %>%
+      select(-hour, -minute, -second, -latitude, -longitude,
+             -altitude, -elevation, -intake_height, -qcflag) %>%
+      filter(value > 0)
+
+  noaa_co2 %>%
+      group_by(site_code, year, month) %>%
+      summarise_at(vars(time_decimal, value), mean) %>%
+      ggplot() +
+      geom_line(aes(time_decimal, value, colour = site_code)) +
+      labs(title = "NOAA CO2 Measurements",
+           x = "Time",
+           y = "CO2 (ppm)") +
+      theme(legend.position = "bottom")
+#+END_SRC
+
+The plot reveals, apart from the dramatic and sustained rise in CO_{2}
+concentration, a curious geographic differentiation. Concentrations
+exhibit a consistent geographic trend, with the highest concentration
+at the northernmost station (Barrow), followed by Mauna Loa, Samoa and
+the lowest at the southernmost station (Antarctica). The summer-winter
+differences follow the same trend, with largest differences in the
+north and smallest in the south.
 
 ** Alternative approaches
 Correlation is not causation, and the direct coupling between
