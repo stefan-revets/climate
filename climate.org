@@ -601,6 +601,63 @@ the lowest at the southernmost station (Antarctica). The summer-winter
 differences follow the same trend, with largest differences in the
 north and smallest in the south.
 
+*** Ocean heat content
+\citet{cheng-al23:heat} provided the latest update of the estimation
+of the ocean's heat content in the upper \unit{2000}{\metre} of the
+world's oceans up to 2022. From their figure 1, let's extract the
+values calculated by the NCEI-NOAA teams (pentad annual means relative
+to the 1981--2010 mean)
+
+#+BEGIN_SRC R :file output/noaa_ohc.pdf
+  noaa_ohc <- read.delim("data/ncei_noaa_ohc.dat", sep = ",")
+
+  ggplot(noaa_ohc) +
+      geom_bar(aes(year,ohc), stat = "identity") +
+      labs(title = "NCEI-NOAA Ocean Heat Content",
+           x = "Year",
+           y = "Relative Heat Content (ZJ)")
+#+END_SRC
+
+From these values, let's see what the year on year changes are
+
+#+BEGIN_SRC R :file output/noaa_ohc_change.pdf
+  noaa_ohc %<>%
+      mutate(ohc_change = ohc - lag(ohc, default = noaa_ohc$ohc[1]))
+
+  ggplot(noaa_ohc) +
+      geom_bar(aes(year, ohc_change), stat = "identity") +
+      labs(title = "NCEI-NOAA Ocean Heat Content Changes",
+           x = "Year",
+           y = "Heat Content (ZJ)")
+#+END_SRC
+
+So, the overall average increase in heat content over the full data set is
+#+BEGIN_SRC R
+  lm(ohc ~ year, data=noaa_ohc)
+#+END_SRC
+that is to say, since 1958, the heat content of the oceans has
+increased on average by \unit{5.16}{\zettad\joule} every year.
+
+Restricting ourselves to the changes since 1995, we get
+#+BEGIN_SRC R
+  lm(ohc ~ year, data=filter(noaa_ohc, year > 1995))
+#+END_SRC
+i.e., some \unit{8.66}{\zettad\joule} every year.
+
+Bearing in mind that the area occupied by the world's oceans covers
+\unit{361.84}{\terad\metre\squared} and that one year is made up by
+\unit{31.558}{\megad\second} we calculate the equivalent average
+surface energy flux as
+
+| Time interval | Yearly Heat Increase (\zetta\joule) | Surface Flux (\watt\per\metre\squared) |
+|---------------+-------------------------------------+----------------------------------------|
+|    1958--2020 |                                5.16 |                                  0.452 |
+|    1995--2020 |                                8.66 |                                  0.758 |
+
+In other words, an additional absorption of
+\unit{0.758}{\watt\per\metre\squared} would account for the increase
+in ocean heat content observed over the last 25 years.
+
 ** Alternative approaches
 Correlation is not causation, and the direct coupling between
 temperature/ice volume and received solar radiation is too
