@@ -2397,6 +2397,34 @@ small changes in (re-)absorbed energy. The calculations here suggest
 that 2-\unit{3}{\watt\per\metre\squared} are sufficient to move from
 glacial-interglacial cycles to a hothouse type of climate.
 
+In view of the unexpected and remarkable insensitivity of the
+absorption to the latitude profiles and their seasonal variation, we
+can just pick one of these profiles and calculate the absorptions as a
+function of CO_{2} concentrations with finer granularity.
+
+#+BEGIN_SRC sh :session *bash* :results none :eval never
+    cd hitran2020
+
+    for CO2 in 150 175 200 225 250 275 300 325 350 375 400 425 450 475 500; do
+        awk -v cco2=$CO2 'NR > 2 && $1 < 46 {print "SgMinR  590.0\nSgMaxR  740.0\n\
+  dSg     0.01\n\TotMax  0.1e-28\nxCO2    "cco2".e-6\nMixFull 0\nMixSDV  1\n\
+  Temp    "$3 "\nPtot    "$2/1013.25 "\nxH2O    "$4}' \
+            ../data/grl54358_atmosphere_midlat_summer.dat > lm_input.new
+
+        for i in `awk 'BEGIN { for( i=1; i<=46; i++ ) print i }'`; do
+            my_n=$(($i*10))
+            my_h=$(($i-1))
+            head -$my_n lm_input.new | tail -10 > lm_input.in
+            ./lm_calc
+            awk -v h=$my_h -v ppm=$CO2'{AbsV += $2;AbsL += $3}\
+  END{print ppm, h, AbsV/100, AbsL/100}'\
+                ABSCO_HIT2020.dat >> ../cache/atm_profile_ppm.dat 
+        done
+    done
+    cd ..
+
+#+END_SRC
+
 As the density of CO_{2} is the main driver in this absorption
 profile, let's see how the individual molecule absorption varies with
 the atmospheric conditions
