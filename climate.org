@@ -2430,8 +2430,14 @@ more elegant way in which to carry out the interpolations on the
 different columns, something with the 'apply' function, but this will
 do for now)
 #+BEGIN_SRC R
+  ppm_profiles <- read.table("cache/atm_profile_ppm.dat",
+                             col.names = c("ppm", "height", "AbsV", "AbsF"))
+
   ppm_abs_profiles <- 
-      ppm_profiles %>% select(-AbsF) %>%
+      ppm_profiles %>%
+      mutate(AbsV = AbsV / 150,
+             AbsF = AbsF / 150) %>%
+      select(-AbsF) %>%
       spread(ppm, AbsV)
 
   ppm_abs <- data.frame(h = seq(0, 45, 0.001)) %>%
@@ -2479,11 +2485,49 @@ and absorbed energy by the entire atmospheric column
 #+BEGIN_SRC R :file output/abs_voigt_ppm.pdf
   ppm_abs %>%
       ggplot() +
-      geom_line(aes(ppm, Voigt_Abs)) +
+      geom_line(aes(ppm, AbsV)) +
       labs(title = "Concentration Dependence of Atmospheric Voigt Absorption",
            x = "CO2 (ppm)",
            y = "Absorbed Energy (W/m2)")
 #+END_SRC
+This is clearly a relation of the type
+\begin{equation}
+y = 1 - e^{-a x}
+\end{equation}
+which we can estimate from the calculated numbers
+#+BEGIN_SRC R
+  summary(lm(log(1-AbsV) ~ ppm, data = ppm_abs))
+#+END_SRC
+
+#+RESULTS[305f167f733ee27789314722d8bb6fb3ec1a6dde]:
+#+begin_example
+
+Call:
+lm(formula = log(1 - AbsV) ~ ppm, data = ppm_abs)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-9.982e-05 -3.753e-05  1.495e-05  4.731e-05  6.266e-05 
+
+Coefficients:
+              Estimate Std. Error   t value Pr(>|t|)    
+(Intercept)  4.976e-04  4.713e-05     10.56 9.54e-08 ***
+ppm         -1.302e-02  1.376e-07 -94630.67  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5.757e-05 on 13 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:      1 
+F-statistic: 8.955e+09 on 1 and 13 DF,  p-value: < 2.2e-16
+#+end_example
+And so we obtain as (empirical) equation
+\begin{equation}
+\mathrm{AbsV} = 1 - e^{-1.30 \mathrm{ppm}}
+\end{equation}
+from which we get the actual amount of absorbed energy by just
+multiplying the CO_{2} dependent AbsV value with the amount of energy
+available in the spectral band, i.e.,
+\unit{590-740}{\centi\reciprocal\metre}.
 
 As the density of CO_{2} is the main driver in this absorption
 profile, let's see how the individual molecule absorption varies with
