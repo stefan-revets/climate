@@ -1516,7 +1516,7 @@ with \nu the frequency of the radiation. Integrating over all the
 frequencies yields
 \begin{equation}
 \begin{split}
-U(T) & = \int_0^\infty = \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1} \\
+U(T) & = \int_0^\infty \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1} d \nu\\
      & = \frac{8 \pi^2}{60 c^3 h^3}k^4 T^4 \\
      & = \frac{4}{c} \sigma T^4
 \end{split}
@@ -1966,18 +1966,29 @@ regions of interest? We can get the values from simply running the
 code snippet just above for a suite of temperatures: that gives for
 the \unit{665}{\centi\reciprocal\metre} band
 
+#+TBLNAME: energy665
 | T (\kelvin) | Energy (\watt\per\metre\squared) |
 |-------------+----------------------------------|
-|         250 |                            40.22 |
-|         255 |                            40.12 |
-|         260 |                            39.97 |
 |         265 |                            39.77 |
 |         270 |                            39.54 |
 |         275 |                            39.27 |
 |         280 |                            38.95 |
 |         285 |                            38.62 |
 |         290 |                            38.26 |
+|         295 |                            37.87 |
 |         300 |                            37.46 |
+|         305 |                            37.03 |
+|         310 |                            36.59 |
+
+#+BEGIN_SRC R :var energy665=energy665 :file output/energy665.pdf
+  names(energy665) <- c("T","Energy")
+
+  ggplot(energy665) +
+      geom_line(aes(T, Energy)) +
+      labs(title = "Energy available in 665 band",
+           x = "T (K)",
+           y = "Energy (W/m2)")
+#+END_SRC
 
 The paradox of larger amounts of energy available at lower temperature
 (within the range explored here) where one would expect the opposite
@@ -2143,9 +2154,12 @@ The table shows that the bands around 3625 and
 some indication of, are largely subsumed in one of the H_{2}O bands,
 account for barely 2.5% of the overall absorption, while the bands
 around \unit{5000}{\centi\reciprocal\metre} account for even less than
-that. So, keeping only the bands around 665 and
-\unit{2340}{\centi\reciprocal\metre} in consideration would cover
-about 98% of the total possible absorption.
+that. But, as we saw earlier, the energy available for absorption in
+the band around \unit{665}{\centi\reciprocal\metre} is two order of
+magnitude larger than that available to
+\unit{2340}{\centi\reciprocal\metre}, we can safely neglect all but
+the \unit{665}{\centi\reciprocal\metre} band for further
+consideration.
 
 We are now in a position to explore the effects of changes in pressure
 and temperature on the integrated absorption. Perusal of the Lorentz
@@ -2304,6 +2318,27 @@ From the atmospheric profile for a mid-latitude summer, we then obtain
            x = "Height (km)",
            y = expression(paste('Absorption Coefficient ', (m^{-3}))))
 #+END_SRC
+
+As the density of CO_{2} is the main driver in this absorption
+profile, let's see how the individual molecule absorption varies with
+the atmospheric conditions
+
+#+BEGIN_SRC R :file output/abs_profile_molecule.pdf
+  xCO2 <- 420e-6
+  abs_profile %<>%
+      mutate(CO2 = pressure * N_A * xCO2 / (R_gas * temperature),
+             Voigt = AbsV / CO2,
+             First = AbsF / CO2)
+
+  ggplot(abs_profile) +
+      geom_line(aes(height, Voigt / abs_profile$Voigt[1])) +
+      labs(title = "Molecule-specific  Absorption Profile",
+           x = "Height (km)",
+           y = "Relative Absorption ")
+#+END_SRC
+
+which is consistent with the pressure-temperature dependencies we've
+looked at earlier.
 
 We can calculate the total absorption of this atmospheric column from
 \begin{equation}
@@ -2485,7 +2520,7 @@ and absorbed energy by the entire atmospheric column
 #+BEGIN_SRC R :file output/abs_voigt_ppm.pdf
   ppm_abs %>%
       ggplot() +
-      geom_line(aes(ppm, AbsV)) +
+      geom_line(aes(ppm, Voigt_Abs)) +
       labs(title = "Concentration Dependence of Atmospheric Voigt Absorption",
            x = "CO2 (ppm)",
            y = "Absorbed Energy (W/m2)")
@@ -2522,33 +2557,13 @@ F-statistic: 8.955e+09 on 1 and 13 DF,  p-value: < 2.2e-16
 #+end_example
 And so we obtain as (empirical) equation
 \begin{equation}
-\mathrm{AbsV} = 1 - e^{-1.30 \mathrm{ppm}}
+\mathrm{AbsV} = 1 - e^{-0.0130 \mathrm{ppm}}
 \end{equation}
 from which we get the actual amount of absorbed energy by just
 multiplying the CO_{2} dependent AbsV value with the amount of energy
 available in the spectral band, i.e.,
 \unit{590-740}{\centi\reciprocal\metre}.
 
-As the density of CO_{2} is the main driver in this absorption
-profile, let's see how the individual molecule absorption varies with
-the atmospheric conditions
-
-#+BEGIN_SRC R :file output/abs_profile_molecule.pdf
-  xCO2 <- 420e-6
-  abs_profile %<>%
-      mutate(CO2 = pressure * N_A * xCO2 / (R_gas * temperature),
-             Voigt = AbsV / CO2,
-             First = AbsF / CO2)
-
-  ggplot(abs_profile) +
-      geom_line(aes(height, Voigt / abs_profile$Voigt[1])) +
-      labs(title = "Molecule-specific  Absorption Profile",
-           x = "Height (km)",
-           y = "Relative Absorption ")
-#+END_SRC
-
-which is consistent with the pressure-temperature dependencies we've
-looked at earlier.
 
 ** Calcium carbonate
 Note. \delta^{13}C changes in CaCO_{3} are used to infer changes in C
