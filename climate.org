@@ -1916,6 +1916,27 @@ different bands. But we also need to bring into consideration the
 amount of energy available for absorption, i.e., where these
 absorption bands fall in the Earth's black body spectrum.
 
+An first glimpse can be had by superposing the black body radiation
+profile with the CO_{2} absorption bands
+
+#+BEGIN_SRC R :file output/bb_radiation_co2.pdf
+  co2_spectrum <- hitran_co2 %>%
+      mutate(lambda = 0.01/nu) %>%
+      select(lambda, intensity)
+
+  ggplot(earth_energy) +
+      geom_line(aes(lambda*1e6, intensity*1e25),
+                data = co2_spectrum) +
+      geom_line(aes(lambda*1e6, Energy), color = "red") +
+      scale_y_continuous(sec.axis =
+                             sec_axis(~. /1e25, name = "CO2 Absorption")) +
+      labs(title = "Earth's Black Body Radiation (288 K) and CO2 Absorption",
+           x = expression(paste("Wavelength (", mu, "m)")),
+           y = "Energy (W/m2)")
+
+#+END_SRC
+
+
 Let's calculate the energy available to these absorption bands
 #+BEGIN_SRC R 
   earth_avail <- data.frame(lambda = seq(13.50,16.95,0.1)*1e-6,
@@ -1947,8 +1968,6 @@ Let's calculate the energy available to these absorption bands
       mutate(energy = energy * stepsize) %>%
       select(-stepsize)
 #+END_SRC
-
-#+RESULTS[0cb9592f4530ecd8b8bcf37de0236159688cd475]:
 
 | wave number \centi\reciprocal\metre | \micro\metre | energy (\watt\per\metre\squared) |
 |-------------------------------------+--------------+----------------------------------|
