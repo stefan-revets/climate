@@ -1631,7 +1631,7 @@ calculate the expected black body temperature as
   (solar_incoming / sigma_stefan)^(1/4)
 #+END_SRC
 which is about \unit{10}{\kelvin} below the current average Earth
-temperature of \unit{288}{\kelvin}. So, as expected, the Earth does
+temperature of \unit{287}{\kelvin}. So, as expected, the Earth does
 not behave as a black body. In fact, about 30% of the incoming energy
 is reflected out \citep{trenberth-al09:budget} implying that the
 theoretical black body temperature would be even lower, i.e.,
@@ -1666,7 +1666,7 @@ energy, but this time for the Earth (with an average temperature of
 \unit{238.5}{\watt\per\metre\squared} of outgoing radiation
 \citep{trenberth-al09:budget}, we get
 #+BEGIN_SRC R :file output/earth_spectrum.pdf
-  T_earth <- 288
+  T_earth <- 287
   earth_outgoing <- 238.5
   scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
 
@@ -1922,14 +1922,16 @@ Let's calculate the energy available to these absorption bands
                             band = "0665", stringsAsFactors = FALSE) %>%
       bind_rows(data.frame(lambda = seq(4.14,4.42,0.02)*1e-6,
                            band = "2340", stringsAsFactors = FALSE)) %>%
+      bind_rows(data.frame(lambda = seq(2.63,2.82,0.01)*1e-6,
+                           band = "3625", stringsAsFactors = FALSE)) %>%
       bind_rows(data.frame(lambda = seq(1.97,2.03,0.005)*1e-6,
                            band = "5000", stringsAsFactors = FALSE))
 
-  lambda_steps <- data.frame(band = c("0665", "2340", "5000"),
-                             stepsize = c(0.1e-6, 0.02e-6, 0.005e-6),
+  lambda_steps <- data.frame(band = c("0665", "2340", "3625", "5000"),
+                             stepsize = c(0.1e-6, 0.02e-6, 0.01e-6, 0.005e-6),
                              stringsAsFactors = FALSE)
 
-  T_earth <- 288
+  T_earth <- 287
   earth_outgoing <- 238.5
   scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
   a1 <- 8 * pi * h_planck * c_light
@@ -1946,11 +1948,14 @@ Let's calculate the energy available to these absorption bands
       select(-stepsize)
 #+END_SRC
 
+#+RESULTS[0cb9592f4530ecd8b8bcf37de0236159688cd475]:
+
 | wave number \centi\reciprocal\metre | \micro\metre | energy (\watt\per\metre\squared) |
 |-------------------------------------+--------------+----------------------------------|
-| 665 (590-740)                       |  16.95-13.51 |                           38.405 |
-| 2340 (2265-2415)                    |    4.42-4.14 |                            0.410 |
-| 5000 (4925-5075)                    |    2.03-1.97 |                        0.0000067 |
+| 665 (590-740)                       |  16.95-13.51 |                           38.478 |
+| 2340 (2265-2415)                    |    4.42-4.14 |                            0.399 |
+| 3625 (3550-3800)                    |    2.82-2.63 |                           0.0033 |
+| 5000 (4925-5075)                    |    2.03-1.97 |                        0.0000062 |
 
 which shows the significant differences between the different
 regions. Clearly, the region of the
