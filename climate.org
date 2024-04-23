@@ -1971,6 +1971,8 @@ regions of interest? We can get the values from simply running the
 code snippet just above for a suite of temperatures: that gives for
 the \unit{665}{\centi\reciprocal\metre} band
 
+#+CAPTION: Temperature dependence of energy available for absorption
+#+ATTR_LaTeX: label tbl:black_body
 #+TBLNAME: energy665
 | T (\kelvin) | Energy (\watt\per\metre\squared) |
 |-------------+----------------------------------|
@@ -2563,11 +2565,38 @@ F-statistic: 8.955e+09 on 1 and 13 DF,  p-value: < 2.2e-16
 And so we obtain as (empirical) equation
 \begin{equation}
 \mathrm{AbsV} = 1 - e^{-0.0130 \mathrm{ppm}}
+\label{eqn:rel_absorption}
 \end{equation}
 from which we get the actual amount of absorbed energy by just
 multiplying the CO_{2} dependent AbsV value with the amount of energy
 available in the spectral band, i.e.,
 \unit{590-740}{\centi\reciprocal\metre}.
+
+*** Implications
+These numbers and equations allow the estimation of (black body)
+equilibrium temperatures, given CO_{2} concentrations.
+
+For most of the Holocene, we had 280 ppm of CO_{2} with an average
+temperature of \unit{287}{\kelvin}. At this temperature, a total of
+\unit{38.478}{\watt\per\metre\squared} is available for absorption. The
+relative absorption according to equation \ref{eqn:rel_absorption}
+amounts to 0.97375 for 280 ppm (the present 420 ppm yields 0.99575,
+that is to say it absorbs all the energy in the relevant band).
+
+Therefore, the stability of the Holocene climate corresponds to an
+average absorption of \unit{37.468}{\watt\per\metre\squared}. In view
+of the 10000 year stability, it is reasonable to accept this amount of
+absorbed energy as an equilibrium value.
+
+The present 420 ppm concentration of CO_{2} corresponds to
+\unit{38.314}{\watt\per\metre\squared}. As this is additional energy,
+(\unit{0.846}{\watt\per\metre\squared}), it heats up the earth until a
+new equilibrium temperature is reached. As shown earlier, a hotter
+(black) body emits less energy in the CO_{2} absorption band:
+presumably, the heating will stop when the earth is hot enough for
+there to be no longer an excess energy above the equilibrium
+value. According to the calculations behind table
+\ref{energy665}, that temperature is \unit{300}{\kelvin}.
 
 
 ** Calcium carbonate
