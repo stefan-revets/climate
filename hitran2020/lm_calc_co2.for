@@ -38,23 +38,52 @@ C     The USER will probably HAVE TO CHANGE the access path to
 C     the files according to his computer+directory system.
 C-------------------------------------------------
 C
+C     Minor modification to set input parameters through a separate
+C     file, rather than incorporated in the source code
+C
+C     Stefan Revets, 2024
+C-------------------------------------------------      
       implicit none
       include 'parameters.inc'
       logical MixFull,MixSDV
-      integer*4 isig,nsig
+      integer*4 isig,nsig,icount
       real*8 Temp,ptot,xCO2,xH2O
 	real*8 SgMinR,SgMaxR,dSg,sig,StotMax
 C Results (Absorption Coefficients in cm-1, dimensions defined in 'parameter.inc')
-      real*8 AbsV(nSigmx),AbsY(nSigmx),AbsW(nSigmx)
+        real*8 AbsV(nSigmx),AbsY(nSigmx),AbsW(nSigmx)
+        character*7 myvar_name
+        real*8 myvar_value
 
-C----------
-C Min and Max wavenumbers and step of the calculation (user supplied)
-      sgminR=3410.d0   ! Min wavenumber (cm-1)
-      sgmaxR=3770.d0   ! Max wavenumber (cm-1)
-      dsg=0.01d0        ! wavenumber step (cm-1)
-C Total band intensity cut-off (user supplied)
-	sTotMax=0.1d-27
-	
+C  Let's read in the user data from file
+        
+      open(unit=100,file="lm_input.in", status ="old")
+      do 10,icount=1,10
+         read(unit=100, fmt=*) myvar_name, myvar_value
+         if(myvar_name .EQ. "SgMinR") then
+            sgminR = myvar_value
+         else if(myvar_name .EQ. "SgMaxR") then
+            sgmaxR = myvar_value
+         else if(myvar_name .EQ. "dSg") then
+            dsg = myvar_value
+         else if(myvar_name .EQ. "sTotMax") then
+            sTotMax = myvar_value
+         else if(myvar_name .EQ. "Temp") then
+            Temp = myvar_value
+         else if(myvar_name .EQ. "Ptot") then
+            Ptot = myvar_value
+         else if(myvar_name .EQ. "xCO2") then
+            xCO2 = myvar_value
+         else if(myvar_name .EQ. "xH2O") then
+            xH2O = myvar_value
+         else if(myvar_name .EQ. "MixFull") then
+            MixFull = (myvar_value .GT. 0)
+         else if(myvar_name .EQ. "MixSDV") then
+            MixSDV = (myvar_value .GT. 0)
+         end if                     
+ 10   continue
+      close(unit=100)
+
+        
 	
        open (unit=202,file="./output/00_YT_NoZero_.dat"
      $   ,action="write", status="unknown")
@@ -67,23 +96,6 @@ c
 C read Relaxation matrix files
 c
       call ReadW
-
-c
-C Thermophysical conditions of calculation (user supplied)
-	Temp=296.0d0    ! Temperature (K)
-	Ptot=1.0d0    ! Total pressure (Atm)
-
-
-	xCO2=410d-6   ! CO2 molefraction
-C	xCO2=1.0d0
-
-	xH2O=0.0d-2       ! H2O molefraction
-
-C Choose full LM calculation (TRUE) or not (FALSE) (user supplied)
-      MixFull=.True.
-
-C Choose LM calculation with speed-dependant Voigt profile (TRUE) or not (FALSE) (user supplied)
-      MixSDV=.False.
 
 C --------- 
 C Calculate absorption coefficient
@@ -99,7 +111,6 @@ C a Speed-dependent Voigt profile can NOT be done with full relaxation matrix
 	 call CompAbs(Temp,Ptot,xCO2,xH2O,SgMinR,SgMaxR,DSg
      &      ,AbsV,AbsY,AbsW,MixSDV,MixFull,Nsig)
 	endif
-
 
 
 C print results in File

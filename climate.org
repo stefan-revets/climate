@@ -1936,7 +1936,6 @@ profile with the CO_{2} absorption bands
 
 #+END_SRC
 
-
 Let's calculate the energy available to these absorption bands
 #+BEGIN_SRC R 
   earth_avail <- data.frame(lambda = seq(13.50,16.95,0.1)*1e-6,
