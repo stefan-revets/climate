@@ -1,0 +1,1396 @@
+% Created 2024-05-17 Fri 10:49
+\documentclass[10pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{listings}
+\tolerance=1000
+\def\today{\number\day\space\ifcase\month\or January\or February\or March\or April\or May\or June\or July\or August\or September\or October\or November\or December\fi \space \number\year}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{parskip}
+\usepackage[margin=1in]{geometry}
+\usepackage[round]{natbib}
+\usepackage{fancyhdr}
+\usepackage{titling}
+\usepackage[squaren,cdot]{SIunits}
+\usepackage{booktabs}
+\pagestyle{fancy}
+\renewcommand{\footrulewidth}{0.4pt}
+\newcommand{\isotope}[2]{\ensuremath{{^{#1}\mathrm{#2}}}}
+\lhead{}
+\rhead{}
+\lfoot{CO2 Absorption}
+\cfoot{\thepage}
+\rfoot{\thedate}
+\author{Stefan Revets}
+\pretitle{\flushleft\LARGE\bfseries\vskip 80mm}
+\posttitle{\par}
+\preauthor{\flushleft}
+\postauthor{\par}
+\predate{\flushleft}
+\postdate{\par{In Progress}}
+\author{Stefan Revets}
+\date{\today}
+\title{CO$_{\text{2}}$ Absorption and Earth's Black Body Radiation}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 24.5.1 (Org mode 8.2.10)}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{Introduction}
+\label{sec-1}
+The heating of the Earth due to human CO$_{\text{2}}$ emissions is the subject
+of substantial research activities. A great deal of complex modelling
+is carried out and used to inform humanity of the likelihood of
+various scenarios of future climates. The Paris accord in 2015
+accepted to bring down CO$_{\text{2}}$ emissions so to limit the rise of the
+Earth's average temperature to \unit{1.5}{\celsius}. The
+failure of politicians and industrialists to take swift and sufficient
+action has led to the prediction that the increase will be close to
+\unit{3}{\celsius}.
+
+The modelling behind these numbers has overlooked a number of physical
+facts and processes which have led to unrealistically optimistic
+projections. A first-principles analysis uncovers a process of heating
+and a feedback mechanism with very different consequences for the
+future average Earth's temperature.
+
+\section{Rationale}
+\label{sec-2}
+Earth receives essentially all its energy from the Sun (heat loss due
+to cooling of the core and radiogenic heating amounts to
+\unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
+for the total solar energy delivered to the Earth). 
+
+In the absence of tectonic activity and of human interference, this
+received energy undergoes a number of conversions before ultimately
+being radiated out. The various conversion processes have their own
+response time, and they interact with each other. This results in a
+dynamic equilibrium, maintaining the temperature on Earth within
+fairly narrow bounds.
+
+A clear distinction has to be made between the changes in CO$_{\text{2}}$ and
+CH$_{\text{4}}$ concentrations and climate oscillations pre-Anthropocene and
+what is taking place now that a massive injection of CO$_{\text{2}}$ has taken
+place, geologically speaking instantaneously. Pre-Anthropocene, the
+greenhouse gases did not drive climate change, if anything, they were
+part of the feedback responses. It is not at all clear if the
+geological concentrations and the temperatures/ice volumes can be used
+as a direct, simple proxy for the effects of the human-caused
+concentrations.
+
+\section{A first principles approach}
+\label{sec-3}
+I'll be using R to carry out most of the calculations, so let's bring
+in the libraries needed and define a number of constants we'll be
+using later on. The values of the various constants included have been
+taken from CODATA 2010.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+library("dplyr")
+library("ggplot2")
+library("magrittr")
+library("pracma")
+library("tidyr")
+
+R_gas <- 8.314471               # J / K mol, Gas constant
+N_A <- 6.02214129e23            # / mol, Avogadro constant
+k_boltzmann <- 1.3806488e-23    # J / K, Boltzmann constant (R / N_A)
+h_planck <- 6.62606957e-34      # J s, Planck constant
+c_light <- 299792458            # m / s, speed of light
+sigma_stefan <- 5.670373e-8     # W / m^2 K^4, Stefan-Boltzmann constant
+p0 <- 101325                    # Pa, standard pressure
+\end{lstlisting}
+
+\subsection{Atmosphere}
+\label{sec-3-1}
+\citet{trenberth-smith05:atmosphere} provide a carefully argued
+calculation of the total mass of the atmosphere.
+
+The total mean mass amounts to \unit{5.1480}{\exad\kilogram} with an
+annual range due to water vapour of \unit{1.5}{\petad\kilogram}. The
+mean mass of water vapour is estimated as \unit{12.7}{\petad\kilogram}
+and the dry air mass as \unit{5.1352}{\exad\kilogram}.
+
+Composition of the atmosphere
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+component & fraction & mol mass\\
+\midrule
+N$_{\text{2}}$ & 0.7808 & 28.0134\\
+O$_{\text{2}}$ & 0.2094 & 31.8888\\
+Ar & 0.0093 & 39.948\\
+CO$_{\text{2}}$ & 0.0004 & 43.8998\\
+\bottomrule
+\end{tabular}
+\end{center}
+which yields an average mol mass for air of 28.9395
+
+Assuming a homogeneous mix throughout the atmospheric column, these
+numbers allow us to calculate the absolute amount of CO$_{\text{2}}$ in the
+atmosphere, given concentration measurements (with M mass, MM molar
+mass and [x] concentration), i.e.,
+
+\begin{equation}
+\mathrm{M_{CO_2}} = \frac{\mathrm{M_{air}}}{\mathrm{MM_{air}}} [x_{\mathrm{CO_2}}] \mathrm{MM_{CO_2}}
+\end{equation}
+
+And so we get for the conditions of relevant geological times
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+ & CO$_{\text{2}}$ (ppm) & CO$_{\text{2}}$ (\petad\kilogram)\\
+\midrule
+Glacial & 180 & 1.4056\\
+Interglacial & 280 & 2.1866\\
+Pliocene(?) & 350 & 2.7332\\
+Present Day & 420 & 3.2799\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+which suggests that the Glacial-Interglacial alternations correspond
+to some \unit{781}{\terad\kilogram} CO$_{\text{2}}$ (or
+\unit{17.79}{\petad\mole}) entering and leaving the atmosphere. It
+also tells us that we have currently \unit{1.0933}{\petad\kilogram} in
+excess of Interglacial amounts of CO$_{\text{2}}$ in the atmosphere.
+
+\citet{mlynczak-al16:spectroscopic} used a set of atmospheric
+profiles, based on the studies by
+\citet{mcclatchey-al72:atmosphere}. These profiles include pressure,
+temperature, water and ozone content in function of height,
+differentiating tropical, mid-latitude and subarctic latitudes as well
+as summer/winter differentiation.
+
+Let's have a quick, first look at the data, with pressures in Pa,
+temperature in K, and water content in \gram\per\metre\cubed
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+atm_equ <- read.table("data/grl54358_atmosphere_tropical.dat",
+		       col.names = c("height", "pressure",
+				     "temperature", "water", "ozone"),
+		       skip = 2) %>%
+    mutate(pressure = pressure * 100,
+	   latitude = "Equatorial") %>%
+    select(-ozone)
+
+atm_mid_s <- read.table("data/grl54358_atmosphere_midlat_summer.dat",
+			 col.names = c("height", "pressure",
+				     "temperature", "water", "ozone"),
+			 skip = 2) %>%
+    mutate(pressure = pressure * 100,
+	   latitude = "Temperate",
+	   season = "Summer") %>%
+    select(-ozone)
+
+atm_mid_w <- read.table("data/grl54358_atmosphere_midlat_winter.dat",
+			 col.names = c("height", "pressure",
+				     "temperature", "water", "ozone"),
+			 skip = 2) %>%
+    mutate(pressure = pressure * 100,
+	   latitude = "Temperate",
+	   season = "Winter") %>%
+    select(-ozone)
+
+atm_pol_s <- read.table("data/grl54358_atmosphere_subarctic_summer.dat",
+			 col.names = c("height", "pressure",
+				     "temperature", "water", "ozone"),
+			 skip = 2) %>%
+    mutate(pressure = pressure * 100,
+	   latitude = "Polar",
+	   season = "Summer") %>%
+    select(-ozone)
+
+atm_pol_w <- read.table("data/grl54358_atmosphere_subarctic_winter.dat",
+			 col.names = c("height", "pressure",
+				     "temperature", "water", "ozone"),
+			 skip = 2) %>%
+    mutate(pressure = pressure * 100,
+	   latitude = "Polar",
+	   season = "Winter") %>%
+    select(-ozone)
+
+atmosphere <- atm_equ %>%
+    gather("property", "value", 2:4) %>%
+    bind_rows(gather(atm_mid_s, "property", "value", 2:4)) %>%
+    bind_rows(gather(atm_mid_w, "property", "value", 2:4)) %>%
+    bind_rows(gather(atm_pol_s, "property", "value", 2:4)) %>%
+    bind_rows(gather(atm_pol_w, "property", "value", 2:4))
+
+ggplot(atmosphere) +
+    geom_line(aes(height, value, colour = season)) +
+    facet_wrap(~latitude+property, scales = "free_y") +
+    theme(legend.position = "bottom") +
+    labs(x = "Height (km)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/atmosphere_profile.pdf}
+
+\subsection{Solar energy spectrum}
+\label{sec-3-2}
+By comparing the solar radiation spectrum as it is emitted with that
+measured at the Earth's surface, we get information on how and how
+much energy is captured by the greenhouse gases, i.e., water vapour,
+CO$_{\text{2}}$ and CH$_{\text{4}}$. Bringing in their absorption spectra should give us
+the means to calculate how much heat is retained as a function of
+their concentrations in the atmosphere. The principle appears simple,
+practice seems to present quite some difficulties.
+
+The Sun radiates energy out, the spectrum of which can be described
+remarkably well as that of a black body. That principle can of course
+also be applied to the Earth.
+
+Black body radiation was first analysed and described by
+\citet{planck00:energieverteilung} as
+\begin{equation}
+u(\nu, T) = \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1}
+\end{equation}
+with $\nu$ the frequency of the radiation. Integrating over all the
+frequencies yields
+\begin{equation}
+\begin{split}
+U(T) & = \int_0^\infty \frac{8 \pi \nu^2}{c^3} \frac{h \nu}{e^{h \nu / k T} - 1} d \nu\\
+     & = \frac{8 \pi^2}{60 c^3 h^3}k^4 T^4 \\
+     & = \frac{4}{c} \sigma T^4
+\end{split}
+\end{equation}
+with $\sigma$ the Stefan-Boltzman constant (as a combination of the
+other constants, we can calculate this very easily as
+\unit{56.70373}{\nano\watt\per\metre\squared\fourth\kelvin}). Note
+that the usual relation for black body radiation
+\begin{equation}
+R(T) = \sigma T^4
+\end{equation}
+is the result of additional, and very much needed, integration over
+all the angles of radiation of the previous integration: that one
+addresses the ``uni-directional'' flux of energy.
+
+There is a caveat to be heeded here. The relation between frequency
+and wavelength cannot be used as is to convert the calculations from
+frequency-based values to wavelength-based ones, that is to say
+\begin{equation}
+\begin{split}
+u(\lambda, T) d\lambda & = -u(\epsilon, T) d\epsilon \\
+\frac{d\epsilon}{d\lambda} & = -\frac{h c}{\lambda^2}
+\end{split}
+\end{equation}
+and hence we get
+\begin{equation}
+u(\lambda, T) = \frac{8 \pi h c}{\lambda^5} \frac{1}{e^{h c /\lambda k T} - 1}
+\end{equation}
+
+Let's see this distribution for the Sun, with a temperature of some
+\unit{5778}{\kelvin} 
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+T_sun <- 5778
+a1 <- 8 * pi * h_planck * c_light
+a2 <- h_planck * c_light / (k_boltzmann * T_sun)
+
+sun_energy <- data.frame(lambda = seq(100, 5000, 10)*1e-9) %>%
+    mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)))
+
+ggplot(sun_energy) +
+    geom_line(aes(lambda*1e9, Energy)) +
+    labs(title = "Solar Radiation, Black Body at 5778 K",
+	 x = "Wavelength (nm)",
+	 y = "Energy (J/m3.m)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/solar_spectrum.pdf}
+
+Let's check these calculations and equations, and compare the
+(numerical) integration of the curve with the calculated energy, i.e.,
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+sun_integral <- (sum(sun_energy$Energy) * 1e-8 )
+sun_blackbody <- sigma_stefan * T_sun^4
+
+(sun_integral * c_light / 4) / sun_blackbody
+\end{lstlisting}
+
+\begin{verbatim}
+[1] 0.99478
+\end{verbatim}
+
+That confirms the numerical calculations: in addition, a dimensional
+analysis likewise confirms the correctness of the need for the speed
+of light as part of the final calculation
+(\joule\per\metre\cubed $\times$ \metre\per\second $=$
+\watt\per\metre\squared).
+
+In order to calculate the actual energy distribution arriving on
+Earth, we need to scale the black body spectrum just calculated, that
+is to say, reduce it to the amount of energy arriving at the
+Earth. 
+And so we can confirm that that we do have
+\unit{341.57}{\watt\per\metre\squared} coming in, averaged over the
+globe and over the year. That allows us now to scale the energy of the
+solar spectrum arriving at the Earth
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+solar_incoming <- 341.57
+scale_factor <- solar_incoming * c_light / (4 * sigma_stefan * T_sun^4)
+
+sun_energy %<>%
+    mutate(Energy = Energy * scale_factor)
+
+ggplot(sun_energy) +
+    geom_line(aes(lambda*1e9, Energy)) +
+    labs(title = "Incoming Solar Radiation profile",
+	 x = "Wavelength (nm)",
+	 y = "Energy (W/m3)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/solar_spectrum_scaled.pdf}
+
+A quick check to see if this normalisation is correct:
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+sum(sun_energy$Energy) * 1e-8
+\end{lstlisting}
+
+\begin{verbatim}
+[1] 339.787
+\end{verbatim}
+
+which is sufficiently close to the expected value of
+\unit{341.57}{\watt\per\metre\squared}.
+
+This amount of incoming solar radiation gives us also a means of
+assessing to what extent the Earth can be considered as a black
+body. The amount of energy arriving at the Earth has to be radiated
+out again (if not, the Earth's temperature would increase), we can
+calculate the expected black body temperature as
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+(solar_incoming / sigma_stefan)^(1/4)
+\end{lstlisting}
+
+\begin{verbatim}
+[1] 278.591
+\end{verbatim}
+
+which is about \unit{10}{\kelvin} below the current average Earth
+temperature of \unit{287}{\kelvin}. So, as expected, the Earth does
+not behave as a black body. In fact, about 30\% of the incoming energy
+is reflected out \citep{trenberth-al09:budget} implying that the
+theoretical black body temperature would be even lower, i.e.,
+\unit{254.8}{\kelvin} (and further reinforcing the deviation from
+black body assumptions).
+
+In principle, we can calculate the expected black body temperature of
+any of the planets, as some elementary algebra tells us that
+\begin{equation}
+T_{\mathrm{Planet}} = \sqrt{\frac{R_{\mathrm{Sun}}}{2 R_{\mathrm{orbit}}}} \, T_{\mathrm{Sun}}
+\end{equation}
+assuming of course that any planetary albedo will be zero
+
+So, given a solar radius of \unit{695508}{\kilo\metre} and a
+temperature of \unit{5778}{\kelvin}, we predict
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Planet & distance (km) & T$_{\text{Black Body}}$ (K)\\
+\midrule
+Mercury & 57909227 & 447.75\\
+Venus & 108209475 & 327.55\\
+Earth & 149598262 & 278.58\\
+Mars & 227943824 & 225.68\\
+Jupiter & 778340821 & 122.13\\
+Saturn & 1426666422 & 90.20\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Now, looking at the incoming solar radiation, the low amount of energy
+in the absorption bands of CO$_{\text{2}}$ are obvious.  However, when we turn
+to the equivalent black body radiation emitted by the Earth, we get a
+different picture. Repeating the earlier calculations for the solar
+energy, but this time for the Earth (with an average temperature of
+\unit{288}{\kelvin}), and using the estimated value of
+\unit{238.5}{\watt\per\metre\squared} of outgoing radiation
+\citep{trenberth-al09:budget}, we get
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+T_earth <- 287
+earth_outgoing <- 238.5
+scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
+
+a1 <- 8 * pi * h_planck * c_light
+a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
+earth_energy <- data.frame(lambda = seq(2000, 50000, 200)*1e-9) %>%
+    mutate(Energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
+	   Energy = Energy * scale_factor)
+
+ggplot(earth_energy) +
+    geom_line(aes(lambda*1e6, Energy)) +
+    labs(title = "Earth Radiation, Black Body at 288 K",
+	 x = expression(paste("Wavelength (", mu, "m)")),
+	 y = "Energy (W/m2)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/earth_spectrum.pdf}
+
+and so we see that a great deal of (outgoing) energy can be absorbed
+by CO$_{\text{2}}$, i.e., the actual greenhouse effect.
+
+\subsection{CO2}
+\label{sec-3-3}
+\subsubsection{Energy Absorption}
+\label{sec-3-3-1}
+
+The next step in the process is accounting for the absorption by
+CO$_{\text{2}}$, and also H$_{\text{2}}$O as parts of their absorption spectra overlap.
+
+A great deal of meticulous effort has been expended on obtaining these
+absorption spectra, including quantum mechanical calculations
+\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}.
+These efforts have culminated into a database which can be accessed
+on-line (\url{https://hitran.org/}) to obtain any desired data.  The level
+of detail captured in the database includes the separation of each
+isotope of the constituent atoms. The most abundant isotopic mix is
+marked with code number 1.
+
+A complete explanation of the  HITRAN data structure is as follows:
+
+\begin{center}
+\begin{tabular}{lrll}
+\toprule
+parameter & field length & format & units\\
+\midrule
+M & 2 & I2 & HITRAN molecule number code\\
+I & 1 & I1 & ordering within molecule by terrestrial abundance\\
+$\nu$ & 12 & F12.6 & \centi\reciprocal\metre\\
+S & 10 & E10.3 & \centi\reciprocal\metre\per\centi\rpsquare\metre molecule\\
+A & 10 & E10.3 & \reciprocal\second\\
+$\gamma$$_{\text{air}}$ & 5 & F5.4 & HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm$^{\text{-1}}$)\\
+$\gamma$$_{\text{self}}$ & 5 & F5.4 & HWHM at \unit{296}{\kelvin} (\centi\reciprocal\metre atm$^{\text{-1}}$)\\
+E'' & 10 & F10.4 & \centi\reciprocal\metre\\
+n$_{\text{air}}$ & 4 & F4.2 & exponent of $\gamma$$_{\text{air}}$\\
+$\delta$$_{\text{air}}$ & 8 & F8.6 & \centi\reciprocal\metre atm$^{\text{-1}}$\\
+V' & 15 & A15 & Upper state global quanta\\
+V'' & 15 & A15 & Lower state global quanta\\
+Q' & 15 & A15 & Upper state local quanta\\
+Q'' & 15 & A15 & Lower state local quanta\\
+Ierr & 6 & 6I1 & accuracy codes for $\nu$, S, $\gamma$$_{\text{air}}$, $\gamma$$_{\text{self}}$, n$_{\text{air}}$, $\delta$$_{\text{air}}$\\
+Iref & 12 & 6I2 & references for $\nu$, S, $\gamma$$_{\text{air}}$, $\gamma$$_{\text{self}}$, n$_{\text{air}}$, $\delta$$_{\text{air}}$\\
+flag & 1 & A1 & \\
+g' & 7 & F7.1 & weight of upper state\\
+g'' & 7 & F7.1 & weight of lower state\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The two molecules on interest in the analysis here are H$_{\text{2}}$O and
+CO$_{\text{2}}$. A query of the database for the most common isotopologues of
+these two molecules and including all the wavelengths for which data
+is available, yielded 319887 entries for H$_{\text{2}}$O and 174446 entries for
+CO$_{\text{2}}$.
+
+A neat way of bringing in the data is through an AWK script. Although
+the data is presented in a Fortran-type format, i.e., columnar, there
+is a possibility of defining fields by their width, rather than the
+usual AWK field separator character.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=awk,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+BEGIN{OFS = ","
+    FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
+      print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
+	     energy_lower, n_air, delta_air"}
+    {print $3, $4, $5, $6, $7, $8, $9, $10
+}
+\end{lstlisting}
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=awk,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+BEGIN{OFS = ","
+    FIELDWIDTHS = "2 1 12 10 10 5 5 10 4 8 60 6 12 1 7 7"
+      print "nu, intensity, Einstein_A, gamma_air, gamma_self, \
+	     energy_lower, n_air, delta_air"}
+    {print $3, $4, $5, $6, $7, $8, $9, $10
+}
+\end{lstlisting}
+
+Let's have a look at the absorption data, and in particular, let's try
+and contrast the H$_{\text{2}}$O and CO$_{\text{2}}$ absorption spectra.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+hitran_h2o <- read.csv("cache/hitran_h2o.dat")
+hitran_co2 <- read.csv("cache/hitran_co2.dat")
+
+hitran_abs <- hitran_h2o %>%
+    mutate(molecule = "H2O") %>%
+    bind_rows(hitran_co2 %>%
+	      mutate(molecule = "CO2")) %>%
+    select(nu, intensity, molecule)
+
+hitran_abs %>%
+    filter(intensity > 1e-24) %>%
+    ggplot() +
+    geom_line(aes(nu, intensity)) +
+    facet_wrap(~molecule, nrow=2) +
+    xlim(0, 10000) +
+    scale_y_log10() +
+    labs(title = "HITRAN Absorption Intensities",
+	 x = expression(paste("Wave number ", (cm^{-1}))),
+	 y = "Log Intensity")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/absorption.pdf}
+
+which shows rather nicely that there are essentially three regions in
+which CO$_{\text{2}}$ absorption can take place unhindered by the presence of
+water vapour (around 667, 2360 and
+\unit{5000}{\centi\reciprocal\metre}, the bands around 3600 and
+\unit{3700}{\centi\reciprocal\metre} appear to be largely saturated by
+the H$_{\text{2}}$O absorption).
+
+Taking a closer look around these four regions
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+hitran_abs %>%
+    filter(nu > 590 & nu < 740) %>%
+    mutate(region = 665) %>%
+    bind_rows(filter(hitran_abs, nu > 2265 & nu < 2415) %>%
+	      mutate(region = 2340)) %>%
+    bind_rows(filter(hitran_abs, nu > 3550 & nu < 3800) %>%
+	      mutate(region = 3625)) %>%
+    bind_rows(filter(hitran_abs, nu > 4800 & nu < 5050) %>%
+	      mutate(region = 4900)) %>%
+    filter(intensity > 1e-25) %>%
+    ggplot() +
+    geom_line(aes(nu, intensity, colour = molecule)) +
+    facet_wrap(~region,scales="free") +
+    labs(title = "HITRAN Absorption Intensities",
+	 x = expression(paste("Wave number ", (cm^{-1}))),
+	 y = "Intensity") +
+    theme(legend.position = "bottom")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/absorption_details.pdf}
+
+we get a first good inkling of the relative importance of the
+different bands. But we also need to bring into consideration the
+amount of energy available for absorption, i.e., where these
+absorption bands fall in the Earth's black body spectrum.
+
+An first glimpse can be had by superposing the black body radiation
+profile with the CO$_{\text{2}}$ absorption bands
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+co2_spectrum <- hitran_co2 %>%
+    mutate(lambda = 0.01/nu) %>%
+    select(lambda, intensity)
+
+ggplot(earth_energy) +
+    geom_line(aes(lambda*1e6, intensity*1e25),
+	      data = co2_spectrum) +
+    geom_line(aes(lambda*1e6, Energy), color = "red") +
+    scale_y_continuous(sec.axis =
+			   sec_axis(~. /1e25, name = "CO2 Absorption")) +
+    labs(title = "Earth's Black Body Radiation (288 K) and CO2 Absorption",
+	 x = expression(paste("Wavelength (", mu, "m)")),
+	 y = "Energy (W/m2)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/bb_radiation_co2.pdf}
+
+Let's calculate the energy available to these absorption bands
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+earth_avail <- data.frame(lambda = seq(13.50,16.95,0.1)*1e-6,
+			  band = "0665", stringsAsFactors = FALSE) %>%
+    bind_rows(data.frame(lambda = seq(4.14,4.42,0.02)*1e-6,
+			 band = "2340", stringsAsFactors = FALSE)) %>%
+    bind_rows(data.frame(lambda = seq(2.63,2.82,0.01)*1e-6,
+			 band = "3625", stringsAsFactors = FALSE)) %>%
+    bind_rows(data.frame(lambda = seq(1.97,2.03,0.005)*1e-6,
+			 band = "5000", stringsAsFactors = FALSE))
+
+lambda_steps <- data.frame(band = c("0665", "2340", "3625", "5000"),
+			   stepsize = c(0.1e-6, 0.02e-6, 0.01e-6, 0.005e-6),
+			   stringsAsFactors = FALSE)
+
+T_earth <- 287
+earth_outgoing <- 238.5
+scale_factor <- earth_outgoing * c_light / (4 * sigma_stefan * T_earth^4)
+a1 <- 8 * pi * h_planck * c_light
+a2 <- h_planck * c_light / (k_boltzmann * T_earth)
+
+earth_avail %<>%
+    mutate(energy = a1 / (lambda^5 * (exp(a2 / lambda) - 1)),
+	   energy = energy * scale_factor) %>%
+    group_by(band) %>%
+    summarise_at("energy", sum) %>%
+    ungroup() %>%
+    left_join(lambda_steps, by = "band") %>%
+    mutate(energy = energy * stepsize) %>%
+    select(-stepsize)
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+wave number \centi\reciprocal\metre & \textmu{}\metre & energy (\watt\per\metre\squared)\\
+\midrule
+665 (590-740) & 16.95-13.51 & 38.478\\
+2340 (2265-2415) & 4.42-4.14 & 0.399\\
+3625 (3550-3800) & 2.82-2.63 & 0.0033\\
+5000 (4925-5075) & 2.03-1.97 & 0.0000062\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+which shows the significant differences between the different
+regions. Clearly, the region of the
+\unit{665}{\centi\reciprocal\metre} is almost a hundred times larger
+than the next band, and even more so for other regions. It would be
+wise, then, to investigate this region more closely.
+
+On the subject of energy available for absorption, let's take the
+opportunity to document the relation between (assumed black body)
+temperature and energy. Given different earth surface temperatures,
+how much energy is then radiated out again in the CO$_{\text{2}}$ absorption
+regions of interest? We can get the values from simply running the
+code snippet just above for a suite of temperatures: that gives for
+the \unit{665}{\centi\reciprocal\metre} band
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{rr}
+\toprule
+T (\kelvin) & Energy (\watt\per\metre\squared)\\
+\midrule
+265 & 39.77\\
+270 & 39.54\\
+275 & 39.27\\
+280 & 38.95\\
+285 & 38.62\\
+290 & 38.26\\
+295 & 37.87\\
+300 & 37.46\\
+305 & 37.03\\
+310 & 36.59\\
+\bottomrule
+\end{tabular}\caption{\label{energy665}Temperature dependence of energy available for absorption}
+
+\end{table}
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+names(energy665) <- c("T","Energy")
+
+ggplot(energy665) +
+    geom_line(aes(T, Energy)) +
+    labs(title = "Energy available in 665 band",
+	 x = "T (K)",
+	 y = "Energy (W/m2)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/energy665.pdf}
+
+The paradox of larger amounts of energy available at lower temperature
+(within the range explored here) where one would expect the opposite
+is simply due to the shape of the black body curve and the spot
+occupied by the band of interest. The relevance of this
+counterintuitive finding lies with the suggestion that more energy is
+available for absorption by CO$_{\text{2}}$ in the colder regions.
+
+The shape of an absorption peak is not as straightforward a matter as
+one might expect. An absorption line is broadened around its
+transition wavelength due to temperature, pressure, and presence of
+other molecules \citep{tennyson-al14:IUPAC}. In the lower atmosphere,
+the broadening of a line is largely driven by collisions with other
+molecules, and can be modeled by a Lorentz profile:
+\begin{equation}
+L(\nu; \nu_{ij}, p, T) = \frac{1}{\pi} \frac{\gamma(p, T)}{\gamma(p, T)^2 + (\nu - \nu^*_{ij})^2}
+\end{equation}
+where
+\begin{equation}
+\begin{split}
+\gamma(p, T) & = \Bigg( \frac{T_0}{T} \Bigg)^{n_{air}} \bigg( \gamma_{air}(p_0, T_0)(p - p_{self}) + \gamma_{self}(p_0, T_0) p_{self} \bigg) \\
+\nu_{ij}^* & = \nu_{ij} + \delta p_0 p
+\end{split}
+\end{equation}
+In addition, the thermal translational movement of the molecules also
+causes a Doppler effect, which shows up as a frequency shift. The
+resulting profile can be described by a Gaussian curve, 
+\begin{equation}
+G(\nu - \nu_0) = \sqrt{\frac{\ln 2}{\pi}} \frac{1}{\Gamma_D} e^{-\ln 2 (\frac{\nu - \nu_0}{\Gamma_D})^2}
+\end{equation}
+with $\Gamma$$_{\text{D}}$ the Doppler half-width
+\begin{equation}
+\Gamma_D = \sqrt{\frac{2 \ln 2 k T}{m c^2}} \nu_0
+\end{equation}
+To account for both effects, these two profiles can be convoluted into
+a Voigt Profile
+\begin{equation}
+I(\nu) = \int^{\infty}_{-\infty} G(\nu') L(\nu - \nu') d\nu'
+\end{equation}
+which needs to be evaluated numerically \citep{thompson93:voigt}.
+
+Fortunately, a fortran package with associated data files
+\citep{gordon-al22:hitran2020,lamouroux-al15:linemixing} is freely
+available from \url{https://hitran.org/supplementary/} and allows for easy
+experimentation.  The following variables can be changed before
+carrying out the calculations
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+variable & unit & description\\
+\midrule
+SgMinR & \centi\reciprocal\metre & Minimum wavenumber\\
+SgMaxR & \centi\reciprocal\metre & Maximum wavenumber\\
+dSg & \centi\reciprocal\metre & Wavenumber step size\\
+sTotMax &  & Band intensity cut-off\\
+Temp & K & Temperature\\
+Ptot & atm & Total pressure\\
+xCO2 &  & CO$_{\text{2}}$ mole fraction\\
+xH2O &  & H$_{\text{2}}$O mole fraction\\
+MixFull & logical & Full line mixing calcs\\
+MixSDV & logical & Speed-dependent Voigt profile\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+I have modified the fortran code a little so that these variables are
+read in from a separate file (lm\_input.in), rather than having to
+change the parameters in the code and then recompiling the code. As a
+result, it becomes much easier to carry out more numerous
+calculations.
+
+The results of the calculations all go into a file
+(ABSCO\_HIT2020.dat), all in \centi\reciprocal\metre. Looking more
+closely at the fortran code reveals that the absorption coefficient is
+standardised to the number of CO$_{\text{2}}$ molecules per \metre\cubed, i.e.,
+the mole fraction $x_{CO_2}$, temperature $T$ and pressure $p$ are
+used to calculate the number of molecules: the absorption is then
+multiplied with this ``density''.
+
+\begin{equation}
+d_{\mathrm{CO}_2} = \frac{p N_A x_{\mathrm{CO}_2}}{R T}
+\end{equation}
+
+The output format is as follows
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+entry & description\\
+\midrule
+nu & wave number\\
+AbsV & Absorption coeffcient using Voigt line shape, no line mixing\\
+AbsY & Absorption coefficient, first-order line mixing\\
+AbsW & Absorption coefficient, full diagonalisation line mixing\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+As an example, let's calculate the absorption centered around an
+absorption peak at \unit{15}{\micro\metre} (or, in the cgs units
+used by the code, \unit{150}{\centi\reciprocal\metre} around
+\unit{665}{\centi\reciprocal\metre}) with the other parameter values
+as listed in the table
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+variable & value & unit\\
+\midrule
+dSg & 0.01 & \centi\reciprocal\metre\\
+sTotMax & 0.1 10$^{\text{-28}}$ & \\
+Temp & 290 & K\\
+Ptot & 1.0 & atm\\
+xCO2 & 420 10$^{\text{-6}}$ & \\
+xH2O & 0 & \\
+MixFull & .False. & logical\\
+MixSDV & .True. & logical\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+We can use a shell script to store the desired parameters and their
+values into the expected lm\_input.in file and then run the modified
+lm\_calc program. Let's move the output of the calculations to the
+cache directory, where we can access it for further scrutiny
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd hitran2020
+cat > lm_input.in <<EOF
+SgMinR  590.0
+SgMaxR  740.0
+dSg     0.01
+sTotMax 0.1e-28
+Temp    290
+Ptot    1.0
+xCO2    420.e-6
+xH2O    0
+MixFull 0
+MixSDV  1
+EOF
+
+./lm_calc
+mv ABSCO_HIT2020.dat ../cache/hitran_lm_665.dat
+cd ..
+\end{lstlisting}
+
+And here is a plot of the results
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+hitran_665 <- read.table("cache/hitran_lm_665.dat",
+			  col.names = c("nu","Voigt","First_Order","Full_Calc"))
+
+ggplot(hitran_665) +
+    geom_line(aes(nu, Voigt)) +
+    labs(title = "Absorption Coefficients, with Voigt Profile",
+	 x = expression(paste('Wave number ', (cm^{-1}))),
+	 y = expression(paste('Absorption Coefficient ', (cm^{-1}/m^3))))
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/hitran_665.pdf}
+
+It is a straightforward matter to calculate the area under the curves
+(sum of all the values multiplied with the step size), and so we can
+assess the contributions of the various absorption bands.
+
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+wave number \centi\reciprocal\metre & \textmu{}\metre & IAbs\_V & IAbs\_f\\
+\midrule
+665 & 15.0 & 0.09656 & 0.09659\\
+2340 & 4.27 & 1.07276 & 1.07349\\
+3625 & 2.76 & 0.01197 & 0.01197\\
+3725 & 2.68 & 0.01775 & 0.01776\\
+4845 & 2.06 & 0.00009 & 0.00009\\
+5000 & 2.00 & 0.00040 & 0.00040\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+As the intervals span \unit{150}{\centi\reciprocal\metre}, the maximum
+area under the curve would stand at
+\unit{150}{\centi\reciprocal\metre}, and the numbers above should be
+divided by this. Clearly, the amount of radiation absorption at these
+concentrations is small.
+
+The table shows that the bands around 3625 and
+\unit{3727}{\centi\reciprocal\metre}, which as we have already had
+some indication of, are largely subsumed in one of the H$_{\text{2}}$O bands,
+account for barely 2.5\% of the overall absorption, while the bands
+around \unit{5000}{\centi\reciprocal\metre} account for even less than
+that. But, as we saw earlier, the energy available for absorption in
+the band around \unit{665}{\centi\reciprocal\metre} is two order of
+magnitude larger than that available to
+\unit{2340}{\centi\reciprocal\metre}, we can safely neglect all but
+the \unit{665}{\centi\reciprocal\metre} band for further
+consideration.
+
+We are now in a position to explore the effects of changes in pressure
+and temperature on the integrated absorption. Perusal of the Lorentz
+and Gau\ss profile equations above hint that concentration differences
+in CO$_{\text{2}}$ will have very little effect on the individual absorption,
+particularly at the ppm concentrations we are dealing with here.
+
+First, the dependence between absorbance and pressure
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd hitran2020
+rm -f ../cache/lm_calc_p.dat
+
+cat > lm_input.stub <<EOF
+SgMinR  590.0
+SgMaxR  740.0
+dSg     0.01
+sTotMax 0.1e-28
+Temp    290
+xCO2    420.e-6
+xH2O    0
+MixFull 0
+MixSDV  1
+Ptot    1.0
+EOF
+
+for p in 1.0 0.5 0.1 0.05 0.01; do
+    head -9 lm_input.stub > lm_input.in
+    cat >> lm_input.in <<EOF
+Ptot    $p
+EOF
+
+./lm_calc
+
+awk -v press=$p '{AbsV += $2;AbsL += $3}END{print press, AbsV/100, AbsL/100}' \
+    ABSCO_HIT2020.dat >> ../cache/lm_calc_p.dat
+
+done
+cd ..
+\end{lstlisting}
+
+Let's plot the results of the integrated speed-dependent Voigt
+absorption, relative to the base case
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+Press_Abs <- read.table("cache/lm_calc_p.dat",
+			col.names = c("pressure", "AbsV", "AbsL"))
+
+Press_Abs %>%
+    mutate(Voigt = AbsV / (pressure * Press_Abs$AbsV[1])) %>%
+    ggplot() +
+    geom_point(aes(pressure * p0/1000, Voigt)) +
+    labs(title = "Relative Absorbance in function of Pressure",
+	 x = "Pressure (kPa)",
+	 y = "Relative Speed-dependent Voigt Absorbance")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/hitran_PA.pdf}
+
+Clearly, the dependence to pressure is very small indeed.
+
+Turning now to the temperature yields the following values
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd hitran2020
+rm -f ../cache/lm_calc_T.dat
+
+cat > lm_input.stub <<EOF
+SgMinR  590.0
+SgMaxR  740.0
+dSg     0.01
+sTotMax 0.1e-28
+Ptot    1.0
+xCO2    420.e-6
+xH2O    0
+MixFull 0
+MixSDV  1
+Temp    290
+EOF
+
+for T in 290 280 270 260 250 240 230 220 210 200; do
+    head -9 lm_input.stub > lm_input.in
+    cat >> lm_input.in <<EOF
+Temp    $T
+EOF
+
+./lm_calc
+
+awk -v Temp=$T '{AbsV += $2;AbsL += $3}END{print Temp, AbsV/100, AbsL/100}' \
+    ABSCO_HIT2020.dat >> ../cache/lm_calc_T.dat
+
+done
+cd ..
+\end{lstlisting}
+
+again, removing the density effect of the Temperature changes and
+normalising to the base case, we get the plot
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+Temp_Abs <- read.table("cache/lm_calc_T.dat",
+			col.names = c("Temperature", "AbsV", "AbsL"))
+
+Temp_Abs %>%
+    mutate(Voigt = AbsV * Temperature /
+	       (Temp_Abs$AbsV[1] * Temp_Abs$Temperature[1])) %>%
+    ggplot() +
+    geom_point(aes(Temperature, Voigt)) +
+    labs(title = "Relative Absorbance in function of Temperature",
+	 x = "Temperature (K)",
+	 y = "Relative Speed-dependent Voigt Absorbance")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/hitran_TA.pdf}
+
+The last two graphs show that the relative effects of pressure and
+temperature ranges encountered in the atmosphere on the absorbance are
+tiny in comparison with the changes in CO$_{\text{2}}$ concentrations.
+
+Let's check to what extent this effect plays out on the typical
+atmospheric p,T profile.  Let's use the values of temperature,
+pressure and water content of the earlier mentioned model atmosphere
+profiles, and calculating the integrated absorbance at 420 ppm CO$_{\text{2}}$,
+again \unit{150}{\centi\reciprocal\metre} around the
+\unit{665}{\centi\reciprocal\metre} wave number. Note that the
+pressure in the original data files is expressed in mbar, so we need
+to convert to atm as expected by the HITRAN program
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+cd hitran2020
+rm -f ../cache/atm_profile_results.dat
+
+awk 'NR > 2 && $1 < 46 {print "SgMinR  590.0\nSgMaxR  740.0\ndSg     0.01\n\
+TotMax  0.1e-28\nxCO2    420.e-6\nMixFull 0\nMixSDV  1\nTemp    "$3 "\n\
+Ptot    "$2/1013.25 "\nxH2O    "$4}' \
+../data/grl54358_atmosphere_tropical.dat > lm_input.new
+
+for i in `awk 'BEGIN { for( i=1; i<=46; i++ ) print i }'`; do
+    my_n=$(($i*10))
+    my_h=$(($i-1))
+    head -$my_n lm_input.new | tail -10 > lm_input.in
+    ./lm_calc
+    awk -v h=$my_h '{AbsV += $2;AbsL += $3}END{print h, AbsV/100, AbsL/100}'\
+	ABSCO_HIT2020.dat >> ../cache/atm_profile_results.dat 
+done
+
+cd ..
+\end{lstlisting}
+
+From the atmospheric profile for a mid-latitude summer, we then obtain
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+abs_profile <-
+    read.table("cache/atm_profile_results.dat",
+	       col.names = c("height", "AbsV", "AbsF"))
+
+abs_profile %<>%
+    left_join(atm_mid_s, by="height") %>%
+    mutate(AbsV = AbsV / 150,
+	   AbsF = AbsF / 150)
+
+ggplot(abs_profile) +
+    geom_line(aes(height, AbsV)) +
+    labs(title = "Mid-latitude Summer Atmospheric Absorption Profile",
+	 x = "Height (km)",
+	 y = expression(paste('Absorption Coefficient ', (m^{-3}))))
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/abs_profile.pdf}
+
+As the density of CO$_{\text{2}}$ is the main driver in this absorption
+profile, let's see how the individual molecule absorption varies with
+the atmospheric conditions
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+xCO2 <- 420e-6
+abs_profile %<>%
+    mutate(CO2 = pressure * N_A * xCO2 / (R_gas * temperature),
+	   Voigt = AbsV / CO2,
+	   First = AbsF / CO2)
+
+ggplot(abs_profile) +
+    geom_line(aes(height, Voigt / abs_profile$Voigt[1])) +
+    labs(title = "Molecule-specific  Absorption Profile",
+	 x = "Height (km)",
+	 y = "Relative Absorption ")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/abs_profile_molecule.pdf}
+
+which is consistent with the pressure-temperature dependencies we've
+looked at earlier.
+
+We can calculate the total absorption of this atmospheric column from
+\begin{equation}
+A = 1 - \prod_1^n (1 - a_i)
+\end{equation}
+where $a_i$ stands for the absorption in a volume element $i$. Bearing
+in mind that the HITRAN calculations have been carried out for
+\unit{1}{\cubic\metre} at \unit{1}{\kilo\metre} intervals in the
+atmospheric column, it is a good idea to extend the calculations by
+interpolating the volume element absorptions.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+band_energy <- earth_avail$energy[earth_avail$band == "0665"]
+
+absorption <- data.frame(h = seq(0, 45, 0.001)) %>%
+    mutate(AbsV = interp1(abs_profile$h, abs_profile$AbsV, h,
+			  method = "spline"),
+	   AbsF = interp1(abs_profile$h, abs_profile$AbsF, h,
+			  method = "spline"),
+	   transV = cumprod(1 - AbsV),
+	   transF = cumprod(1 - AbsF)) %>%
+    summarise_all(min) %>%
+    mutate(Voigt = 1 - transV,
+	   Line = 1 - transF) %>%
+    select(Voigt, Line) %>%
+    mutate(Voigt_Abs = Voigt * band_energy,
+	   Line_Abs = Line * band_energy)
+absorption
+\end{lstlisting}
+
+\begin{verbatim}
+      Voigt      Line Voigt_Abs Line_Abs
+1 0.9957845 0.9957734  38.31587 38.31545
+\end{verbatim}
+
+Now we can run a suite of different CO$_{\text{2}}$ concentrations and see how
+the absorption, and absorbed energy, changes. The choice of
+concentrations reflects a number of known conditions, as tabled here
+
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+ & CO$_{\text{2}}$ (ppm)\\
+\midrule
+Glacial & 180\\
+Interglacial & 280\\
+Pliocene? & 360\\
+Present Day & 420\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+And we can extend that analysis over the different atmospheric
+profiles looked at higher up. That gives us
+
+\begin{center}
+\begin{tabular}{llrrr}
+\toprule
+latitude & season & CO2 & Voigt & Abs\\
+\midrule
+mid & summer & 180 & 0.87569 & 33.631\\
+mid & summer & 280 & 0.96097 & 36.906\\
+mid & summer & 360 & 0.98455 & 37.811\\
+mid & summer & 420 & 0.99229 & 38.109\\
+mid & winter & 180 & 0.87476 & 33.596\\
+mid & winter & 280 & 0.96052 & 36.889\\
+mid & winter & 360 & 0.98432 & 37.803\\
+mid & winter & 420 & 0.99216 & 38.104\\
+subarctic & summer & 180 & 0.87381 & 33.559\\
+subarctic & summer & 280 & 0.96005 & 36.871\\
+subarctic & summer & 360 & 0.98408 & 37.794\\
+subarctic & summer & 420 & 0.99202 & 38.099\\
+subarctic & winter & 180 & 0.87157 & 33.473\\
+subarctic & winter & 280 & 0.95894 & 36.828\\
+subarctic & winter & 360 & 0.98351 & 37.772\\
+subarctic & winter & 420 & 0.99168 & 38.086\\
+tropical & summer & 180 & 0.87654 & 33.664\\
+tropical & summer & 280 & 0.96138 & 36.922\\
+tropical & summer & 360 & 0.98476 & 37.820\\
+tropical & summer & 420 & 0.99241 & 38.114\\
+tropical & winter & 180 & 0.87654 & 33.664\\
+tropical & winter & 280 & 0.96138 & 36.922\\
+tropical & winter & 360 & 0.98476 & 37.820\\
+tropical & winter & 420 & 0.99241 & 38.114\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+ggplot(atm_abs_profiles) +
+    geom_line(aes(CO2,Voigt, colour = latitude)) +
+    facet_wrap(~season) +
+    labs(title = "Total Atmospheric Absorption by latitude and season",
+	 x = "CO2 (ppm)",
+	 y = "Voigt-based Absorption") +
+    theme(legend.position = "bottom")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/atm_abs_profiles.pdf}
+
+According to these calculations, and in keeping with the earlier
+uncovered tiny temperature and pressure effects, latitudinal and
+seasonal variation have a negligible effect on the atmospheric
+absorption profile. The degree of absorption is very high, and the
+variation driven by the known changes in CO$_{\text{2}}$ concentrations is
+surprisingly small. If this approach and analysis is indeed correct,
+that implies that the climatic system is remarkably sensitive to very
+small changes in (re-)absorbed energy. The calculations here suggest
+that 2-\unit{3}{\watt\per\metre\squared} are sufficient to move from
+glacial-interglacial cycles to a hothouse type of climate.
+
+In view of the unexpected and remarkable insensitivity of the
+absorption to the latitude profiles and their seasonal variation, we
+can just pick one of these profiles and calculate the absorptions as a
+function of CO$_{\text{2}}$ concentrations with finer granularity.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+  cd hitran2020
+
+  for CO2 in 150 175 200 225 250 275 300 325 350 375 400 425 450 475 500; do
+      awk -v cco2=$CO2 'NR > 2 && $1 < 46 {print "SgMinR  590.0\nSgMaxR  740.0\n\
+dSg     0.01\n\TotMax  0.1e-28\nxCO2    "cco2".e-6\nMixFull 0\nMixSDV  1\n\
+Temp    "$3 "\nPtot    "$2/1013.25 "\nxH2O    "$4}' \
+	  ../data/grl54358_atmosphere_midlat_summer.dat > lm_input.new
+
+      for i in `awk 'BEGIN { for( i=1; i<=46; i++ ) print i }'`; do
+	  my_n=$(($i*10))
+	  my_h=$(($i-1))
+	  head -$my_n lm_input.new | tail -10 > lm_input.in
+	  ./lm_calc
+	  awk -v h=$my_h '{AbsV += $2;AbsL += $3}\
+END{print h, AbsV/100, AbsL/100}'\
+	      ABSCO_HIT2020.dat >> ../cache/atm_profile_ppm.dat 
+      done
+  done
+  cd ..
+\end{lstlisting}
+
+Let's process the data generated by this script (I suspect there is a
+more elegant way in which to carry out the interpolations on the
+different columns, something with the 'apply' function, but this will
+do for now)
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+ppm_profiles <- read.table("cache/atm_profile_ppm.dat",
+			   col.names = c("ppm", "height", "AbsV", "AbsF"))
+
+ppm_abs_profiles <- 
+    ppm_profiles %>%
+    mutate(AbsV = AbsV / 150,
+	   AbsF = AbsF / 150) %>%
+    select(-AbsF) %>%
+    spread(ppm, AbsV)
+
+ppm_abs <- data.frame(h = seq(0, 45, 0.001)) %>%
+    mutate(`150` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`150`,
+			       h, method = "spline"),
+	   `175` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`175`,
+			       h, method = "spline"),
+	   `200` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`200`,
+			       h, method = "spline"),
+	   `225` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`225`,
+			       h, method = "spline"),
+	   `250` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`250`,
+			       h, method = "spline"),
+	   `275` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`275`,
+			       h, method = "spline"),
+	   `300` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`300`,
+			       h, method = "spline"),
+	   `325` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`325`,
+			       h, method = "spline"),
+	   `350` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`350`,
+			       h, method = "spline"),
+	   `375` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`375`,
+			       h, method = "spline"),
+	   `400` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`400`,
+			       h, method = "spline"),
+	   `425` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`425`,
+			       h, method = "spline"),
+	   `450` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`450`,
+			       h, method = "spline"),
+	   `475` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`475`,
+			       h, method = "spline"),
+	   `500` = 1 - interp1(ppm_abs_profiles$height, ppm_abs_profiles$`500`,
+			       h, method = "spline")) %>%
+    select(-h) %>%
+    mutate_each(funs(cumprod)) %>%
+    summarise_all(min) %>%
+    gather(ppm, AbsV) %>%
+    mutate(ppm = as.numeric(ppm),
+	   AbsV = 1 - AbsV,
+	   Voigt_Abs = AbsV * band_energy)
+\end{lstlisting}
+
+And so we get the following relationship between CO$_{\text{2}}$ concentration
+and absorbed energy by the entire atmospheric column
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+ppm_abs %>%
+    ggplot() +
+    geom_line(aes(ppm, Voigt_Abs)) +
+    labs(title = "Concentration Dependence of Atmospheric Voigt Absorption",
+	 x = "CO2 (ppm)",
+	 y = "Absorbed Energy (W/m2)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/abs_voigt_ppm.pdf}
+
+This is clearly a relation of the type
+\begin{equation}
+y = 1 - e^{-a x}
+\end{equation}
+which we can estimate from the calculated numbers
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+summary(lm(log(1-AbsV) ~ ppm, data = ppm_abs))
+\end{lstlisting}
+
+\begin{verbatim}
+Call:
+lm(formula = log(1 - AbsV) ~ ppm, data = ppm_abs)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-9.982e-05 -3.753e-05  1.495e-05  4.731e-05  6.266e-05 
+
+Coefficients:
+              Estimate Std. Error   t value Pr(>|t|)    
+(Intercept)  4.976e-04  4.713e-05     10.56 9.54e-08 ***
+ppm         -1.302e-02  1.376e-07 -94630.67  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5.757e-05 on 13 degrees of freedom
+Multiple R-squared:      1,	Adjusted R-squared:      1 
+F-statistic: 8.955e+09 on 1 and 13 DF,  p-value: < 2.2e-16
+\end{verbatim}
+And so we obtain as (empirical) equation
+\begin{equation}
+\mathrm{AbsV} = 1 - e^{-0.0130 \mathrm{ppm}}
+\label{eqn:rel_absorption}
+\end{equation}
+from which we get the actual amount of absorbed energy by just
+multiplying the CO$_{\text{2}}$ dependent AbsV value with the amount of energy
+available in the spectral band, i.e.,
+\unit{590-740}{\centi\reciprocal\metre}.
+
+\subsubsection{Implications}
+\label{sec-3-3-2}
+These numbers and equations allow the estimation of (black body)
+equilibrium temperatures, given CO$_{\text{2}}$ concentrations.
+
+For most of the Holocene, we had 280 ppm of CO$_{\text{2}}$ with an average
+temperature of \unit{287}{\kelvin}. At this temperature, a total of
+\unit{38.478}{\watt\per\metre\squared} is available for absorption. The
+relative absorption according to equation \ref{eqn:rel_absorption}
+amounts to 0.97375 for 280 ppm (the present 420 ppm yields 0.99575,
+that is to say it absorbs all the energy in the relevant band).
+
+Therefore, the stability of the Holocene climate corresponds to an
+average absorption of \unit{37.468}{\watt\per\metre\squared}. In view
+of the 10000 year stability, it is reasonable to accept this amount of
+absorbed energy as an equilibrium value.
+
+The present 420 ppm concentration of CO$_{\text{2}}$ corresponds to
+\unit{38.314}{\watt\per\metre\squared}. As this is additional energy,
+(\unit{0.846}{\watt\per\metre\squared}), it heats up the earth until a
+new equilibrium temperature is reached. As shown earlier, a hotter
+(black) body emits less energy in the CO$_{\text{2}}$ absorption band:
+presumably, the heating will stop when the earth is hot enough for
+there to be no longer an excess energy above the equilibrium
+value. According to the calculations behind table
+\ref{energy665}, that temperature is \unit{300}{\kelvin}.
+
+\section{References}
+\label{sec-4}
+The org-mode source and associated files reside at \url{https://github.com/stefan-revets/climate}
+
+\bibliographystyle{plainnat}
+\bibliography{climate}
+% Emacs 24.5.1 (Org mode 8.2.10)
+\end{document}
