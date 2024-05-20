@@ -1,4 +1,4 @@
-% Created 2024-05-17 Fri 10:49
+% Created 2024-05-20 Mon 16:36
 \documentclass[10pt,a4paper,titlepage]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -60,13 +60,12 @@
 \label{sec-1}
 The heating of the Earth due to human CO$_{\text{2}}$ emissions is the subject
 of substantial research activities. A great deal of complex modelling
-is carried out and used to inform humanity of the likelihood of
-various scenarios of future climates. The Paris accord in 2015
-accepted to bring down CO$_{\text{2}}$ emissions so to limit the rise of the
-Earth's average temperature to \unit{1.5}{\celsius}. The
-failure of politicians and industrialists to take swift and sufficient
-action has led to the prediction that the increase will be close to
-\unit{3}{\celsius}.
+is carried out and used to inform humanity of various scenarios of
+future climates. The Paris accord in 2015 accepted to bring down
+CO$_{\text{2}}$ emissions so to limit the rise of the Earth's average
+temperature to \unit{1.5}{\celsius}. The failure of politicians and
+industrialists to take swift and sufficient action has led to the
+prediction that the increase will be close to \unit{3}{\celsius}.
 
 The modelling behind these numbers has overlooked a number of physical
 facts and processes which have led to unrealistically optimistic
@@ -81,25 +80,38 @@ to cooling of the core and radiogenic heating amounts to
 \unit{42}{\terad\watt}, compared to the \unit{174}{\petad\watt}
 for the total solar energy delivered to the Earth). 
 
-In the absence of tectonic activity and of human interference, this
-received energy undergoes a number of conversions before ultimately
-being radiated out. The various conversion processes have their own
-response time, and they interact with each other. This results in a
-dynamic equilibrium, maintaining the temperature on Earth within
-fairly narrow bounds.
+This received energy undergoes a number of conversions before
+ultimately being radiated out into space. The various conversion
+processes have their own response time, and they interact with each
+other. This results in a dynamic equilibrium, maintaining the
+temperature on Earth within relatively narrow bounds.
 
 A clear distinction has to be made between the changes in CO$_{\text{2}}$ and
-CH$_{\text{4}}$ concentrations and climate oscillations pre-Anthropocene and
-what is taking place now that a massive injection of CO$_{\text{2}}$ has taken
-place, geologically speaking instantaneously. Pre-Anthropocene, the
-greenhouse gases did not drive climate change, if anything, they were
-part of the feedback responses. It is not at all clear if the
-geological concentrations and the temperatures/ice volumes can be used
-as a direct, simple proxy for the effects of the human-caused
-concentrations.
+CH$_{\text{4}}$ concentrations and climate oscillations before
+industrialisation and what is taking place in the last few decades,
+now that a massive injection of CO$_{\text{2}}$ has taken place, geologically
+speaking instantaneously. It is questionable if, Pre-Anthropocene,
+greenhouse gases drove climate change: there are fascinating
+indications that they were part of feedback mechanisms which kept the
+Earth's climate within relatively narrow limits. It is not at all
+clear if the geological concentrations and the temperatures/ice
+volumes can be used as a direct, simple proxy for the effects of the
+human-caused concentrations.
 
 \section{A first principles approach}
 \label{sec-3}
+
+The greenhouse effect which keeps the Earth warmer than expected is
+due to the absorption of infrared radiation radiated out by the
+Earth. This radiation can be modelled effectively as black body
+radiation. Therefore, I propose to analyse the heating up of the Earth
+by simplifying the process to a black body surrounded by an
+atmosphere, and singleing out the contribution of just CO$_{\text{2}}$, i.e.,
+ignoring all the other component (including water vapour). It is,
+after all, CO$_{\text{2}}$ that humans have been pumping in the atmosphere in
+astounding amounts, and it is that what differentiates the present
+situation from the remarkable stability of the Holocene.
+
 I'll be using R to carry out most of the calculations, so let's bring
 in the libraries needed and define a number of constants we'll be
 using later on. The values of the various constants included have been
@@ -122,7 +134,7 @@ sigma_stefan <- 5.670373e-8     # W / m^2 K^4, Stefan-Boltzmann constant
 p0 <- 101325                    # Pa, standard pressure
 \end{lstlisting}
 
-\subsection{Atmosphere}
+\subsection{Earth's Atmosphere}
 \label{sec-3-1}
 \citet{trenberth-smith05:atmosphere} provide a carefully argued
 calculation of the total mass of the atmosphere.
@@ -177,15 +189,15 @@ to some \unit{781}{\terad\kilogram} CO$_{\text{2}}$ (or
 also tells us that we have currently \unit{1.0933}{\petad\kilogram} in
 excess of Interglacial amounts of CO$_{\text{2}}$ in the atmosphere.
 
-\citet{mlynczak-al16:spectroscopic} used a set of atmospheric
-profiles, based on the studies by
-\citet{mcclatchey-al72:atmosphere}. These profiles include pressure,
-temperature, water and ozone content in function of height,
-differentiating tropical, mid-latitude and subarctic latitudes as well
-as summer/winter differentiation.
+The study by \citet{mcclatchey-al72:atmosphere} resulted in a set of
+atmospheric profiles. They proposed a set of profiles by including
+pressure, temperature, water and ozone content in function of height,
+and that for tropical, mid-latitude and subarctic latitudes as well as
+summer/winter differentiation. These profiles continue to be used,
+e.g., \citet{mlynczak-al16:spectroscopic}.
 
-Let's have a quick, first look at the data, with pressures in Pa,
-temperature in K, and water content in \gram\per\metre\cubed
+Let's have a look at the data, plotting pressure (Pa),
+temperature (K), and water content (\gram\per\metre\cubed).
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 atm_equ <- read.table("data/grl54358_atmosphere_tropical.dat",
@@ -248,16 +260,12 @@ ggplot(atmosphere) +
 
 \includegraphics[width=.9\linewidth]{output/atmosphere_profile.pdf}
 
-\subsection{Solar energy spectrum}
-\label{sec-3-2}
-By comparing the solar radiation spectrum as it is emitted with that
-measured at the Earth's surface, we get information on how and how
-much energy is captured by the greenhouse gases, i.e., water vapour,
-CO$_{\text{2}}$ and CH$_{\text{4}}$. Bringing in their absorption spectra should give us
-the means to calculate how much heat is retained as a function of
-their concentrations in the atmosphere. The principle appears simple,
-practice seems to present quite some difficulties.
+The data determining these profiles will be very useful when
+calculating the infrad red absorption of CO$_{\text{2}}$ in the atmospheric
+column.
 
+\subsection{The Sun as a Black Body}
+\label{sec-3-2}
 The Sun radiates energy out, the spectrum of which can be described
 remarkably well as that of a black body. That principle can of course
 also be applied to the Earth.
@@ -376,14 +384,14 @@ sum(sun_energy$Energy) * 1e-8
 [1] 339.787
 \end{verbatim}
 
-which is sufficiently close to the expected value of
+which converged sufficiently close to the expected value of
 \unit{341.57}{\watt\per\metre\squared}.
 
-This amount of incoming solar radiation gives us also a means of
+The amount of incoming solar radiation gives us also a means of
 assessing to what extent the Earth can be considered as a black
-body. The amount of energy arriving at the Earth has to be radiated
-out again (if not, the Earth's temperature would increase), we can
-calculate the expected black body temperature as
+body. As the amount of energy arriving at the Earth has to be radiated
+out again, otherwise the Earth's temperature would continue to
+increase, we can calculate the expected black body temperature as
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 (solar_incoming / sigma_stefan)^(1/4)
@@ -395,14 +403,22 @@ calculate the expected black body temperature as
 
 which is about \unit{10}{\kelvin} below the current average Earth
 temperature of \unit{287}{\kelvin}. So, as expected, the Earth does
-not behave as a black body. In fact, about 30\% of the incoming energy
-is reflected out \citep{trenberth-al09:budget} implying that the
-theoretical black body temperature would be even lower, i.e.,
-\unit{254.8}{\kelvin} (and further reinforcing the deviation from
-black body assumptions).
+not behave as an ideal black body. Furthermore,
+\citet{trenberth-al09:budget} inform us that about 30\% of the incoming
+energy is reflected (the albedo, a combination of cloud, ocean, ice
+and land reflectivity). Using this downward revised number out would
+result in a, even lower black body temperature, i.e.,
+\unit{254.8}{\kelvin}. Clearly, the greenhouse effect due to the
+atmospheric water and CO$_{\text{2}}$ content plays a vital part in generating
+the Earth's temperature.
 
-In principle, we can calculate the expected black body temperature of
-any of the planets, as some elementary algebra tells us that
+At the same time, it is perfectly clear from the energy distribution
+of the incoming solar radiation just plotted that very little of that
+energy is available for the absorption bands of CO$_{\text{2}}$.
+
+As an aside, we can calculate in principle the expected black body
+temperature of any of the planets, as some elementary algebra tells us
+that
 \begin{equation}
 T_{\mathrm{Planet}} = \sqrt{\frac{R_{\mathrm{Sun}}}{2 R_{\mathrm{orbit}}}} \, T_{\mathrm{Sun}}
 \end{equation}
@@ -426,14 +442,13 @@ Saturn & 1426666422 & 90.20\\
 \end{tabular}
 \end{center}
 
-Now, looking at the incoming solar radiation, the low amount of energy
-in the absorption bands of CO$_{\text{2}}$ are obvious.  However, when we turn
-to the equivalent black body radiation emitted by the Earth, we get a
-different picture. Repeating the earlier calculations for the solar
-energy, but this time for the Earth (with an average temperature of
-\unit{288}{\kelvin}), and using the estimated value of
-\unit{238.5}{\watt\per\metre\squared} of outgoing radiation
-\citep{trenberth-al09:budget}, we get
+\subsection{Earth as a Black Body}
+\label{sec-3-3}
+Turning to the Earth as a black body radiator, we can repeat the
+earlier calculations for the solar energy, but this time for the Earth
+(taking an average temperature of \unit{287}{\kelvin}), and using the
+estimated value of \unit{238.5}{\watt\per\metre\squared} of outgoing
+radiation \citep{trenberth-al09:budget}.
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 T_earth <- 287
@@ -459,10 +474,10 @@ ggplot(earth_energy) +
 and so we see that a great deal of (outgoing) energy can be absorbed
 by CO$_{\text{2}}$, i.e., the actual greenhouse effect.
 
-\subsection{CO2}
-\label{sec-3-3}
+\subsection{The role of CO$_{\text{2}}$}
+\label{sec-3-4}
 \subsubsection{Energy Absorption}
-\label{sec-3-3-1}
+\label{sec-3-4-1}
 
 The next step in the process is accounting for the absorption by
 CO$_{\text{2}}$, and also H$_{\text{2}}$O as parts of their absorption spectra overlap.
@@ -1360,7 +1375,7 @@ available in the spectral band, i.e.,
 \unit{590-740}{\centi\reciprocal\metre}.
 
 \subsubsection{Implications}
-\label{sec-3-3-2}
+\label{sec-3-4-2}
 These numbers and equations allow the estimation of (black body)
 equilibrium temperatures, given CO$_{\text{2}}$ concentrations.
 
