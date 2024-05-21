@@ -1,4 +1,4 @@
-% Created 2024-05-20 Mon 16:36
+% Created 2024-05-21 Tue 11:43
 \documentclass[10pt,a4paper,titlepage]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -42,7 +42,7 @@
 \preauthor{\flushleft}
 \postauthor{\par}
 \predate{\flushleft}
-\postdate{\par{In Progress}}
+\postdate{\par{For discussion}}
 \author{Stefan Revets}
 \date{\today}
 \title{CO$_{\text{2}}$ Absorption and Earth's Black Body Radiation}
@@ -478,18 +478,20 @@ by CO$_{\text{2}}$, i.e., the actual greenhouse effect.
 \label{sec-3-4}
 \subsubsection{Energy Absorption}
 \label{sec-3-4-1}
-
-The next step in the process is accounting for the absorption by
-CO$_{\text{2}}$, and also H$_{\text{2}}$O as parts of their absorption spectra overlap.
+Let's now turn to the energy absorption by CO$_{\text{2}}$, and, to a lesser
+extent, that of H$_{\text{2}}$O in so far as its absorption overlaps or
+interferes with that of CO$_{\text{2}}$.
 
 A great deal of meticulous effort has been expended on obtaining these
 absorption spectra, including quantum mechanical calculations
-\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}.
-These efforts have culminated into a database which can be accessed
-on-line (\url{https://hitran.org/}) to obtain any desired data.  The level
-of detail captured in the database includes the separation of each
-isotope of the constituent atoms. The most abundant isotopic mix is
-marked with code number 1.
+\citep{rothman-al2009:hitran,lamouroux-al12:database,etminan-al16:forcing,mlynczak-al16:spectroscopic}. As
+a result, we have now access to a great deal of precision,
+outstripping the earlier, necessarily more crude broader absorption
+peaks.  These efforts have culminated into a database which can be
+accessed on-line (\url{https://hitran.org/}) to obtain any desired data.
+The level of detail captured in the database includes the separation
+of each isotope of the constituent atoms. The most abundant isotopic
+mix is marked with code number 1.
 
 A complete explanation of the  HITRAN data structure is as follows:
 
@@ -532,6 +534,7 @@ the data is presented in a Fortran-type format, i.e., columnar, there
 is a possibility of defining fields by their width, rather than the
 usual AWK field separator character.
 
+First, to get the relevant data for CO$_{\text{2}}$
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=awk,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 BEGIN{OFS = ","
@@ -542,6 +545,7 @@ BEGIN{OFS = ","
 }
 \end{lstlisting}
 
+and similarly, for H$_{\text{2}}$O
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=awk,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 BEGIN{OFS = ","
@@ -552,7 +556,7 @@ BEGIN{OFS = ","
 }
 \end{lstlisting}
 
-Let's have a look at the absorption data, and in particular, let's try
+Let's have a look at the absorption data, and in particular, compare
 and contrast the H$_{\text{2}}$O and CO$_{\text{2}}$ absorption spectra.
 
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
@@ -580,14 +584,14 @@ hitran_abs %>%
 
 \includegraphics[width=.9\linewidth]{output/absorption.pdf}
 
-which shows rather nicely that there are essentially three regions in
-which CO$_{\text{2}}$ absorption can take place unhindered by the presence of
-water vapour (around 667, 2360 and
-\unit{5000}{\centi\reciprocal\metre}, the bands around 3600 and
+This plot shows rather nicely that there are essentially three regions
+in which CO$_{\text{2}}$ absorption can take place more or less unhindered by
+the presence of water vapour (around 667, 2360 and
+\unit{5000}{\centi\reciprocal\metre}; the bands around 3600 and
 \unit{3700}{\centi\reciprocal\metre} appear to be largely saturated by
 the H$_{\text{2}}$O absorption).
 
-Taking a closer look around these four regions
+Taking a closer look at these four regions
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 hitran_abs %>%
@@ -611,13 +615,14 @@ hitran_abs %>%
 
 \includegraphics[width=.9\linewidth]{output/absorption_details.pdf}
 
-we get a first good inkling of the relative importance of the
-different bands. But we also need to bring into consideration the
-amount of energy available for absorption, i.e., where these
-absorption bands fall in the Earth's black body spectrum.
+we get a first inkling of the relative importance of the different
+bands (note that the Y-axis is now linear, while in the previous plot
+it was logarithmic). But we also need to bring into consideration the
+amount of energy that can be absorbed, i.e., where these absorption
+bands fall in the Earth's black body spectrum.
 
-An first glimpse can be had by superposing the black body radiation
-profile with the CO$_{\text{2}}$ absorption bands
+An first glimpse can be had by superposing the Earth's black body
+radiation profile on the CO$_{\text{2}}$ absorption bands
 
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
@@ -638,7 +643,8 @@ ggplot(earth_energy) +
 
 \includegraphics[width=.9\linewidth]{output/bb_radiation_co2.pdf}
 
-Let's calculate the energy available to these absorption bands
+Let's quantify the differences glimpsed on the plot and calculate the
+energy available to each of these absorption bands
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 earth_avail <- data.frame(lambda = seq(13.50,16.95,0.1)*1e-6,
@@ -691,12 +697,13 @@ than the next band, and even more so for other regions. It would be
 wise, then, to investigate this region more closely.
 
 On the subject of energy available for absorption, let's take the
-opportunity to document the relation between (assumed black body)
-temperature and energy. Given different earth surface temperatures,
-how much energy is then radiated out again in the CO$_{\text{2}}$ absorption
-regions of interest? We can get the values from simply running the
-code snippet just above for a suite of temperatures: that gives for
-the \unit{665}{\centi\reciprocal\metre} band
+opportunity to record the relation between black body temperature and
+energy available for a given absorption band. Given different earth
+surface temperatures, how much energy is then radiated out again in
+the CO$_{\text{2}}$ absorption regions of interest? We can get the values from
+simply running the code snippet just above for a suite of
+temperatures: that gives for the \unit{665}{\centi\reciprocal\metre}
+band
 
 \begin{table}[htb]
 \centering
@@ -772,7 +779,7 @@ I(\nu) = \int^{\infty}_{-\infty} G(\nu') L(\nu - \nu') d\nu'
 \end{equation}
 which needs to be evaluated numerically \citep{thompson93:voigt}.
 
-Fortunately, a fortran package with associated data files
+Fortunately, a Fortran package with associated data files
 \citep{gordon-al22:hitran2020,lamouroux-al15:linemixing} is freely
 available from \url{https://hitran.org/supplementary/} and allows for easy
 experimentation.  The following variables can be changed before
@@ -797,7 +804,7 @@ MixSDV & logical & Speed-dependent Voigt profile\\
 \end{tabular}
 \end{center}
 
-I have modified the fortran code a little so that these variables are
+I have modified the Fortran code a little so that these variables are
 read in from a separate file (lm\_input.in), rather than having to
 change the parameters in the code and then recompiling the code. As a
 result, it becomes much easier to carry out more numerous
@@ -805,7 +812,7 @@ calculations.
 
 The results of the calculations all go into a file
 (ABSCO\_HIT2020.dat), all in \centi\reciprocal\metre. Looking more
-closely at the fortran code reveals that the absorption coefficient is
+closely at the Fortran code reveals that the absorption coefficient is
 standardised to the number of CO$_{\text{2}}$ molecules per \metre\cubed, i.e.,
 the mole fraction $x_{CO_2}$, temperature $T$ and pressure $p$ are
 used to calculate the number of molecules: the absorption is then
@@ -853,7 +860,7 @@ MixSDV & .True. & logical\\
 \end{tabular}
 \end{center}
 
-We can use a shell script to store the desired parameters and their
+We'll use shell scripts to store the desired parameters and their
 values into the expected lm\_input.in file and then run the modified
 lm\_calc program. Let's move the output of the calculations to the
 cache directory, where we can access it for further scrutiny
@@ -919,25 +926,35 @@ area under the curve would stand at
 divided by this. Clearly, the amount of radiation absorption at these
 concentrations is small.
 
-The table shows that the bands around 3625 and
-\unit{3727}{\centi\reciprocal\metre}, which as we have already had
-some indication of, are largely subsumed in one of the H$_{\text{2}}$O bands,
-account for barely 2.5\% of the overall absorption, while the bands
-around \unit{5000}{\centi\reciprocal\metre} account for even less than
-that. But, as we saw earlier, the energy available for absorption in
-the band around \unit{665}{\centi\reciprocal\metre} is two order of
-magnitude larger than that available to
-\unit{2340}{\centi\reciprocal\metre}, we can safely neglect all but
-the \unit{665}{\centi\reciprocal\metre} band for further
+ We do have to put these numbers into the context of the amount of
+energy available for absorption, already derived above.  Taking both
+tables into consideration, we see that the bands around 3625 and
+\unit{3727}{\centi\reciprocal\metre} (as we have already had some
+indication of) are not only largely subsumed in some of the H$_{\text{2}}$O
+absorption bands, they also account for barely 2.5\% of the overall
+absorption, while the bands around
+\unit{5000}{\centi\reciprocal\metre} account for even less than
+that. In contrast, the energy available for absorption in the band
+around \unit{665}{\centi\reciprocal\metre} is two order of magnitude
+larger than that available to \unit{2340}{\centi\reciprocal\metre}, so
+even though the absorption of the \unit{2340}{\centi\reciprocal\metre}
+band is 10 times as strong as that of the
+\unit{665}{\centi\reciprocal\metre} band, we can safely neglect all
+but the \unit{665}{\centi\reciprocal\metre} band for further
 consideration.
 
-We are now in a position to explore the effects of changes in pressure
-and temperature on the integrated absorption. Perusal of the Lorentz
-and Gau\ss profile equations above hint that concentration differences
-in CO$_{\text{2}}$ will have very little effect on the individual absorption,
+\citep{tennyson-al14:IUPAC} showed that temperature, pressure, and
+presence of other molecules have an effect on the shape of the
+absorption curves, and is reflected in the relevant equations. What is
+not obvious is to what degree the absorption changes with the
+variation in temperature and pressure as encountered in the
+atmosphere. Fortunately, we are now in a position to explore these
+effects on the integrated absorption. Perusal of the Lorentz and
+Gau\ss profile equations above hint that concentration differences in
+CO$_{\text{2}}$ will have very little effect on the individual absorption,
 particularly at the ppm concentrations we are dealing with here.
 
-First, the dependence between absorbance and pressure
+First, let's look at the dependence between absorbance and pressure
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 cd hitran2020
@@ -989,9 +1006,9 @@ Press_Abs %>%
 
 \includegraphics[width=.9\linewidth]{output/hitran_PA.pdf}
 
-Clearly, the dependence to pressure is very small indeed.
+Clearly, the relation between pressure and absorbance is very weak indeed.
 
-Turning now to the temperature yields the following values
+Turning now to temperature variation yields the following values
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=sh,label= ,caption= ,numbers=none}
 \begin{lstlisting}
 cd hitran2020
@@ -1044,9 +1061,10 @@ Temp_Abs %>%
 
 \includegraphics[width=.9\linewidth]{output/hitran_TA.pdf}
 
-The last two graphs show that the relative effects of pressure and
-temperature ranges encountered in the atmosphere on the absorbance are
-tiny in comparison with the changes in CO$_{\text{2}}$ concentrations.
+Once again, the influence of temperature on absorption is very
+small. The last two graphs show that the relative effects of pressure
+and temperature ranges encountered in the atmosphere on the absorbance
+are tiny in comparison with the changes in CO$_{\text{2}}$ concentrations.
 
 Let's check to what extent this effect plays out on the typical
 atmospheric p,T profile.  Let's use the values of temperature,
@@ -1103,7 +1121,9 @@ ggplot(abs_profile) +
 
 As the density of CO$_{\text{2}}$ is the main driver in this absorption
 profile, let's see how the individual molecule absorption varies with
-the atmospheric conditions
+the atmospheric conditions, that is to say, let's show how the effects
+of pressure and temperature change in the atmosphere play out on the
+per molecule absorption.
 
 \lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
 \begin{lstlisting}
@@ -1122,10 +1142,10 @@ ggplot(abs_profile) +
 
 \includegraphics[width=.9\linewidth]{output/abs_profile_molecule.pdf}
 
-which is consistent with the pressure-temperature dependencies we've
-looked at earlier.
+As expected from the slight pressure-temperature dependencies we've
+seen earlier, the absorbance changes very little.
 
-We can calculate the total absorption of this atmospheric column from
+Turning now to the total absorption of this atmospheric column from
 \begin{equation}
 A = 1 - \prod_1^n (1 - a_i)
 \end{equation}
@@ -1374,8 +1394,8 @@ multiplying the CO$_{\text{2}}$ dependent AbsV value with the amount of energy
 available in the spectral band, i.e.,
 \unit{590-740}{\centi\reciprocal\metre}.
 
-\subsubsection{Implications}
-\label{sec-3-4-2}
+\subsection{Implications}
+\label{sec-3-5}
 These numbers and equations allow the estimation of (black body)
 equilibrium temperatures, given CO$_{\text{2}}$ concentrations.
 
@@ -1384,12 +1404,12 @@ temperature of \unit{287}{\kelvin}. At this temperature, a total of
 \unit{38.478}{\watt\per\metre\squared} is available for absorption. The
 relative absorption according to equation \ref{eqn:rel_absorption}
 amounts to 0.97375 for 280 ppm (the present 420 ppm yields 0.99575,
-that is to say it absorbs all the energy in the relevant band).
+that is to say it absorbs essentially all the energy in the relevant band).
 
 Therefore, the stability of the Holocene climate corresponds to an
 average absorption of \unit{37.468}{\watt\per\metre\squared}. In view
-of the 10000 year stability, it is reasonable to accept this amount of
-absorbed energy as an equilibrium value.
+of the 10000 year stability, we may hypothesise that this amount of
+absorbed energy is a thermal equilibrium value.
 
 The present 420 ppm concentration of CO$_{\text{2}}$ corresponds to
 \unit{38.314}{\watt\per\metre\squared}. As this is additional energy,
@@ -1397,9 +1417,43 @@ The present 420 ppm concentration of CO$_{\text{2}}$ corresponds to
 new equilibrium temperature is reached. As shown earlier, a hotter
 (black) body emits less energy in the CO$_{\text{2}}$ absorption band:
 presumably, the heating will stop when the earth is hot enough for
-there to be no longer an excess energy above the equilibrium
-value. According to the calculations behind table
-\ref{energy665}, that temperature is \unit{300}{\kelvin}.
+there to be no longer an excess energy above the equilibrium value. We
+can therefore use the calculations behind table \ref{energy665}, and
+equation \ref{eqn:rel_absorption} to predict the equilibrium black
+body temperature for a given CO$_{\text{2}}$ concentration.
+
+\lstset{literate={<-}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {!=}{{$\neq$}}1 {<>}{{$\neq$}}1 {\%>\%}{{$\Leftarrow$}}1 {\%<>\%}{{$\Leftrightarrow$}}1,frame=single,language=R,label= ,caption= ,numbers=none}
+\begin{lstlisting}
+E_equilibrium <- 37.468
+
+T_ppm_prediction <- data.frame(T = seq(275, 299, 1)) %>%
+    mutate(Energy = interp1(energy665$T, energy665$Energy,
+			    T, method = "spline"),
+	   ppm = -log(1 - E_equilibrium/Energy) / 0.013)
+
+ggplot(T_ppm_prediction) +
+    geom_line(aes(ppm, T)) +
+    labs(title = "Predicted Black Body T for given [CO2]",
+	 x = "CO2 (ppm)",
+	 y = "Temperature (K)")
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{output/T_ppm_prediction.pdf}
+
+This plot proposes that the Earth's average temperature would reach a
+maximum of \unit{300}{\kelvin}. Once the atmospheric CO$_{\text{2}}$
+concentration reaches the 450 ppm mark, all the available band energy
+will be absorbed, and higher concentrations will make no additional
+contribution.
+
+If this analysis is substantially correct, the implications for action
+to stop climate change are stark. Even if net zero emission of
+greenhouse gases were achieved today, temperatures will continue to
+rise to reach \unit{298}{\kelvin}. To maintain the current average
+temperature of \unit{288}{\kelvin} we not only have to stop emissions,
+we will have to reduce the CO$_{\text{2}}$ concentration in the atmosphere down
+to 285 ppm. That translates to the sequestration of
+\unit{1.09}{\petad\kilogram}.
 
 \section{References}
 \label{sec-4}
